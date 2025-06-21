@@ -133,17 +133,31 @@
                           <div class="mod-group">
                             <strong><%= g.name %></strong><br>
                             <% mods.filter(m => m.group_id === g.id).forEach(mod => { %>
-                          <label>
+                          <label class="me-2">
                             <input type="checkbox" name="modifier_ids" value="<%= mod.id %>" <%= (item.modifier_ids.includes(mod.id)) ? 'checked' : '' %> >
                             <%= mod.name %><% if(mod.price && Number(mod.price) !== 0) { %> (+<%= Number(mod.price).toFixed(2) %>)<% } %>
+                            <select class="form-select form-select-sm mod-replace-select ms-1" name="replaces_ingredient_ids" <%= (item.modifier_ids.includes(mod.id)) ? '' : 'disabled' %>>
+                              <option value="">Adds</option>
+                              <% item.ingredients.forEach(ing => { %>
+                                <% const ingData = publicIngredients.find(p => p.id === ing.ingredient_id); %>
+                                <option value="<%= ing.ingredient_id %>" <%= (item.modifier_replacements[mod.id] === ing.ingredient_id) ? 'selected' : '' %>><%= ingData ? ingData.name : '' %></option>
+                              <% }) %>
+                            </select>
                           </label>
                         <% }); %>
                       </div>
                     <% }); %>
                     <% mods.filter(mod => !mod.group_id).forEach(mod => { %>
-                      <label>
+                      <label class="me-2">
                         <input type="checkbox" name="modifier_ids" value="<%= mod.id %>" <%= (item.modifier_ids.includes(mod.id)) ? 'checked' : '' %> >
                         <%= mod.name %><% if(mod.price && Number(mod.price) !== 0) { %> (+<%= Number(mod.price).toFixed(2) %>)<% } %>
+                        <select class="form-select form-select-sm mod-replace-select ms-1" name="replaces_ingredient_ids" <%= (item.modifier_ids.includes(mod.id)) ? '' : 'disabled' %>>
+                          <option value="">Adds</option>
+                          <% item.ingredients.forEach(ing => { %>
+                            <% const ingData = publicIngredients.find(p => p.id === ing.ingredient_id); %>
+                            <option value="<%= ing.ingredient_id %>" <%= (item.modifier_replacements[mod.id] === ing.ingredient_id) ? 'selected' : '' %>><%= ingData ? ingData.name : '' %></option>
+                          <% }) %>
+                        </select>
                       </label>
                     <% }); %>
                   </div>

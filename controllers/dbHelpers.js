@@ -1,15 +1,13 @@
-function updateItemModifiers(db, itemId, modifierIds, callback) {
-  let mods = [];
-  if (Array.isArray(modifierIds)) {
-    mods = modifierIds;
-  } else if (modifierIds) {
-    mods = [modifierIds];
+function updateItemModifiers(db, itemId, modifierRows, callback) {
+  let rows = [];
+  if (Array.isArray(modifierRows)) {
+    rows = modifierRows;
   }
   db.query('DELETE FROM item_modifiers WHERE menu_item_id=?', [itemId], err => {
     if (err) { console.error(err); }
-    if (mods.length === 0) return callback();
-    const values = mods.map(mid => [itemId, mid]);
-    db.query('INSERT INTO item_modifiers (menu_item_id, modifier_id) VALUES ?', [values], err2 => {
+    if (rows.length === 0) return callback();
+    const values = rows.map(m => [itemId, m.modifier_id, m.replaces_ingredient_id || null]);
+    db.query('INSERT INTO item_modifiers (menu_item_id, modifier_id, replaces_ingredient_id) VALUES ?', [values], err2 => {
       if (err2) { console.error(err2); }
       callback();
     });
@@ -100,7 +98,7 @@ async function getMenuData(db) {
   const itemModsMap = {};
   itemMods.forEach(link => {
     if (!itemModsMap[link.menu_item_id]) itemModsMap[link.menu_item_id] = [];
-    itemModsMap[link.menu_item_id].push(link.modifier_id);
+    itemModsMap[link.menu_item_id].push({ modifier_id: link.modifier_id, replaces_ingredient_id: link.replaces_ingredient_id });
   });
 
   const modMap = {};
@@ -138,7 +136,8 @@ async function getMenuData(db) {
       station_name: row.station_name,
       category_id: row.category_id,
       sort_order: row.sort_order,
-      modifier_ids: itemModsMap[row.id] ? itemModsMap[row.id] : [],
+      modifier_ids: itemModsMap[row.id] ? itemModsMap[row.id].map(m => m.modifier_id) : [],
+      modifier_replacements: itemModsMap[row.id] ? Object.fromEntries(itemModsMap[row.id].map(m => [m.modifier_id, m.replaces_ingredient_id])) : {},
       ingredients: itemIngMap[row.id] ? itemIngMap[row.id] : []
     };
     if (item.modifier_ids.length) {
@@ -196,19 +195,31 @@ function updateItemIngredients(db, itemId, ingList, callback) {
 async function logInventoryForOrder(db, orderId, items) {
   for (const it of items) {
     const [ings] = await db.promise().query('SELECT ingredient_id, amount FROM item_ingredients WHERE menu_item_id=?', [it.menu_item_id]);
+    let replaced = [];
+    let modRows = [];
+    if (Array.isArray(it.modifier_ids) && it.modifier_ids.length) {
+      const [rows] = await db.promise().query(
+        `SELECT m.ingredient_id, im.replaces_ingredient_id
+           FROM item_modifiers im
+           JOIN modifiers m ON im.modifier_id = m.id
+          WHERE im.menu_item_id=? AND im.modifier_id IN (?) AND m.ingredient_id IS NOT NULL`,
+        [it.menu_item_id, it.modifier_ids]
+      );
+      modRows = rows;
+      replaced = rows.map(r => r.replaces_ingredient_id).filter(Boolean);
+    }
+
     for (const row of ings) {
+      if (replaced.includes(row.ingredient_id)) continue;
       const used = parseFloat(row.amount) * it.quantity;
       await db.promise().query('UPDATE ingredients SET quantity = quantity - ? WHERE id=?', [used, row.ingredient_id]);
       await db.promise().query('INSERT INTO inventory_log (order_id, menu_item_id, ingredient_id, amount) VALUES (?, ?, ?, ?)', [orderId, it.menu_item_id, row.ingredient_id, used]);
     }
 
-    if (Array.isArray(it.modifier_ids) && it.modifier_ids.length) {
-      const [mods] = await db.promise().query('SELECT ingredient_id FROM modifiers WHERE id IN (?) AND ingredient_id IS NOT NULL', [it.modifier_ids]);
-      for (const modRow of mods) {
-        const used = 1 * it.quantity;
-        await db.promise().query('UPDATE ingredients SET quantity = quantity - ? WHERE id=?', [used, modRow.ingredient_id]);
-        await db.promise().query('INSERT INTO inventory_log (order_id, menu_item_id, ingredient_id, amount) VALUES (?, ?, ?, ?)', [orderId, it.menu_item_id, modRow.ingredient_id, used]);
-      }
+    for (const modRow of modRows) {
+      const used = 1 * it.quantity;
+      await db.promise().query('UPDATE ingredients SET quantity = quantity - ? WHERE id=?', [used, modRow.ingredient_id]);
+      await db.promise().query('INSERT INTO inventory_log (order_id, menu_item_id, ingredient_id, amount) VALUES (?, ?, ?, ?)', [orderId, it.menu_item_id, modRow.ingredient_id, used]);
     }
   }
 }

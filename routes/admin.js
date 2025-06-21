@@ -98,16 +98,19 @@ router.get('/admin/menu', async (req, res) => {
   // Parse and validate selected modifiers
   let selectedMods = [];
   const rawMods = req.body.modifier_ids;
-  if (Array.isArray(rawMods)) {
-    selectedMods = rawMods.map(m => parseInt(m, 10)).filter(Boolean);
-  } else if (rawMods) {
-    selectedMods = [parseInt(rawMods, 10)];
-  }
+  const rawReps = req.body.replaces_ingredient_ids;
+  const modIds = Array.isArray(rawMods) ? rawMods : rawMods ? [rawMods] : [];
+  const repIds = Array.isArray(rawReps) ? rawReps : rawReps ? [rawReps] : [];
+  selectedMods = modIds.map((m, idx) => ({
+    modifier_id: parseInt(m, 10),
+    replaces_ingredient_id: repIds[idx] ? parseInt(repIds[idx], 10) || null : null
+  })).filter(r => r.modifier_id);
+
   if (selectedMods.length) {
     try {
       const [modRows] = await db.promise().query(
         'SELECT id, ingredient_id FROM modifiers WHERE id IN (?)',
-        [selectedMods]
+        [selectedMods.map(r => r.modifier_id)]
       );
       if (modRows.length !== selectedMods.length || modRows.some(r => !r.ingredient_id)) {
         return res.redirect('/admin?tab=menu&msg=Invalid+modifier+selection');

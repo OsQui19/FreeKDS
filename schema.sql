@@ -55,9 +55,11 @@ CREATE TABLE modifiers (
 CREATE TABLE item_modifiers (
   menu_item_id INT NOT NULL,
   modifier_id  INT NOT NULL,
+  replaces_ingredient_id INT DEFAULT NULL,
   PRIMARY KEY (menu_item_id, modifier_id),
   FOREIGN KEY (menu_item_id) REFERENCES menu_items(id) ON DELETE CASCADE,
-  FOREIGN KEY (modifier_id)  REFERENCES modifiers(id) ON DELETE CASCADE
+  FOREIGN KEY (modifier_id)  REFERENCES modifiers(id) ON DELETE CASCADE,
+  FOREIGN KEY (replaces_ingredient_id) REFERENCES ingredients(id)
 );
 
 -- Orders table: one record per order (ticket).

@@ -82,6 +82,17 @@ function initAdminMenu() {
     });
   });
 
+  function initModifierReplaceFields() {
+    document.querySelectorAll('.item-edit-form').forEach(div => {
+      div.querySelectorAll('.mod-replace-select').forEach(sel => {
+        const box = sel.closest('label').querySelector('input[name="modifier_ids"]');
+        const toggle = () => { sel.disabled = !box.checked; };
+        box.addEventListener('change', toggle);
+        toggle();
+      });
+    });
+  }
+
   function initModifierFields() {
     const ings = window.publicIngredients || [];
     const findByName = name => ings.find(i => i.name.toLowerCase() === name.toLowerCase());
@@ -203,6 +214,7 @@ function initIngredientFields() {
   initIngredientFields();
   initRecipeFields();
   initModifierFields();
+  initModifierReplaceFields();
   const modal = document.getElementById('addRecipeModal');
   if (modal) {
     const saveBtn = document.getElementById('recipeSave');
