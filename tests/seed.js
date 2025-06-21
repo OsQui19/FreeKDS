@@ -74,13 +74,23 @@ async function main() {
 
   const [modGroupRes] = await db.query('INSERT INTO modifier_groups (name) VALUES (?)', ['Toppings']);
   const modGroupId = modGroupRes.insertId;
+
+  const ingredientNames = ['Cheese', 'Bacon', 'Avocado'];
+  for (const name of ingredientNames) {
+    await db.query('INSERT INTO ingredients (name) VALUES (?)', [name]);
+  }
+
+  const [ingRows] = await db.query('SELECT id, name FROM ingredients');
+  const ingMap = Object.fromEntries(ingRows.map(r => [r.name, r.id]));
+
   const modifiers = [
     { name: 'Cheese', price: 0.5 },
     { name: 'Bacon', price: 1.0 },
     { name: 'Avocado', price: 1.5 }
   ];
   for (const m of modifiers) {
-    await db.query('INSERT INTO modifiers (name, price, group_id) VALUES (?, ?, ?)', [m.name, m.price, modGroupId]);
+    const ingId = ingMap[m.name] || null;
+    await db.query('INSERT INTO modifiers (name, price, group_id, ingredient_id) VALUES (?, ?, ?, ?)', [m.name, m.price, modGroupId, ingId]);
   }
 
   const [modRows] = await db.query('SELECT id, name FROM modifiers');

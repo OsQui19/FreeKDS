@@ -1,3 +1,4 @@
+SET FOREIGN_KEY_CHECKS=0;
 CREATE DATABASE IF NOT EXISTS kds_db;
 USE kds_db;
 
@@ -162,3 +163,4 @@ CREATE TABLE inventory_transactions (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (ingredient_id) REFERENCES ingredients(id)
 );
+SET FOREIGN_KEY_CHECKS=1;

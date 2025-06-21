@@ -95,6 +95,29 @@ router.get('/admin/menu', async (req, res) => {
     }
   }
 
+  // Parse and validate selected modifiers
+  let selectedMods = [];
+  const rawMods = req.body.modifier_ids;
+  if (Array.isArray(rawMods)) {
+    selectedMods = rawMods.map(m => parseInt(m, 10)).filter(Boolean);
+  } else if (rawMods) {
+    selectedMods = [parseInt(rawMods, 10)];
+  }
+  if (selectedMods.length) {
+    try {
+      const [modRows] = await db.promise().query(
+        'SELECT id, ingredient_id FROM modifiers WHERE id IN (?)',
+        [selectedMods]
+      );
+      if (modRows.length !== selectedMods.length || modRows.some(r => !r.ingredient_id)) {
+        return res.redirect('/admin?tab=menu&msg=Invalid+modifier+selection');
+      }
+    } catch (err) {
+      console.error('Error verifying modifiers:', err);
+      return res.status(500).send('DB Error');
+    }
+  }
+
   if (!name || !stationId || !categoryId) {
     return res.redirect('/admin?tab=menu');
   }
@@ -110,7 +133,7 @@ router.get('/admin/menu', async (req, res) => {
                        WHERE id=?`;
     db.query(updateSql, [name, price, stationId, categoryId, imageUrl, recipe, id], (err) => {
       if (err) { console.error(err); }
-      updateItemModifiers(db, id, req.body.modifier_ids, () => {
+      updateItemModifiers(db, id, selectedMods, () => {
         if (itemIngredients.length) {
           updateItemIngredients(db, id, itemIngredients, () => {
             return res.redirect('/admin?tab=menu&msg=Item+saved');
@@ -130,7 +153,7 @@ router.get('/admin/menu', async (req, res) => {
       db.query(insertSql, [name, price, stationId, categoryId, imageUrl, recipe, nextOrder], (err, result) => {
           if (err) { console.error(err); return res.redirect('/admin?tab=menu'); }
         const newItemId = result.insertId;
-        updateItemModifiers(db, newItemId, req.body.modifier_ids, () => {
+        updateItemModifiers(db, newItemId, selectedMods, () => {
           updateItemIngredients(db, newItemId, itemIngredients, () => {
             return res.redirect('/admin?tab=menu&msg=Item+saved');
           });
