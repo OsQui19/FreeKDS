@@ -404,15 +404,24 @@
     document.querySelectorAll('.edit-cat-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const header = btn.closest('.category-header');
+        const collapse = header.nextElementSibling;
+        const form = collapse.querySelector('.category-edit-form');
         header.classList.add('hidden');
-        header.nextElementSibling.classList.remove('hidden');  // show the category-edit-form
+        if (collapse && !collapse.classList.contains('show')) {
+          collapse.classList.add('show');
+        }
+        if (form) form.classList.remove('hidden');
       });
     });
     document.querySelectorAll('.cancel-cat-edit').forEach(btn => {
       btn.addEventListener('click', () => {
-        const editDiv = btn.closest('.category-edit-form');
-        editDiv.classList.add('hidden');
-        editDiv.previousElementSibling.classList.remove('hidden');
+        const form = btn.closest('.category-edit-form');
+        const collapse = form.closest('.collapse');
+        form.classList.add('hidden');
+        if (collapse) collapse.classList.remove('show');
+        if (collapse && collapse.previousElementSibling) {
+          collapse.previousElementSibling.classList.remove('hidden');
+        }
       });
     });
         // Collapse/expand category sections
