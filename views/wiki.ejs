@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= station.name %> – Recipes Wiki</title>
+  <link rel="stylesheet" href="/style.css">
+  <%- include('partials/theme-vars') %>
+  <style>
+    :root {
+      --bg-color: <%= station.bg_color || settings.theme_bg_color %>;
+      --primary-color: <%= station.primary_color || settings.theme_primary_color %>;
+      --font-family: <%= station.font_family || 'Roboto, sans-serif' %>;
+    }
+    body {
+      background: var(--bg-color);
+      color: #fff;
+      padding: 20px;
+      font-family: var(--font-family);
+    }
+    h1 { color: var(--primary-color); }
+    .recipe-entry { margin-bottom: 2em; }
+    .recipe-entry h3 { color: var(--primary-color); }
+    pre { background: #333; padding: 10px; }
+    .recipe-list { background: #333; padding: 10px; }
+    .recipe-list li { margin-bottom: 0.5em; }
+  </style>
+</head>
+<body>
+  <h1><%= station.name %> Station – Recipe Wiki</h1>
+  <p>All recipes for items prepared at this station:</p>
+  <% items.forEach(item => { %>
+    <div class="recipe-entry">
+      <h3><%= item.name %></h3>
+      <% if (item.recipe && item.recipe.trim() !== '') { %>
+        <% const steps = item.recipe.replace(/\r/g,'').split('\n').filter(s => s.trim()); %>
+        <ol class="recipe-list">
+          <% steps.forEach(function(step){ %>
+            <li><%= step %></li>
+          <% }); %>
+        </ol>
+      <% } else { %>
+        <p><em>No recipe available.</em></p>
+      <% } %>
+    </div>
+  <% }); %>
+  <footer><a href="/station/<%= station.id %>">← Back to <%= station.name %> KDS</a></footer>
+</body>
+</html>
+

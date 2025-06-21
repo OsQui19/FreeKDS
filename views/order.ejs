@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Place Order</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/order.css">
+  <%- include('partials/theme-vars') %>
+</head>
+<body>
+<header class="menu-header">
+  <h1 class="menu-title">Menu</h1>
+  <div class="mt-1 order-type-select">
+    <label for="orderType" class="fw-bold me-2">Order Type:</label>
+    <select id="orderType" class="form-select d-inline-block w-auto">
+      <option value="DINE-IN">DINE-IN</option>
+      <option value="TO-GO">TO-GO</option>
+      <option value="CATERING">CATERING</option>
+    </select>
+  </div>
+  <nav id="categoryNav">
+    <% categories.forEach(cat => { %>
+      <a href="#cat-<%= cat.id %>"><%= cat.name %></a>
+    <% }) %>
+  </nav>
+</header>
+<main id="menu" class="menu-content container py-3">
+  <% categories.forEach(cat => { %>
+    <div class="category" id="cat-<%= cat.id %>">
+      <h2><%= cat.name %></h2>
+      <div class="item-grid">
+      <% cat.items.forEach(item => { %>
+        <div class="item-card">
+          <img src="<%= item.image_url || 'https://via.placeholder.com/150' %>" alt="<%= item.name %>">
+          <span class="item-name"><%= item.name %></span>
+          <span class="item-price">$<%= Number(item.price).toFixed(2) %></span>
+          <button class="btn" data-id="<%= item.id %>">Add</button>
+        </div>
+      <% }) %>
+      </div>
+    </div>
+  <% }) %>
+</main>
+<div class="cart" id="cart">
+  <h3>Your Order</h3>
+  <ul id="cartItems"></ul>
+  <div id="cartTotal" class="cart-total">$0.00</div>
+  <div class="mb-2">
+    <label for="instructions">Special Instructions:</label><br>
+    <textarea id="instructions" rows="3" class="w-100"></textarea>
+  </div>
+  <div class="mb-2">
+    <label><input type="checkbox" id="allergy"> Allergy</label>
+  </div>
+  <button id="submitBtn" class="btn" disabled>Submit Order</button>
+</div>
+<div id="modModal" class="modal d-none">
+  <div class="modal-content modal-small bg-white text-dark p-3">
+    <h3 id="modTitle"></h3>
+    <div id="modOptions"></div>
+    <button id="modConfirm" class="btn">Add Item</button>
+    <button id="modCancel" class="btn">Cancel</button>
+  </div>
+</div>
+<script>
+  window.TABLE = "<%= table %>";
+  window.MENU_CATS = <%- JSON.stringify(categories) %>;
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/order.js"></script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+{
+  "name": "freekds",
+  "version": "1.0.0",
+  "description": "Simplified kitchen display system",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "seed": "node tests/seed.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "ejs": "^3.1.9",
+    "express": "^4.19.2",
+    "mysql2": "^3.14.1",
+    "socket.io": "^4.7.4"
+  },
+  "devDependencies": {
+    "eslint": "^9.29.0",
+    "nodemon": "^3.1.10",
+    "prettier": "^3.5.3"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

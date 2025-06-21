@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= station.name %> KDS</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+  <%- include('partials/theme-vars') %>
+  <style>
+    :root {
+      --bg-color: <%= station.bg_color || settings.theme_bg_color %>;
+      --primary-color: <%= station.primary_color || settings.theme_primary_color %>;
+      --font-family: <%= station.font_family || 'Roboto, sans-serif' %>;
+    }
+    .brand-name {
+      color: var(--primary-color);
+    }
+  </style>
+</head>
+<body class="station-screen <%= station.type %>">
+  <header class="top-bar">
+    <h1 class="station-title"><span class="brand-name"><%= settings.brand_name || '' %></span> – <%= station.name %></h1>
+    <div class="top-bar-links">
+      <select id="stationSelect" class="station-switch">
+        <% allStations.forEach(function(st){ %>
+          <option value="<%= st.id %>" <%= st.id === station.id ? 'selected' : '' %>><%= st.name %></option>
+        <% }); %>
+      </select>
+      <a href="/wiki/<%= station.id %>" class="btn-small">Recipes Wiki</a>
+      <a href="/admin" class="btn-small">⚙️</a>
+    </div>
+  </header>
+
+<main id="ticketsMain" class="tickets-container<%= settings.ticket_layout > 1 ? ' tickets-grid' : '' %>"
+      <% if (settings.ticket_layout > 1) { %>
+        style="--ticket-columns:<%= parseInt(settings.ticket_layout) %>"
+      <% } %>>
+    <% if (orders.length === 0) { %>
+      <p class="no-orders">No current orders.</p>
+    <% } %>
+    <% orders.forEach(function(order) { %>
+      <div class="ticket <%= order.order_type ? order.order_type.replace(' ', '-').toLowerCase() : '' %>" data-order-id="<%= order.order_id %>" data-created-ts="<%= order.ts %>">
+        <div class="ticket-header">
+          <!-- Order type label -->
+          <% if (order.order_type) {
+               // Display order type or a source tag (could customize if needed)
+          %>
+            <span class="order-type <%= order.order_type.replace(' ', '-').toLowerCase() %>">
+              <%= order.order_type %>
+            </span>
+          <% } %>
+          <!-- Order number or reference -->
+          <span class="order-num"><%= order.order_number || '#' + order.order_id %></span>
+          <% if (order.allergy) { %>
+            <span class="allergy-label">ALLERGY</span>
+          <% } %>
+          <!-- Order time and elapsed -->
+          <span class="order-time">
+            <%
+              // Format created_at timestamp to hh:mm AM/PM
+              const date = new Date(order.ts * 1000);
+              const timeStr = date.toLocaleTimeString('en-US', {hour: 'numeric', minute: 'numeric'});
+            %>
+            <%= timeStr %>
+          </span>
+          <span class="elapsed">00:00</span>
+        </div>
+        <% if (order.special_instructions) { %>
+          <div class="ticket-instructions"><%= order.special_instructions %></div>
+        <% } %>
+        <ul class="items<%= station.type === 'expo' ? ' expo-items' : '' %>">
+          <% order.items.forEach(function(item) { %>
+            <li class="item <%= item.stationId ? 'station-' + item.stationId : '' %>">
+              <span class="qty"><%= item.quantity %>×</span>
+              <span class="item-name" data-item-id="<%= item.itemId %>" <% if (item.stationId) { %>data-station-id="<%= item.stationId %>"<% } %>><%= item.name %></span>
+              <% if (item.modifiers && item.modifiers.length) { %>
+                <ul class="item-modifiers">
+                  <% item.modifiers.forEach(function(m){ %>
+                    <li><%= m %></li>
+                  <% }); %>
+                </ul>
+              <% } %>
+            </li>
+          <% }); %>
+        </ul>
+      </div>
+    <% }); %>
+  </main>
+
+  <!-- Bottom action bar -->
+  <footer class="action-bar">
+    <button id="actionBtn" class="btn-primary">
+      <% if (station.type === 'expo') { %>Serve<% } else { %>Ready<% } %>
+    </button>
+    <button id="urgentBtn" class="btn-secondary">Urgent</button>
+    <button id="recallBtn" class="btn-secondary">Recall</button>
+    <button id="layoutToggle" class="btn-secondary">Toggle Layout</button>
+  </footer>
+
+  <!-- Recipe Modal (hidden by default) -->
+  <div id="recipeModal" class="modal d-none">
+    <div class="modal-content">
+      <button id="modalClose" class="btn-secondary">Close</button>
+      <div id="recipeText" class="recipe-text"><!-- Recipe details go here --></div>
+    </div>
+  </div>
+  
+  <!-- Recall Modal (hidden by default) -->
+  <div id="recallModal" class="modal d-none">
+    <div class="modal-content">
+      <button id="recallClose" class="btn-secondary">Close</button>
+      <h2>Recall Order</h2>
+      <ul id="recallList"></ul>
+    </div>
+  </div>
+  
+  <!-- Client-side scripts -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    window.STATION_ID = <%= station.id %>;
+    window.STATION_TYPE = "<%= station.type %>";
+    window.BUMPED_HISTORY = <%- JSON.stringify(bumpedOrders || []) %>;
+  </script>
+  <script src="/client.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

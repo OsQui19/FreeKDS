@@ -1,0 +1,460 @@
+  <div class="container admin-container">
+  <h1>Manage Menu</h1>
+  <input type="text" id="itemSearch" class="form-control mb-3 w-25" placeholder="Search items...">
+
+  <!-- Category and Items listing -->
+  <div id="categories-container">
+    <% categories.forEach(category => { %>
+      <div class="category-section card mb-3" data-category-id="<%= category.id %>">
+        <div class="card-header category-header d-flex justify-content-between align-items-center">
+          <div class="category-title-group">
+            <span class="drag-handle">☰</span>
+            <span class="order-num">#<%= category.sort_order %></span>
+            <span class="category-name-view"><%= category.name %></span>
+          </div>
+          <div class="category-actions">
+            <button type="button" class="btn btn-secondary edit-cat-btn">Edit</button>
+            <button type="button" class="btn btn-secondary toggle-items-btn" data-bs-toggle="collapse" data-bs-target="#catBody-<%= category.id %>">Show Items</button>
+            <form action="/admin/categories/delete" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete the \"<%= category.name %>\" category and all its items?');">
+              <input type="hidden" name="id" value="<%= category.id %>">
+              <button type="submit" class="btn btn-secondary">Delete</button>
+            </form>
+          </div>
+        </div>
+        <div id="catBody-<%= category.id %>" class="collapse">
+          <div class="category-edit-form hidden card-body">
+            <form action="/admin/categories" method="POST" class="p-2">
+              <input type="hidden" name="id" value="<%= category.id %>">
+              <input class="form-control" type="text" name="name" value="<%= category.name %>" required>
+              <button type="submit" class="btn btn-primary">Save</button>
+              <button type="button" class="btn btn-secondary cancel-cat-edit">Cancel</button>
+            </form>
+          </div>
+          <ul class="item-list list-group list-group-flush" data-category-id="<%= category.id %>">
+          <% category.items.forEach(item => { %>
+            <li class="menu-item list-group-item" data-item-id="<%= item.id %>">
+              <!-- Item display view -->
+              <div class="item-view">
+                <span class="drag-handle">☰</span>
+                <span class="item-id">ID: <%= item.id %></span>
+                <img src="<%= item.image_url ? item.image_url : 'https://via.placeholder.com/60?text=No+Img' %>" alt="Item Image" class="item-thumb">
+                <div class="item-name"><%= item.name %></div>
+                <div class="item-price">$<%= Number(item.price).toFixed(2) %></div>
+                <div class="item-station">Station: <%= item.station_name %></div>
+                <div class="item-recipe">Recipe: <%= (item.recipe && item.recipe.trim() !== '') ? 'Yes' : 'No' %></div>
+                <div class="item-mods">Extras: <%= item.modifierNamesStr || 'None' %></div>
+                <div class="item-actions">
+                  <button type="button" class="btn btn-secondary edit-item-btn">Edit</button>
+                  <form action="/admin/items/delete" method="POST" class="d-inline" onsubmit="return confirm('Delete menu item \"<%= item.name %>\"?');">
+                    <input type="hidden" name="id" value="<%= item.id %>">
+                    <button type="submit" class="btn btn-secondary">Delete</button>
+                  </form>
+                </div>
+              </div>
+              <!-- Item edit form (hidden by default) -->
+              <div class="item-edit-form hidden">
+                <form action="/admin/items" method="POST" class="my-1">
+                  <input type="hidden" name="id" value="<%= item.id %>">
+                  <div class="row mb-2">
+                    <div class="col-md-6 col-sm-6">
+                      <label class="form-label">Name</label>
+                      <input class="form-control" type="text" name="name" value="<%= item.name %>" required>
+                    </div>
+                    <div class="col-md-6 col-sm-6">
+                      <label class="form-label">Price</label>
+                      <input class="form-control" type="number" step="0.01" name="price" value="<%= item.price %>" required>
+                    </div>
+                  </div>
+                  <div class="row mb-2">
+                    <div class="col-md-6 col-sm-6">
+                      <label class="form-label">Station</label>
+                      <select class="form-select" name="station_id">
+                        <% stations.forEach(st => { %>
+                          <option value="<%= st.id %>" <%= (st.id === item.station_id) ? 'selected' : '' %>><%= st.name %></option>
+                        <% }); %>
+                      </select>
+                    </div>
+                    <div class="col-md-6 col-sm-6">
+                      <label class="form-label">Category</label>
+                      <select class="form-select" name="category_id">
+                        <% categories.forEach(cat => { %>
+                          <option value="<%= cat.id %>" <%= (cat.id === item.category_id) ? 'selected' : '' %>><%= cat.name %></option>
+                        <% }); %>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="row mb-2">
+                    <div class="col-md-6 col-sm-6">
+                      <label class="form-label">Image URL</label>
+                      <input class="form-control" type="text" name="image_url" value="<%= item.image_url || '' %>" placeholder="Image URL">
+                    </div>
+                  </div>
+                  <div class="row mb-2">
+                    <div class="col-12 recipe-container">
+                      <label class="form-label">Recipe Steps</label>
+                      <div class="recipe-rows">
+                        <% (item.recipe || '').split(/\r?\n/).forEach(step => { if(step.trim()) { %>
+                          <div class="recipe-row d-flex gap-2 mb-1">
+                            <input class="form-control" type="text" name="recipe_steps" value="<%= step %>">
+                            <button type="button" class="btn btn-secondary remove-recipe-row">x</button>
+                          </div>
+                        <% } }) %>
+                      </div>
+                      <div class="d-flex gap-2 mb-2">
+                        <input type="text" class="form-control recipe-input" placeholder="Instruction">
+                        <button type="button" class="btn btn-sm btn-secondary add-recipe-row">Add Step</button>
+                      </div>
+                      <input type="hidden" name="recipe" value="<%- item.recipe || '' %>">
+                    </div>
+                  </div>
+                  <div class="row mb-2">
+                    <div class="col-12 ingredient-container">
+                      <label class="form-label">Ingredients</label>
+                      <div class="ingredient-rows">
+                        <% item.ingredients.forEach(ing => { %>
+                          <% const ingData = publicIngredients.find(p => p.id === ing.ingredient_id); %>
+                          <div class="ingredient-row d-flex gap-2 mb-1 align-items-center">
+                            <input class="form-control ingredient-name" list="ingredientsList" value="<%= ingData ? ingData.name : '' %>">
+                            <input type="hidden" name="ingredient_ids" value="<%= ing.ingredient_id %>">
+                            <input type="hidden" name="ingredient_unit_ids" value="<%= ingData ? ingData.unit_id : '' %>">
+                            <input class="form-control" type="number" step="0.01" name="ingredient_amounts" value="<%= ing.amount %>">
+                            <span class="ingredient-unit"><%= ingData && ingData.unit ? ingData.unit : '' %></span>
+                            <button type="button" class="btn btn-secondary remove-ingredient-row">x</button>
+                          </div>
+                        <% }) %>
+                      </div>
+                      <button type="button" class="btn btn-sm btn-secondary add-ingredient-row">Add Ingredient</button>
+                    </div>
+                  </div>
+                  <div class="row mb-2">
+                    <div class="col-12">
+                      <div class="mod-checkboxes">
+                        <% modGroups.forEach(g => { %>
+                          <div class="mod-group">
+                            <strong><%= g.name %></strong><br>
+                            <% mods.filter(m => m.group_id === g.id).forEach(mod => { %>
+                          <label>
+                            <input type="checkbox" name="modifier_ids" value="<%= mod.id %>" <%= (item.modifier_ids.includes(mod.id)) ? 'checked' : '' %> >
+                            <%= mod.name %><% if(mod.price && Number(mod.price) !== 0) { %> (+<%= Number(mod.price).toFixed(2) %>)<% } %>
+                          </label>
+                        <% }); %>
+                      </div>
+                    <% }); %>
+                    <% mods.filter(mod => !mod.group_id).forEach(mod => { %>
+                      <label>
+                        <input type="checkbox" name="modifier_ids" value="<%= mod.id %>" <%= (item.modifier_ids.includes(mod.id)) ? 'checked' : '' %> >
+                        <%= mod.name %><% if(mod.price && Number(mod.price) !== 0) { %> (+<%= Number(mod.price).toFixed(2) %>)<% } %>
+                      </label>
+                    <% }); %>
+                  </div>
+                      </div>
+                      <div class="text-end">
+                        <button type="submit" class="btn btn-primary">Save</button>
+                        <button type="button" class="btn btn-secondary cancel-item-edit">Cancel</button>
+                      </div>
+                    </form>
+                  </div>
+                </li>
+              <% }); %>
+              <!-- Form to add a new item in this category -->
+              <li class="add-item-form">
+            <form action="/admin/items" method="POST">
+              <input type="hidden" name="category_id" value="<%= category.id %>">
+              <span class="fst-italic me-1">Add new item:</span>
+              <div class="row mb-2">
+                <div class="col-md-6 col-sm-6">
+                  <label class="form-label">Name</label>
+                  <input class="form-control" type="text" name="name" placeholder="Item name" required>
+                </div>
+                <div class="col-md-6 col-sm-6">
+                  <label class="form-label">Price</label>
+                  <input class="form-control" type="number" step="0.01" name="price" placeholder="Price" required>
+                </div>
+              </div>
+              <div class="row mb-2">
+                <div class="col-md-6 col-sm-6">
+                  <label class="form-label">Station</label>
+                  <select class="form-select" name="station_id">
+                    <% stations.forEach(st => { %>
+                      <option value="<%= st.id %>"><%= st.name %></option>
+                    <% }); %>
+                  </select>
+                </div>
+                <div class="col-md-6 col-sm-6">
+                  <label class="form-label">Image URL</label>
+                  <input class="form-control" type="text" name="image_url" placeholder="Image URL">
+                </div>
+              </div>
+              <input type="hidden" name="recipe">
+              <div class="hidden-ingredients"></div>
+              <div class="row mb-2">
+                <div class="col-12">
+                  <div class="mod-checkboxes">
+                    <% modGroups.forEach(g => { %>
+                      <div class="mod-group">
+                        <strong><%= g.name %></strong><br>
+                        <% mods.filter(m => m.group_id === g.id).forEach(mod => { %>
+                      <label>
+                        <input type="checkbox" name="modifier_ids" value="<%= mod.id %>">
+                        <%= mod.name %> (<%= mod.id %>)<% if(mod.price && Number(mod.price) !== 0) { %> (+<%= Number(mod.price).toFixed(2) %>)<% } %>
+                      </label>
+                    <% }); %>
+                  </div>
+                <% }); %>
+                <% mods.filter(mod => !mod.group_id).forEach(mod => { %>
+                  <label>
+                    <input type="checkbox" name="modifier_ids" value="<%= mod.id %>">
+                    <%= mod.name %> (<%= mod.id %>)<% if(mod.price && Number(mod.price) !== 0) { %> (+<%= Number(mod.price).toFixed(2) %>)<% } %>
+                  </label>
+                <% }); %>
+              </div>
+                </div>
+                </div>
+                <div class="text-end">
+                  <button type="button" class="btn btn-primary open-recipe-modal">Input Recipe</button>
+                </div>
+            </form>
+          </li>
+        </ul>
+  </div>
+  </div>
+  <% }); %>
+  </div>
+
+  <!-- Modal for adding recipe and ingredients -->
+  <div id="addRecipeModal" class="modal d-none">
+    <div class="modal-content bg-white text-dark">
+      <h3>Item Recipe</h3>
+      <div class="recipe-container mb-3">
+        <label class="form-label">Recipe Steps</label>
+        <div class="recipe-rows"></div>
+        <div class="d-flex gap-2 mb-2">
+          <input type="text" class="form-control recipe-input" placeholder="Instruction">
+          <button type="button" class="btn btn-sm btn-secondary add-recipe-row">Add Step</button>
+        </div>
+      </div>
+      <div class="ingredient-container mb-3">
+        <label class="form-label">Ingredients</label>
+        <div class="ingredient-rows"></div>
+        <button type="button" class="btn btn-sm btn-secondary add-ingredient-row">Add Ingredient</button>
+      </div>
+      <div class="text-end">
+        <button type="button" id="recipeSave" class="btn btn-primary">Save</button>
+        <button type="button" id="recipeCancel" class="btn btn-secondary">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Management options -->
+  <h3>Add New Category</h3>
+  <button class="btn btn-secondary mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#newCategoryForm">Show Form</button>
+  <div id="newCategoryForm" class="card collapse mb-4">
+    <div class="card-body">
+      <form action="/admin/categories" method="POST" class="mod-row">
+        <input class="form-control" type="text" name="name" placeholder="Category name" required>
+        <button type="submit" class="btn btn-primary">Add Category</button>
+      </form>
+    </div>
+    <h3>Modifier Groups</h3>
+  <button class="btn btn-secondary mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#groupSection">Show Groups</button>
+  <div id="groupSection" class="card collapse mb-4">
+    <div class="card-body">
+      <div class="mod-group-list">
+        <% modGroups.forEach(g => { %>
+          <div class="mod-row mb-2">
+             <form action="/admin/modifier-groups" method="POST" class="d-flex gap-2 flex-grow-1">
+              <input type="hidden" name="id" value="<%= g.id %>">
+              <input class="form-control" type="text" name="name" value="<%= g.name %>" required>
+              <button type="submit" class="btn btn-primary">Save</button>
+            </form>
+            <form action="/admin/modifier-groups/delete" method="POST" onsubmit="return confirm('Delete group \"<%= g.name %>\"?');">
+              <input type="hidden" name="id" value="<%= g.id %>">
+              <button type="submit" class="btn btn-secondary">Delete</button>
+            </form>
+          </div>
+        <% }); %>
+        <form action="/admin/modifier-groups" method="POST" class="mod-row mt-2">
+          <input class="form-control" type="text" name="name" placeholder="New group name" required>
+          <button type="submit" class="btn btn-primary">Add Group</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <h3>Modifiers</h3>
+  <button class="btn btn-secondary mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#modifierSection">Show Modifiers</button>
+  <div id="modifierSection" class="card collapse mb-4">
+    <div class="card-body">
+      <div class="mod-list">
+        <% mods.forEach(mod => { %>
+          <div class="mod-row">
+            <form action="/admin/modifiers" method="POST" class="d-flex gap-2 align-items-end flex-grow-1">
+              <input type="hidden" name="id" value="<%= mod.id %>">
+              <span class="me-1">(<%= mod.id %>)</span>
+              <input class="form-control mod-name" list="ingredientsList" type="text" name="name" value="<%= mod.ingredient_name || mod.name %>" required>
+              <input type="hidden" name="ingredient_id" value="<%= mod.ingredient_id || '' %>">
+              <input class="form-control" type="number" step="0.01" name="price" value="<%= Number(mod.price).toFixed(2) %>" required>
+              <select class="form-select" name="group_id">
+                <option value="">No Group</option>
+                <% modGroups.forEach(g => { %>
+                  <option value="<%= g.id %>" <%= mod.group_id === g.id ? 'selected' : '' %>><%= g.name %></option>
+                <% }); %>
+              </select>
+              <button type="submit" class="btn btn-primary">Save</button>
+            </form>
+            <form action="/admin/modifiers/delete" method="POST" onsubmit="return confirm('Delete modifier \"<%= mod.name %>\"?');">
+              <input type="hidden" name="id" value="<%= mod.id %>">
+              <button type="submit" class="btn btn-secondary">Delete</button>
+            </form>
+          </div>
+        <% }); %>
+        </div>
+        <div class="mod-row mt-3">
+          <form id="addModifierForm" action="/admin/modifiers" method="POST" class="d-flex gap-2 align-items-end">
+            <span class="me-1">New:</span>
+            <input class="form-control mod-name" list="ingredientsList" type="text" name="name" placeholder="Modifier ingredient" required>
+            <input type="hidden" name="ingredient_id">
+            <input class="form-control" type="number" step="0.01" name="price" placeholder="Price" value="0" required>
+            <select class="form-select" name="group_id">
+              <option value="">No Group</option>
+              <% modGroups.forEach(g => { %>
+                <option value="<%= g.id %>"><%= g.name %></option>
+              <% }); %>
+            </select>
+            <button type="submit" class="btn btn-primary">Add Modifier</button>
+          </form>
+      </div>
+    </div>
+  </div>
+</div>
+  <!-- Include SortableJS for drag-and-drop reordering -->
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+  <datalist id="ingredientsList">
+    <% publicIngredients.forEach(ing => { %>
+      <option value="<%= ing.name %>"></option>
+    <% }) %>
+  </datalist>
+  <script>window.publicIngredients = <%- JSON.stringify(publicIngredients) %>;</script>
+  <script>
+    window.initMenuTab = function() {
+    // Enable drag-and-drop sorting for categories (drag by category header handle)
+    new Sortable(document.getElementById('categories-container'), {
+      handle: '.category-header .drag-handle',
+      draggable: '.category-section',
+      animation: 150,
+      onEnd: function(evt) {
+        // Gather new category order by their data-category-id
+        const newOrder = Array.from(document.querySelectorAll('#categories-container .category-section'))
+                              .map(sec => sec.getAttribute('data-category-id'));
+        // Send updated order to server
+        fetch('/admin/categories/reorder', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ order: newOrder })
+        });
+      }
+    });
+    // Enable sorting for items within each category (drag by item handle)
+    document.querySelectorAll('.item-list').forEach(listEl => {
+      new Sortable(listEl, {
+        handle: '.item-view .drag-handle',
+        draggable: '.menu-item',
+        animation: 150,
+        onEnd: function(evt) {
+          const catId = listEl.getAttribute('data-category-id');
+          const newOrder = Array.from(listEl.querySelectorAll('.menu-item'))
+                                .map(li => li.getAttribute('data-item-id'));
+          fetch('/admin/items/reorder', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ categoryId: catId, order: newOrder })
+          });
+        }
+      });
+    });
+    // Toggle item edit form visibility
+    document.querySelectorAll('.edit-item-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const li = btn.closest('li');
+        li.querySelector('.item-view').classList.add('hidden');
+        li.querySelector('.item-edit-form').classList.remove('hidden');
+      });
+    });
+    document.querySelectorAll('.cancel-item-edit').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const li = btn.closest('li');
+        li.querySelector('.item-edit-form').classList.add('hidden');
+        li.querySelector('.item-view').classList.remove('hidden');
+      });
+    });
+    // Toggle category edit form visibility
+    document.querySelectorAll('.edit-cat-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const header = btn.closest('.category-header');
+        header.classList.add('hidden');
+        header.nextElementSibling.classList.remove('hidden');  // show the category-edit-form
+      });
+    });
+    document.querySelectorAll('.cancel-cat-edit').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const editDiv = btn.closest('.category-edit-form');
+        editDiv.classList.add('hidden');
+        editDiv.previousElementSibling.classList.remove('hidden');
+      });
+    });
+        // Collapse/expand category sections
+    document.querySelectorAll('.toggle-items-btn').forEach(btn => {
+      const target = document.querySelector(btn.getAttribute('data-bs-target'));
+      if (!target) return;
+      const updateText = () => {
+        btn.textContent = target.classList.contains('show') ? 'Hide Items' : 'Show Items';
+      };
+      updateText();
+      target.addEventListener('hidden.bs.collapse', updateText);
+      target.addEventListener('shown.bs.collapse', updateText);
+    });
+
+    // Filter items by search term
+    const searchInput = document.getElementById('itemSearch');
+    searchInput.addEventListener('input', () => {
+    const term = searchInput.value.trim().toLowerCase();
+    document.querySelectorAll('.menu-item').forEach(li => {
+      const name = li.querySelector('.item-name').textContent.toLowerCase();
+      li.style.display = name.includes(term) ? '' : 'none';
+    });
+  });
+
+  // Update toggle text for management sections
+  const optionSections = [
+    { id: 'newCategoryForm', show: 'Show Form', hide: 'Hide Form' },
+    { id: 'groupSection', show: 'Show Groups', hide: 'Hide Groups' },
+    { id: 'modifierSection', show: 'Show Modifiers', hide: 'Hide Modifiers' }
+  ];
+  optionSections.forEach(sec => {
+    const el = document.getElementById(sec.id);
+    const btn = document.querySelector(`button[data-bs-target="#${sec.id}"]`);
+    if (el && btn) {
+      const update = () => {
+        btn.textContent = el.classList.contains('show') ? sec.hide : sec.show;
+      };
+      update();
+      el.addEventListener('shown.bs.collapse', update);
+      el.addEventListener('hidden.bs.collapse', update);
+    }
+  });
+  // Persist modifier section state
+  const modSection = document.getElementById('modifierSection');
+  if (modSection) {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('openMods') === '1' || localStorage.getItem('modifierSectionExpanded') === 'true') {
+      modSection.classList.add('show');
+    }
+    modSection.addEventListener('shown.bs.collapse', () => {
+      localStorage.setItem('modifierSectionExpanded', 'true');
+    });
+    modSection.addEventListener('hidden.bs.collapse', () => {
+      localStorage.setItem('modifierSectionExpanded', 'false');
+    });
+  };
+  window.initMenuTab();
+  </script>
+  <script defer src="/adminMenu.js" onload="initAdminMenu && initAdminMenu()"></script>

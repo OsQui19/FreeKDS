@@ -1,0 +1,12 @@
+open db : 
+mysql -u $DB_USER -p
+mysql -u freekds -p -h 127.0.0.1 kds_db
+DROP DATABASE IF EXISTS kds_db;
+CREATE DATABASE kds_db;
+USE kds_db;
+source /Users/samael/FreeKDS/schema.sql
+EXIT;
+
+import :
+mysql -u $DB_USER -p kds_db < schema.sql
+
