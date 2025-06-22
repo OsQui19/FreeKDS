@@ -206,6 +206,9 @@
                       <label>
                         <input type="checkbox" name="modifier_ids" value="<%= mod.id %>">
                         <%= mod.name %> (<%= mod.id %>)<% if(mod.price && Number(mod.price) !== 0) { %> (+<%= Number(mod.price).toFixed(2) %>)<% } %>
+                        <select class="form-select form-select-sm mod-replace-select ms-1" name="replaces_ingredient_ids" disabled>
+                          <option value="">Adds</option>
+                        </select>
                       </label>
                     <% }); %>
                   </div>
@@ -214,6 +217,9 @@
                   <label>
                     <input type="checkbox" name="modifier_ids" value="<%= mod.id %>">
                     <%= mod.name %> (<%= mod.id %>)<% if(mod.price && Number(mod.price) !== 0) { %> (+<%= Number(mod.price).toFixed(2) %>)<% } %>
+                    <select class="form-select form-select-sm mod-replace-select ms-1" name="replaces_ingredient_ids" disabled>
+                      <option value="">Adds</option>
+                    </select>
                   </label>
                 <% }); %>
               </div>

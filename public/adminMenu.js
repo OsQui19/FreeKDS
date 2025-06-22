@@ -45,14 +45,35 @@ function handleForm(form, onSuccess) {
   });
 }
 
+function updateModReplaceOptions(form) {
+  if (!form) return;
+  const ings = window.publicIngredients || [];
+  const ingIds = Array.from(form.querySelectorAll('input[name="ingredient_ids"]'))
+    .map(i => i.value)
+    .filter(Boolean);
+  form.querySelectorAll('.mod-replace-select').forEach(sel => {
+    const current = sel.value;
+    const opts = ['<option value="">Adds</option>'];
+    ingIds.forEach(id => {
+      const ing = ings.find(p => String(p.id) === String(id));
+      opts.push(`<option value="${id}">${ing ? ing.name : ''}</option>`);
+    });
+    sel.innerHTML = opts.join('');
+    sel.value = ingIds.includes(current) ? current : '';
+  });
+}
+
 function initModifierReplaceFields() {
-  document.querySelectorAll('.item-edit-form').forEach(div => {
-    div.querySelectorAll('.mod-replace-select').forEach(sel => {
+  document.querySelectorAll('.item-edit-form form, .add-item-form form').forEach(form => {
+    form.querySelectorAll('.mod-replace-select').forEach(sel => {
       const box = sel.closest('label').querySelector('input[name="modifier_ids"]');
       const toggle = () => { sel.disabled = !box.checked; };
-      box.addEventListener('change', toggle);
-      toggle();
+      if (box) {
+        box.addEventListener('change', toggle);
+        toggle();
+      }
     });
+    updateModReplaceOptions(form);
   });
 }
 
@@ -271,6 +292,8 @@ function initRecipeModal() {
       hiddenBox.appendChild(unitInput);
       hiddenBox.appendChild(amtInput);
     });
+
+    updateModReplaceOptions(currentForm);
 
     closeModal();
     if (typeof currentForm.requestSubmit === 'function') {
