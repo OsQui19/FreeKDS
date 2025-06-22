@@ -21,9 +21,9 @@ module.exports = (db, io) => {
                                                       JOIN ingredients ing ON t.ingredient_id = ing.id
                                                       LEFT JOIN units u ON ing.unit_id = u.id
                                                       ORDER BY t.id DESC LIMIT 100`);
-      const summarySql = `SELECT ing.id AS ingredient_id, ing.name, u.abbreviation AS unit, SUM(l.amount) AS total
-                          FROM inventory_log l
-                          JOIN ingredients ing ON l.ingredient_id = ing.id
+      const summarySql = `SELECT ing.id AS ingredient_id, ing.name, u.abbreviation AS unit, SUM(d.amount) AS total
+                          FROM daily_usage_log d
+                          JOIN ingredients ing ON d.ingredient_id = ing.id
                           LEFT JOIN units u ON ing.unit_id = u.id
                           GROUP BY ing.id
                           ORDER BY ing.name`;
@@ -304,6 +304,51 @@ module.exports = (db, io) => {
     }
   });
 
+  router.get('/admin/inventory/logs', async (req, res) => {
+    try {
+      const { start, end } = req.query;
+      const endDate = end ? new Date(end) : new Date();
+      const startDate = start ? new Date(start) : new Date(endDate.getTime() - 86400000);
+      function fmt(d) { return d.toISOString().slice(0,19).replace('T',' '); }
+      const sql = `SELECT l.*, mi.name AS item_name, ing.name AS ingredient_name, u.abbreviation AS unit
+                   FROM inventory_log l
+                   JOIN menu_items mi ON l.menu_item_id = mi.id
+                   JOIN ingredients ing ON l.ingredient_id = ing.id
+                   LEFT JOIN units u ON ing.unit_id = u.id
+                   WHERE l.created_at BETWEEN ? AND ?
+                   ORDER BY l.id DESC`;
+      const [logs] = await db.promise().query(sql, [fmt(startDate), fmt(endDate)]);
+      res.json({ logs });
+    } catch (err) {
+      console.error('Error fetching inventory logs:', err);
+      res.status(500).json({ error: 'DB Error' });
+    }
+  });
+
+  router.post('/admin/inventory/logs', async (req, res) => {
+    try {
+      const { start, end } = req.body;
+      if (!start || !end) return res.redirect('/admin?tab=inventory');
+      const [rows] = await db.promise().query(
+        `SELECT ingredient_id, SUM(amount) AS total
+           FROM inventory_log
+          WHERE created_at BETWEEN ? AND ?
+          GROUP BY ingredient_id`,
+        [start + ' 00:00:00', end + ' 23:59:59']
+      );
+      for (const r of rows) {
+        await db.promise().query(
+          'INSERT INTO daily_usage_log (start_date, end_date, ingredient_id, amount) VALUES (?, ?, ?, ?)',
+          [start, end, r.ingredient_id, r.total]
+        );
+      }
+      res.redirect('/admin?tab=inventory&msg=Usage+log+created');
+    } catch (err) {
+      console.error('Error creating usage log:', err);
+      res.status(500).send('DB Error');
+    }
+  });
+
   router.post('/admin/modifiers', (req, res) => {
   const id   = req.body.id;
   const name = req.body.name;
@@ -443,9 +488,9 @@ module.exports = (db, io) => {
                                                       JOIN ingredients ing ON t.ingredient_id = ing.id
                                                       LEFT JOIN units u ON ing.unit_id = u.id
                                                       ORDER BY t.id DESC LIMIT 100`);
-      const summarySql = `SELECT ing.id AS ingredient_id, ing.name, u.abbreviation AS unit, SUM(l.amount) AS total
-                          FROM inventory_log l
-                          JOIN ingredients ing ON l.ingredient_id = ing.id
+      const summarySql = `SELECT ing.id AS ingredient_id, ing.name, u.abbreviation AS unit, SUM(d.amount) AS total
+                          FROM daily_usage_log d
+                          JOIN ingredients ing ON d.ingredient_id = ing.id
                           LEFT JOIN units u ON ing.unit_id = u.id
                           GROUP BY ing.id
                           ORDER BY ing.name`;

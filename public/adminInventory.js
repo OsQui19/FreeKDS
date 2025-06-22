@@ -19,4 +19,24 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   document.querySelectorAll('.ingredient-list form, #transaction-form').forEach(handleForm);
+
+  const logForm = document.getElementById('logRangeForm');
+  if (logForm) {
+    logForm.addEventListener('submit', e => {
+      e.preventDefault();
+      fetch(`/admin/inventory/logs?${serialize(logForm)}`)
+        .then(r => r.json())
+        .then(data => {
+          const tbody = document.querySelector('#usageLogPane tbody');
+          tbody.innerHTML = data.logs.map(l => `
+            <tr>
+              <td>${new Date(l.created_at).toLocaleString()}</td>
+              <td>${l.order_id}</td>
+              <td>${l.item_name}</td>
+              <td>${l.ingredient_name}</td>
+              <td>${l.amount} ${l.unit || ''}</td>
+            </tr>`).join('');
+        });
+    });
+  }
 });

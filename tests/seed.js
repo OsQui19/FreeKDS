@@ -24,7 +24,8 @@ async function main() {
     'item_ingredients',
     'inventory_log',
     'inventory_transactions',
-    'bumped_orders'
+    'bumped_orders',
+    'daily_usage_log'
   ];
   for (const t of tables) {
     try {

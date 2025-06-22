@@ -19,7 +19,6 @@ document.addEventListener('DOMContentLoaded', () => {
 ['stations', 'menu', 'theme', 'inventory'].forEach(type => {
   const pane = document.createElement('section');
     pane.className = 'admin-window';
-    pane.className = 'admin-window';
     pane.dataset.type = type;
     pane.innerHTML = templates[type] || '';
 

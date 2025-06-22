@@ -268,15 +268,26 @@ function formatDateTime(dt) {
 async function getSalesTotals(db, start, end) {
   const endDate = end ? new Date(end) : new Date();
   const startDate = start ? new Date(start) : new Date(endDate.getTime() - 29 * 86400000);
-  const sql = `SELECT DATE(o.created_at) AS date, SUM(mi.price * oi.quantity) AS total
-               FROM orders o
-               JOIN order_items oi ON o.id = oi.order_id
-               JOIN menu_items mi ON oi.menu_item_id = mi.id
-               WHERE o.created_at BETWEEN ? AND ?
-               GROUP BY DATE(o.created_at)
-               ORDER BY DATE(o.created_at)`;
-  const [rows] = await db.promise().query(sql, [formatDateTime(startDate), formatDateTime(endDate)]);
-  return rows;
+  const salesSql = `SELECT DATE(o.created_at) AS date, SUM(mi.price * oi.quantity) AS total
+                    FROM orders o
+                    JOIN order_items oi ON o.id = oi.order_id
+                    JOIN menu_items mi ON oi.menu_item_id = mi.id
+                    WHERE o.created_at BETWEEN ? AND ?
+                    GROUP BY DATE(o.created_at)`;
+  const costSql = `SELECT DATE(l.created_at) AS date, SUM(l.amount * ing.cost) AS cost
+                   FROM inventory_log l
+                   JOIN ingredients ing ON l.ingredient_id = ing.id
+                   WHERE l.created_at BETWEEN ? AND ?
+                   GROUP BY DATE(l.created_at)`;
+  const [salesRows] = await db.promise().query(salesSql, [formatDateTime(startDate), formatDateTime(endDate)]);
+  const [costRows] = await db.promise().query(costSql, [formatDateTime(startDate), formatDateTime(endDate)]);
+  const map = {};
+  salesRows.forEach(r => { map[r.date] = { date: r.date, total: r.total, cost: 0 }; });
+  costRows.forEach(r => {
+    if (!map[r.date]) map[r.date] = { date: r.date, total: 0, cost: r.cost };
+    else map[r.date].cost = r.cost;
+  });
+  return Object.values(map).sort((a, b) => new Date(a.date) - new Date(b.date));
 }
 
 async function getIngredientUsage(db, start, end) {

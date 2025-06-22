@@ -176,4 +176,13 @@ CREATE TABLE inventory_transactions (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (ingredient_id) REFERENCES ingredients(id)
 );
+CREATE TABLE daily_usage_log (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  start_date DATE NOT NULL,
+  end_date DATE NOT NULL,
+  ingredient_id INT NOT NULL,
+  amount DECIMAL(10,2) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (ingredient_id) REFERENCES ingredients(id)
+);
 SET FOREIGN_KEY_CHECKS=1;

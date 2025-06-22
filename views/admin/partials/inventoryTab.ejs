@@ -67,6 +67,17 @@
 
     <div class="inventory-pane" id="usageLogPane">
       <h2>Recent Usage</h2>
+      <form id="logRangeForm" class="row g-2 mb-2">
+        <div class="col-auto">
+          <input type="date" name="start" class="form-control form-control-sm" required>
+        </div>
+        <div class="col-auto">
+          <input type="date" name="end" class="form-control form-control-sm" required>
+        </div>
+        <div class="col-auto">
+          <button type="submit" class="btn btn-sm btn-primary">Load</button>
+        </div>
+      </form>
       <table class="table">
         <thead>
           <tr><th>Time</th><th>Order</th><th>Item</th><th>Ingredient</th><th>Amount</th></tr>

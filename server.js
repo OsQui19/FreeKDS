@@ -25,8 +25,38 @@ db.getConnection((err, connection) => {
     process.exit(1);
   }
   if (connection) connection.release();
-  settingsCache.loadSettings(db);
+settingsCache.loadSettings(db);
 });
+
+async function recordDailyUsage() {
+  try {
+    const [rows] = await db.promise().query(
+      `SELECT DATE(created_at) AS day, ingredient_id, SUM(amount) AS total
+         FROM inventory_log
+         WHERE DATE(created_at) = DATE(NOW() - INTERVAL 1 DAY)
+         GROUP BY ingredient_id`
+    );
+    for (const r of rows) {
+      await db.promise().query(
+        'INSERT INTO daily_usage_log (start_date, end_date, ingredient_id, amount) VALUES (?, ?, ?, ?)',
+        [r.day, r.day, r.ingredient_id, r.total]
+      );
+    }
+  } catch (err) {
+    console.error('Daily usage log error:', err);
+  }
+}
+
+function scheduleDailyLog() {
+  const now = new Date();
+  const next = new Date(now);
+  next.setHours(24, 0, 0, 0);
+  setTimeout(async () => {
+    await recordDailyUsage();
+    scheduleDailyLog();
+  }, next - now);
+}
+scheduleDailyLog();
 
 // Middleware to parse request body
 app.use(express.urlencoded({ extended: true }));
