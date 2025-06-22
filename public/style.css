@@ -507,6 +507,17 @@ body.admin-screen {
 .add-item-form textarea {
   margin-right: 5px;
 }
+.item-edit-form {
+  background: #f2e8d8;
+  border: 1px dashed #c7a589;
+  border-radius: 4px;
+  padding: 5px;
+}
+.item-edit-form input,
+.item-edit-form select,
+.item-edit-form textarea {
+  margin-right: 5px;
+}
 .mod-row {
   display: grid;
   grid-template-columns: 1fr auto;
