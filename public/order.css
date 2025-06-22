@@ -164,6 +164,12 @@ body {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+#modOptions .mod-group-label {
+  font-weight: 600;
+  margin-top: 0.5rem;
+  display: block;
+}
 @media (max-width: 768px) {
   #menu.menu-content {
     margin-right: 0;

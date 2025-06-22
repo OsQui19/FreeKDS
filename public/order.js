@@ -4,6 +4,10 @@ const itemMap = {};
     itemMap[it.id] = it;
   });
 });
+const modGroupMap = {};
+(window.MOD_GROUPS || []).forEach(g => {
+  modGroupMap[g.id] = g.name;
+});
 const cart = [];
 const cartItemsEl = document.getElementById('cartItems');
 const totalEl = document.getElementById('cartTotal');
@@ -64,15 +68,27 @@ function showModifierModal(item) {
   currentItem = item;
   modTitle.textContent = `Add ${item.name}`;
   modOptions.innerHTML = '';
+  const groups = {};
   item.modifiers.forEach(m => {
-    const label = document.createElement('label');
-    const cb = document.createElement('input');
-    cb.type = 'checkbox';
-    cb.value = m.id;
-    label.appendChild(cb);
-    label.appendChild(document.createTextNode(' ' + m.name));
-    modOptions.appendChild(label);
-    modOptions.appendChild(document.createElement('br'));
+    const gid = m.group_id || 'extras';
+    if (!groups[gid]) groups[gid] = [];
+    groups[gid].push(m);
+  });
+  Object.keys(groups).forEach(gid => {
+    const labelDiv = document.createElement('div');
+    labelDiv.className = 'mod-group-label';
+    labelDiv.textContent = gid === 'extras' ? 'Extras' : (modGroupMap[gid] || 'Options');
+    modOptions.appendChild(labelDiv);
+    groups[gid].forEach(m => {
+      const label = document.createElement('label');
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.value = m.id;
+      label.appendChild(cb);
+      label.appendChild(document.createTextNode(' ' + m.name));
+      modOptions.appendChild(label);
+      modOptions.appendChild(document.createElement('br'));
+    });
   });
   modModal.classList.remove('d-none');
   modModal.classList.add('d-flex');

@@ -66,6 +66,7 @@
 <script>
   window.TABLE = "<%= table %>";
   window.MENU_CATS = <%- JSON.stringify(categories) %>;
+  window.MOD_GROUPS = <%- JSON.stringify(modGroups || []) %>;
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="/order.js"></script>
