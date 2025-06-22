@@ -187,6 +187,7 @@ CREATE TABLE daily_usage_log (
   amount DECIMAL(10,2) NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (ingredient_id) REFERENCES ingredients(id)
+  , UNIQUE KEY uniq_day_ing (start_date, ingredient_id)
 );
 
 -- Suppliers for purchasing

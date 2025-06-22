@@ -40,7 +40,9 @@ async function recordDailyUsage() {
     );
     for (const r of rows) {
       await db.promise().query(
-        'INSERT INTO daily_usage_log (start_date, end_date, ingredient_id, amount) VALUES (?, ?, ?, ?)',
+        `INSERT INTO daily_usage_log (start_date, end_date, ingredient_id, amount)
+         VALUES (?, ?, ?, ?)
+         ON DUPLICATE KEY UPDATE amount = amount + VALUES(amount), end_date = VALUES(end_date)`,
         [r.day, r.day, r.ingredient_id, r.total]
       );
     }
