@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
         newScript.src = oldScript.src;
       } else {
         newScript.textContent = oldScript.textContent;
-    }
+      }
     document.head.appendChild(newScript);
     oldScript.remove();
   });
