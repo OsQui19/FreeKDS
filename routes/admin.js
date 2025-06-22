@@ -1,5 +1,5 @@
 const express = require('express');
-const { updateItemModifiers, getMenuData, getStations, getIngredients, getUnits, updateItemIngredients } = require('../controllers/dbHelpers');
+const { updateItemModifiers, updateItemGroups, getMenuData, getStations, getIngredients, getUnits, updateItemIngredients } = require('../controllers/dbHelpers');
 const settingsCache = require('../controllers/settingsCache');
 
 module.exports = (db, io) => {
@@ -78,6 +78,11 @@ router.get('/admin/menu', async (req, res) => {
       unit_id: unitIds[idx] ? parseInt(unitIds[idx],10) : null
     })).filter(r => r.ingredient_id && r.amount);
   }
+
+  // Parse selected modifier groups
+  const rawGroups = req.body.group_ids;
+  const groupIds = Array.isArray(rawGroups) ? rawGroups : rawGroups ? [rawGroups] : [];
+  const selectedGroups = groupIds.map(g => parseInt(g, 10)).filter(g => !isNaN(g));
   if (itemIngredients.length) {
     try {
       const ingIds = itemIngredients.map(i => i.ingredient_id);
@@ -136,14 +141,16 @@ router.get('/admin/menu', async (req, res) => {
                        WHERE id=?`;
     db.query(updateSql, [name, price, stationId, categoryId, imageUrl, recipe, id], (err) => {
       if (err) { console.error(err); }
-      updateItemModifiers(db, id, selectedMods, () => {
-        if (itemIngredients.length) {
-          updateItemIngredients(db, id, itemIngredients, () => {
+      updateItemGroups(db, id, selectedGroups, () => {
+        updateItemModifiers(db, id, selectedMods, () => {
+          if (itemIngredients.length) {
+            updateItemIngredients(db, id, itemIngredients, () => {
+              return res.redirect('/admin?tab=menu&msg=Item+saved');
+            });
+          } else {
             return res.redirect('/admin?tab=menu&msg=Item+saved');
-          });
-        } else {
-          return res.redirect('/admin?tab=menu&msg=Item+saved');
-        }
+          }
+        });
       });
     });
   } else {
@@ -156,9 +163,11 @@ router.get('/admin/menu', async (req, res) => {
       db.query(insertSql, [name, price, stationId, categoryId, imageUrl, recipe, nextOrder], (err, result) => {
           if (err) { console.error(err); return res.redirect('/admin?tab=menu'); }
         const newItemId = result.insertId;
-        updateItemModifiers(db, newItemId, selectedMods, () => {
-          updateItemIngredients(db, newItemId, itemIngredients, () => {
-            return res.redirect('/admin?tab=menu&msg=Item+saved');
+        updateItemGroups(db, newItemId, selectedGroups, () => {
+          updateItemModifiers(db, newItemId, selectedMods, () => {
+            updateItemIngredients(db, newItemId, itemIngredients, () => {
+              return res.redirect('/admin?tab=menu&msg=Item+saved');
+            });
           });
         });
       });

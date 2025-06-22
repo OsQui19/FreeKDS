@@ -122,18 +122,29 @@ module.exports = (db) => {
     const table = req.query.table || '';
     const sqlItems = 'SELECT id, name, price, image_url, category_id FROM menu_items ORDER BY category_id, sort_order, id';
     const sqlItemMods = 'SELECT * FROM item_modifiers';
-    const sqlMods = 'SELECT id, name FROM modifiers';
+    const sqlItemGroups = 'SELECT * FROM item_modifier_groups';
+    const sqlMods = 'SELECT id, name, group_id FROM modifiers';
     getCategories(db).then(cats => {
       db.query(sqlItems, (err2, items) => {
         if (err2) { console.error(err2); return res.status(500).send('DB Error'); }
         db.query(sqlItemMods, (err3, itemMods) => {
           if (err3) { console.error(err3); return res.status(500).send('DB Error'); }
+          db.query(sqlItemGroups, (errG, itemGroups) => {
+            if (errG) { console.error(errG); return res.status(500).send('DB Error'); }
           db.query(sqlMods, (err4, mods) => {
             if (err4) { console.error(err4); return res.status(500).send('DB Error'); }
             const modMap = {};
-            mods.forEach(m => { modMap[m.id] = { id: m.id, name: m.name }; });
+            mods.forEach(m => { modMap[m.id] = { id: m.id, name: m.name, group_id: m.group_id }; });
+            const itemGroupsMap = {};
+            itemGroups.forEach(g => {
+              if (!itemGroupsMap[g.menu_item_id]) itemGroupsMap[g.menu_item_id] = [];
+              itemGroupsMap[g.menu_item_id].push(g.group_id);
+            });
             const itemModsMap = {};
             itemMods.forEach(im => {
+              const grp = modMap[im.modifier_id] ? modMap[im.modifier_id].group_id : null;
+              const allowed = itemGroupsMap[im.menu_item_id] || [];
+              if (grp && !allowed.includes(grp)) return;
               if (!itemModsMap[im.menu_item_id]) itemModsMap[im.menu_item_id] = [];
               if (modMap[im.modifier_id]) itemModsMap[im.menu_item_id].push(modMap[im.modifier_id]);
             });

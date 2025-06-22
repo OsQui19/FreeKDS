@@ -14,6 +14,18 @@ function updateItemModifiers(db, itemId, modifierRows, callback) {
   });
 }
 
+function updateItemGroups(db, itemId, groupIds, callback) {
+  const rows = Array.isArray(groupIds) ? groupIds.filter(g => g).map(g => [itemId, g]) : [];
+  db.query('DELETE FROM item_modifier_groups WHERE menu_item_id=?', [itemId], err => {
+    if (err) { console.error(err); }
+    if (rows.length === 0) return callback && callback();
+    db.query('INSERT INTO item_modifier_groups (menu_item_id, group_id) VALUES ?', [rows], err2 => {
+      if (err2) { console.error(err2); }
+      if (callback) callback();
+    });
+  });
+}
+
 function getBumpedOrders(db, stationId, callback, limit = 20) {
   const infoSql = `SELECT bo.order_id,
                           COALESCE(bo.order_number, o.order_number) AS order_number,
@@ -86,6 +98,7 @@ async function getMenuData(db) {
                         ORDER BY m.name`),
     db.promise().query('SELECT * FROM modifier_groups ORDER BY name'),
     db.promise().query('SELECT * FROM item_modifiers'),
+    db.promise().query('SELECT * FROM item_modifier_groups'),
     db.promise().query(`SELECT ing.id, ing.name, ing.quantity, ing.unit_id, u.abbreviation AS unit, ing.sku, ing.cost, ing.is_public
                          FROM ingredients ing
                          LEFT JOIN units u ON ing.unit_id = u.id
@@ -94,11 +107,17 @@ async function getMenuData(db) {
     db.promise().query('SELECT * FROM item_ingredients'),
     db.promise().query('SELECT * FROM units ORDER BY name')
   ];
-  const [cats, stations, items, mods, modGroups, itemMods, ingredients, itemIngs, units] = (await Promise.all(queries)).map(r => r[0]);
+  const [cats, stations, items, mods, modGroups, itemMods, itemGroups, ingredients, itemIngs, units] = (await Promise.all(queries)).map(r => r[0]);
   const itemModsMap = {};
   itemMods.forEach(link => {
     if (!itemModsMap[link.menu_item_id]) itemModsMap[link.menu_item_id] = [];
     itemModsMap[link.menu_item_id].push({ modifier_id: link.modifier_id, replaces_ingredient_id: link.replaces_ingredient_id });
+  });
+
+  const itemGroupsMap = {};
+  itemGroups.forEach(link => {
+    if (!itemGroupsMap[link.menu_item_id]) itemGroupsMap[link.menu_item_id] = [];
+    itemGroupsMap[link.menu_item_id].push(link.group_id);
   });
 
   const modMap = {};
@@ -136,6 +155,7 @@ async function getMenuData(db) {
       station_name: row.station_name,
       category_id: row.category_id,
       sort_order: row.sort_order,
+      group_ids: itemGroupsMap[row.id] || [],
       modifier_ids: itemModsMap[row.id] ? itemModsMap[row.id].map(m => m.modifier_id) : [],
       modifier_replacements: itemModsMap[row.id] ? Object.fromEntries(itemModsMap[row.id].map(m => [m.modifier_id, m.replaces_ingredient_id])) : {},
       ingredients: itemIngMap[row.id] ? itemIngMap[row.id] : []
@@ -226,6 +246,7 @@ async function logInventoryForOrder(db, orderId, items) {
 
 module.exports = {
   updateItemModifiers,
+  updateItemGroups,
   getBumpedOrders,
   getMenuData,
   getStations,

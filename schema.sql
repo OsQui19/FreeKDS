@@ -62,6 +62,15 @@ CREATE TABLE item_modifiers (
   FOREIGN KEY (replaces_ingredient_id) REFERENCES ingredients(id)
 );
 
+-- Linking table assigning modifier groups to menu items
+CREATE TABLE item_modifier_groups (
+  menu_item_id INT NOT NULL,
+  group_id INT NOT NULL,
+  PRIMARY KEY (menu_item_id, group_id),
+  FOREIGN KEY (menu_item_id) REFERENCES menu_items(id) ON DELETE CASCADE,
+  FOREIGN KEY (group_id) REFERENCES modifier_groups(id) ON DELETE CASCADE
+);
+
 -- Orders table: one record per order (ticket).
 CREATE TABLE orders (
   id           INT PRIMARY KEY AUTO_INCREMENT,
