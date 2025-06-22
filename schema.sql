@@ -48,7 +48,7 @@ CREATE TABLE modifiers (
   ingredient_id INT DEFAULT NULL,
   FOREIGN KEY (group_id) REFERENCES modifier_groups(id),
   FOREIGN KEY (ingredient_id) REFERENCES ingredients(id)
-  -- UNIQUE KEY uniq_modifier_name (name)
+  , UNIQUE KEY uniq_modifier_name (name)
 );
 
 -- Linking table for menu items and their available modifiers.
@@ -119,18 +119,20 @@ CREATE TABLE bumped_orders (
 CREATE TABLE units (
   id INT PRIMARY KEY AUTO_INCREMENT,
   name VARCHAR(50) NOT NULL,
-  abbreviation VARCHAR(10) NOT NULL
+  abbreviation VARCHAR(10) NOT NULL,
+  type VARCHAR(20) NOT NULL,
+  to_base DECIMAL(10,4) NOT NULL DEFAULT 1
 );
 
 -- Seed common units
-INSERT INTO units (name, abbreviation) VALUES
-  ('pounds', 'lb'),
-  ('ounces', 'oz'),
-  ('grams', 'g'),
-  ('kilograms', 'kg'),
-  ('liters', 'l'),
-  ('milliliters', 'ml'),
-  ('each', 'ea');
+INSERT INTO units (name, abbreviation, type, to_base) VALUES
+  ('pounds', 'lb', 'weight', 453.592),
+  ('ounces', 'oz', 'weight', 28.3495),
+  ('grams', 'g', 'weight', 1),
+  ('kilograms', 'kg', 'weight', 1000),
+  ('liters', 'l', 'volume', 1000),
+  ('milliliters', 'ml', 'volume', 1),
+  ('each', 'ea', 'count', 1);
 
 -- Ingredients table for inventory tracking
 CREATE TABLE ingredients (
@@ -141,7 +143,8 @@ CREATE TABLE ingredients (
   sku VARCHAR(50) DEFAULT NULL,
   cost DECIMAL(10,2) DEFAULT 0.00,
   is_public BOOLEAN NOT NULL DEFAULT 0,
-  FOREIGN KEY (unit_id) REFERENCES units(id)
+  FOREIGN KEY (unit_id) REFERENCES units(id),
+  UNIQUE KEY uniq_ingredient_name (name)
 );
 
 -- Per-item ingredients
@@ -185,4 +188,44 @@ CREATE TABLE daily_usage_log (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (ingredient_id) REFERENCES ingredients(id)
 );
+
+-- Suppliers for purchasing
+CREATE TABLE suppliers (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(100) NOT NULL,
+  contact_info VARCHAR(255) DEFAULT NULL
+);
+
+-- Inventory locations for multi-store tracking
+CREATE TABLE inventory_locations (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(100) NOT NULL
+);
+
+-- Purchase orders
+CREATE TABLE purchase_orders (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  supplier_id INT NOT NULL,
+  location_id INT DEFAULT NULL,
+  order_date DATE NOT NULL,
+  status VARCHAR(20) DEFAULT 'pending',
+  FOREIGN KEY (supplier_id) REFERENCES suppliers(id),
+  FOREIGN KEY (location_id) REFERENCES inventory_locations(id)
+);
+
+CREATE TABLE purchase_order_items (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  purchase_order_id INT NOT NULL,
+  ingredient_id INT NOT NULL,
+  quantity DECIMAL(10,2) NOT NULL,
+  unit_id INT DEFAULT NULL,
+  FOREIGN KEY (purchase_order_id) REFERENCES purchase_orders(id) ON DELETE CASCADE,
+  FOREIGN KEY (ingredient_id) REFERENCES ingredients(id),
+  FOREIGN KEY (unit_id) REFERENCES units(id)
+);
+
+-- Performance indexes
+CREATE INDEX idx_orders_created_at ON orders(created_at);
+CREATE INDEX idx_inventory_log_created_at ON inventory_log(created_at);
+CREATE INDEX idx_inventory_transactions_created_at ON inventory_transactions(created_at);
 SET FOREIGN_KEY_CHECKS=1;

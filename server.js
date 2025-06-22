@@ -4,6 +4,7 @@ const path    = require('path');
 const http    = require('http');
 const { Server } = require('socket.io');
 const settingsCache = require('./controllers/settingsCache');
+const unitConversion = require('./controllers/unitConversion');
 require('dotenv').config();
 const app     = express();
 const server  = http.createServer(app);
@@ -25,7 +26,8 @@ db.getConnection((err, connection) => {
     process.exit(1);
   }
   if (connection) connection.release();
-settingsCache.loadSettings(db);
+  settingsCache.loadSettings(db);
+  unitConversion.loadUnits(db);
 });
 
 async function recordDailyUsage() {

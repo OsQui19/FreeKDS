@@ -1,31 +1,33 @@
-const unitMap = {
-  lb: { type: 'weight', toBase: 453.592 },
-  oz: { type: 'weight', toBase: 28.3495 },
-  g:  { type: 'weight', toBase: 1 },
-  kg: { type: 'weight', toBase: 1000 },
-  l:  { type: 'volume', toBase: 1000 },
-  ml: { type: 'volume', toBase: 1 },
-  ea: { type: 'count', toBase: 1 }
-};
+const unitsById = {};
+const unitsByAbbr = {};
 
-const idMap = {
-  1: 'lb',
-  2: 'oz',
-  3: 'g',
-  4: 'kg',
-  5: 'l',
-  6: 'ml',
-  7: 'ea'
-};
+function loadUnits(db, cb) {
+  db.query('SELECT id, abbreviation, type, to_base FROM units', (err, rows) => {
+    if (err) {
+      console.error('Error loading units:', err);
+      if (cb) cb(err);
+      return;
+    }
+    const byId = {};
+    const byAbbr = {};
+    rows.forEach(r => {
+      byId[r.id] = { abbr: r.abbreviation, type: r.type, toBase: parseFloat(r.to_base) };
+      byAbbr[r.abbreviation] = { id: r.id, type: r.type, toBase: parseFloat(r.to_base) };
+    });
+    Object.keys(unitsById).forEach(k => delete unitsById[k]);
+    Object.keys(byId).forEach(k => { unitsById[k] = byId[k]; });
+    Object.keys(unitsByAbbr).forEach(k => delete unitsByAbbr[k]);
+    Object.keys(byAbbr).forEach(k => { unitsByAbbr[k] = byAbbr[k]; });
+    if (cb) cb(null);
+  });
+}
 
 function convert(amount, fromId, toId) {
   if (fromId === toId || amount === 0) return amount;
-  const fromAbbr = idMap[fromId];
-  const toAbbr = idMap[toId];
-  const from = unitMap[fromAbbr];
-  const to = unitMap[toAbbr];
+  const from = unitsById[fromId];
+  const to = unitsById[toId];
   if (!from || !to || from.type !== to.type) return null;
   return (amount * from.toBase) / to.toBase;
 }
 
-module.exports = { convert };
+module.exports = { loadUnits, convert };
