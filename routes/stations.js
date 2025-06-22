@@ -166,6 +166,7 @@ module.exports = (db) => {
                   res.locals.settings });
           });
         });
+        });
       });
     }).catch(err => {
       console.error('Error fetching categories:', err);

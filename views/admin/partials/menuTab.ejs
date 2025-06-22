@@ -128,8 +128,18 @@
                   </div>
                   <div class="row mb-2">
                     <div class="col-12">
-                      <div class="mod-checkboxes">
+                      <label class="form-label">Modifier Groups</label>
+                      <select class="form-select" name="group_ids" multiple>
                         <% modGroups.forEach(g => { %>
+                          <option value="<%= g.id %>" <%= item.group_ids.includes(g.id) ? 'selected' : '' %>><%= g.name %></option>
+                        <% }) %>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="row mb-2">
+                    <div class="col-12">
+                      <div class="mod-checkboxes">
+                        <% modGroups.filter(g => item.group_ids.includes(g.id)).forEach(g => { %>
                           <div class="mod-group">
                             <strong><%= g.name %></strong><br>
                             <% mods.filter(m => m.group_id === g.id).forEach(mod => { %>
@@ -197,6 +207,16 @@
                 <div class="col-md-6 col-sm-6">
                   <label class="form-label">Image URL</label>
                   <input class="form-control" type="text" name="image_url" placeholder="Image URL">
+                </div>
+              </div>
+              <div class="row mb-2">
+                <div class="col-12">
+                  <label class="form-label">Modifier Groups</label>
+                  <select class="form-select" name="group_ids" multiple>
+                    <% modGroups.forEach(g => { %>
+                      <option value="<%= g.id %>"><%= g.name %></option>
+                    <% }) %>
+                  </select>
                 </div>
               </div>
               <input type="hidden" name="recipe">
