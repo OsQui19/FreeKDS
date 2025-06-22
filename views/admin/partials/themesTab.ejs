@@ -2,7 +2,9 @@
   <h1>Branding & Theme</h1>
   <button class="btn btn-secondary mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#themeForm">Show Settings</button>
   <div id="themeForm" class="collapse">
-  <form method="POST" action="/admin/settings" class="p-2">
+  <div class="row g-3">
+    <div class="col-12 col-md-5">
+    <form method="POST" action="/admin/settings" class="p-2">
     <div class="row mb-3">
       <label for="brand-name" class="col-sm-4 col-form-label">Brand Name:</label>
       <div class="col-sm-8">
@@ -27,8 +29,23 @@
         <input id="ticket-layout" class="form-control" type="number" name="ticket_layout" min="1" value="<%= settings.ticket_layout || 1 %>">
       </div>
     </div>
+    <div class="row mb-3">
+      <label for="font-family" class="col-sm-4 col-form-label">Font Family:</label>
+      <div class="col-sm-8">
+        <input id="font-family" class="form-control" type="text" name="font_family" value="<%= settings.font_family || '' %>">
+      </div>
+    </div>
+    <div class="mb-3">
+      <label for="custom-css" class="form-label">Custom CSS:</label>
+      <textarea id="custom-css" class="form-control" rows="4" name="custom_css"><%- settings.custom_css || '' %></textarea>
+    </div>
     <button type="submit" class="btn btn-primary">Update Theme</button>
-  </form>
+    </form>
+    </div>
+    <div class="col-12 col-md-7">
+      <iframe id="menuPreview" class="w-100" src="/order"></iframe>
+    </div>
+  </div>
   </div>
 <script>
   const themeForm = document.getElementById('themeForm');
@@ -42,4 +59,5 @@
     themeForm.addEventListener('hidden.bs.collapse', updateText);
   }
 </script>
+<script defer src="/themePreview.js"></script>
 </div>

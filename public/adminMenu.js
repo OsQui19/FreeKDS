@@ -318,6 +318,9 @@ function initDragAndDrop() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ order: newOrder })
+      }).then(() => {
+        const frame = document.getElementById('menuPreview');
+        if (frame) frame.contentWindow.location.reload();
       });
     }
   });
@@ -335,6 +338,9 @@ function initDragAndDrop() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ categoryId: catId, order: newOrder })
+        }).then(() => {
+          const frame = document.getElementById('menuPreview');
+          if (frame) frame.contentWindow.location.reload();
         });
       }
     });

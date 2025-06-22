@@ -459,7 +459,9 @@ router.get('/admin/menu', async (req, res) => {
 });
 
   router.post('/admin/settings', (req, res) => {
-  const settings = req.body;
+  const allowed = ['brand_name','theme_primary_color','theme_bg_color','ticket_layout','font_family','custom_css'];
+  const settings = {};
+  allowed.forEach(k => { if (req.body[k] !== undefined) settings[k] = req.body[k]; });
   const keys = Object.keys(settings);
   if (keys.length === 0) return res.redirect('/admin?tab=theme');
 

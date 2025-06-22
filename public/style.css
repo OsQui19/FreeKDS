@@ -566,3 +566,14 @@ display: contents;
 .ingredient-list input.form-control {
 padding: 2px 4px;
 }
+#menuPreview {
+  border: 1px solid #ccc;
+  width: 100%;
+  height: 600px;
+}
+@media (max-width: 768px) {
+  #menuPreview {
+    margin-top: 15px;
+    height: 400px;
+  }
+}
