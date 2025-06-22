@@ -1,6 +1,6 @@
 // JS for inventory management
 
-document.addEventListener('DOMContentLoaded', () => {
+function initAdminInventory() {
   function serialize(form) {
     return new URLSearchParams(new FormData(form));
   }
@@ -39,4 +39,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
   }
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initAdminInventory);
+} else {
+  initAdminInventory();
+}

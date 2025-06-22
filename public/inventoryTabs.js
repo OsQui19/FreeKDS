@@ -1,5 +1,5 @@
 // Handle switching between inventory panes
-document.addEventListener('DOMContentLoaded', () => {
+function initInventoryTabs() {
   const links = document.querySelectorAll('#inventoryTabs .nav-link');
   const panes = document.querySelectorAll('.inventory-pane');
 
@@ -18,4 +18,10 @@ document.addEventListener('DOMContentLoaded', () => {
       activate(link.dataset.pane);
     });
   });
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initInventoryTabs);
+} else {
+  initInventoryTabs();
+}

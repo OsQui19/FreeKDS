@@ -1,5 +1,5 @@
 // Fetch inventory statistics and render charts using Chart.js
-document.addEventListener('DOMContentLoaded', () => {
+function initInventoryAnalytics() {
   const salesEl = document.getElementById('salesChart');
   const usageEl = document.getElementById('usageChart');
   if (!salesEl || !usageEl) return;
@@ -40,4 +40,10 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     })
     .catch(err => console.error('Analytics fetch error', err));
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initInventoryAnalytics);
+} else {
+  initInventoryAnalytics();
+}
