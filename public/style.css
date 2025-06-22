@@ -566,6 +566,32 @@ display: contents;
 .ingredient-list input.form-control {
 padding: 2px 4px;
 }
+# Inventory tabs
+.inventory-tabs .nav-tabs {
+  flex-wrap: wrap;
+}
+.inventory-tabs .tab-content {
+  padding-top: 1rem;
+}
+.inventory-pane {
+  display: none;
+}
+.inventory-pane.active {
+  display: block;
+}
+@media (max-width: 575.98px) {
+  .inventory-tabs .nav-tabs .nav-link {
+    flex: 1 0 50%;
+    text-align: center;
+  }
+  #analyticsPane canvas {
+    height: 250px;
+  }
+}
+#analyticsPane canvas {
+  max-width: 100%;
+  height: 300px;
+}
 #menuPreview {
   border: 1px solid #ccc;
   width: 100%;

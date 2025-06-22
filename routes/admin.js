@@ -1,5 +1,5 @@
 const express = require('express');
-const { updateItemModifiers, updateItemGroups, getMenuData, getStations, getIngredients, getUnits, updateItemIngredients } = require('../controllers/dbHelpers');
+const { updateItemModifiers, updateItemGroups, getMenuData, getStations, getIngredients, getUnits, updateItemIngredients, getSalesTotals, getIngredientUsage } = require('../controllers/dbHelpers');
 const settingsCache = require('../controllers/settingsCache');
 
 module.exports = (db, io) => {
@@ -292,6 +292,18 @@ router.get('/admin/menu', async (req, res) => {
       if (err2) console.error('Error updating quantity:', err2);
       res.redirect('/admin?tab=inventory&msg=Transaction+recorded');
     });
+  });
+
+  router.get('/admin/inventory/stats', async (req, res) => {
+    try {
+      const { start, end } = req.query;
+      const sales = await getSalesTotals(db, start, end);
+      const usage = await getIngredientUsage(db, start, end);
+      res.json({ sales, usage });
+    } catch (err) {
+      console.error('Error fetching inventory stats:', err);
+      res.status(500).json({ error: 'DB Error' });
+    }
   });
 
   router.post('/admin/modifiers', (req, res) => {

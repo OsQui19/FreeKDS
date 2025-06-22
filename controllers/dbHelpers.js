@@ -244,6 +244,38 @@ async function logInventoryForOrder(db, orderId, items) {
   }
 }
 
+function formatDateTime(dt) {
+  if (typeof dt === 'string') dt = new Date(dt);
+  return dt.toISOString().slice(0, 19).replace('T', ' ');
+}
+
+async function getSalesTotals(db, start, end) {
+  const endDate = end ? new Date(end) : new Date();
+  const startDate = start ? new Date(start) : new Date(endDate.getTime() - 29 * 86400000);
+  const sql = `SELECT DATE(o.created_at) AS date, SUM(mi.price * oi.quantity) AS total
+               FROM orders o
+               JOIN order_items oi ON o.id = oi.order_id
+               JOIN menu_items mi ON oi.menu_item_id = mi.id
+               WHERE o.created_at BETWEEN ? AND ?
+               GROUP BY DATE(o.created_at)
+               ORDER BY DATE(o.created_at)`;
+  const [rows] = await db.promise().query(sql, [formatDateTime(startDate), formatDateTime(endDate)]);
+  return rows;
+}
+
+async function getIngredientUsage(db, start, end) {
+  const endDate = end ? new Date(end) : new Date();
+  const startDate = start ? new Date(start) : new Date(endDate.getTime() - 29 * 86400000);
+  const sql = `SELECT ing.name, SUM(l.amount) AS total
+               FROM inventory_log l
+               JOIN ingredients ing ON l.ingredient_id = ing.id
+               WHERE l.created_at BETWEEN ? AND ?
+               GROUP BY ing.id
+               ORDER BY ing.name`;
+  const [rows] = await db.promise().query(sql, [formatDateTime(startDate), formatDateTime(endDate)]);
+  return rows;
+}
+
 module.exports = {
   updateItemModifiers,
   updateItemGroups,
@@ -254,5 +286,7 @@ module.exports = {
   getIngredients,
   updateItemIngredients,
   getUnits,
-  logInventoryForOrder
+  logInventoryForOrder,
+  getSalesTotals,
+  getIngredientUsage
 };
