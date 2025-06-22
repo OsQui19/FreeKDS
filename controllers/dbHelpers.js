@@ -1,3 +1,5 @@
+const { convert } = require('./unitConversion');
+
 function updateItemModifiers(db, itemId, modifierRows, callback) {
   let rows = [];
   if (Array.isArray(modifierRows)) {
@@ -104,7 +106,9 @@ async function getMenuData(db) {
                          LEFT JOIN units u ON ing.unit_id = u.id
                          WHERE ing.is_public=1
                          ORDER BY ing.name`),
-    db.promise().query('SELECT * FROM item_ingredients'),
+    db.promise().query(`SELECT ii.menu_item_id, ii.ingredient_id, ii.amount, ii.unit_id, u.abbreviation AS unit
+                         FROM item_ingredients ii
+                         LEFT JOIN units u ON ii.unit_id = u.id`),
     db.promise().query('SELECT * FROM units ORDER BY name')
   ];
   const [cats, stations, items, mods, modGroups, itemMods, itemGroups, ingredients, itemIngs, units] = (await Promise.all(queries)).map(r => r[0]);
@@ -130,9 +134,14 @@ async function getMenuData(db) {
     };
   });
   const itemIngMap = {};
-    itemIngs.forEach(ing => {
+  itemIngs.forEach(ing => {
     if (!itemIngMap[ing.menu_item_id]) itemIngMap[ing.menu_item_id] = [];
-    itemIngMap[ing.menu_item_id].push({ ingredient_id: ing.ingredient_id, amount: ing.amount });
+    itemIngMap[ing.menu_item_id].push({
+      ingredient_id: ing.ingredient_id,
+      amount: ing.amount,
+      unit_id: ing.unit_id,
+      unit: ing.unit
+    });
   });
 
   const categories = cats.map(c => ({
@@ -200,12 +209,12 @@ function updateItemIngredients(db, itemId, ingList, callback) {
   let rows = [];
   if (Array.isArray(ingList)) {
     rows = ingList.filter(r => r.ingredient_id && r.amount)
-      .map(r => [itemId, r.ingredient_id, r.amount]);
+      .map(r => [itemId, r.ingredient_id, r.amount, r.unit_id || null]);
   }
   db.query('DELETE FROM item_ingredients WHERE menu_item_id=?', [itemId], err => {
     if (err) { console.error(err); }
     if (rows.length === 0) return callback && callback();
-    db.query('INSERT INTO item_ingredients (menu_item_id, ingredient_id, amount) VALUES ?', [rows], err2 => {
+    db.query('INSERT INTO item_ingredients (menu_item_id, ingredient_id, amount, unit_id) VALUES ?', [rows], err2 => {
       if (err2) console.error(err2);
       if (callback) callback();
     });
@@ -214,7 +223,13 @@ function updateItemIngredients(db, itemId, ingList, callback) {
 
 async function logInventoryForOrder(db, orderId, items) {
   for (const it of items) {
-    const [ings] = await db.promise().query('SELECT ingredient_id, amount FROM item_ingredients WHERE menu_item_id=?', [it.menu_item_id]);
+    const [ings] = await db.promise().query(
+      `SELECT ii.ingredient_id, ii.amount, ii.unit_id AS item_unit_id, ing.unit_id AS ing_unit_id
+         FROM item_ingredients ii
+         JOIN ingredients ing ON ii.ingredient_id = ing.id
+        WHERE ii.menu_item_id=?`,
+      [it.menu_item_id]
+    );
     let replaced = [];
     let modRows = [];
     if (Array.isArray(it.modifier_ids) && it.modifier_ids.length) {
@@ -231,7 +246,8 @@ async function logInventoryForOrder(db, orderId, items) {
 
     for (const row of ings) {
       if (replaced.includes(row.ingredient_id)) continue;
-      const used = parseFloat(row.amount) * it.quantity;
+      const conv = convert(parseFloat(row.amount), row.item_unit_id || row.ing_unit_id, row.ing_unit_id);
+      const used = conv !== null ? conv * it.quantity : parseFloat(row.amount) * it.quantity;
       await db.promise().query('UPDATE ingredients SET quantity = quantity - ? WHERE id=?', [used, row.ingredient_id]);
       await db.promise().query('INSERT INTO inventory_log (order_id, menu_item_id, ingredient_id, amount) VALUES (?, ?, ?, ?)', [orderId, it.menu_item_id, row.ingredient_id, used]);
     }

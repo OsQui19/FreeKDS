@@ -149,9 +149,11 @@ CREATE TABLE item_ingredients (
   menu_item_id INT NOT NULL,
   ingredient_id INT NOT NULL,
   amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  unit_id INT DEFAULT NULL,
   PRIMARY KEY (menu_item_id, ingredient_id),
   FOREIGN KEY (menu_item_id) REFERENCES menu_items(id) ON DELETE CASCADE,
-  FOREIGN KEY (ingredient_id) REFERENCES ingredients(id) ON DELETE CASCADE
+  FOREIGN KEY (ingredient_id) REFERENCES ingredients(id) ON DELETE CASCADE,
+  FOREIGN KEY (unit_id) REFERENCES units(id)
 );
 
 -- Log of inventory deductions per order

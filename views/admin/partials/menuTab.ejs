@@ -92,9 +92,8 @@
                   <input type="hidden" name="recipe" value="<%- item.recipe || '' %>">
                   <div class="hidden-ingredients">
                     <% item.ingredients.forEach(ing => { %>
-                      <% const ingData = publicIngredients.find(p => p.id === ing.ingredient_id); %>
                       <input type="hidden" name="ingredient_ids" value="<%= ing.ingredient_id %>">
-                      <input type="hidden" name="ingredient_unit_ids" value="<%= ingData ? ingData.unit_id : '' %>">
+                      <input type="hidden" name="ingredient_unit_ids" value="<%= ing.unit_id || '' %>">
                       <input type="hidden" name="ingredient_amounts" value="<%= ing.amount %>">
                     <% }) %>
                   </div>
@@ -349,4 +348,5 @@
     <% }) %>
   </datalist>
   <script>window.publicIngredients = <%- JSON.stringify(publicIngredients) %>;</script>
+  <script>window.units = <%- JSON.stringify(units) %>;</script>
   <script defer src="/adminMenu.js" onload="initAdminMenu && initAdminMenu()"></script>

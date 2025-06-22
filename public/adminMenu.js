@@ -1,5 +1,7 @@
 // JS for admin menu management
 
+const UNIT_OPTIONS = (window.units || []).map(u => `<option value="${u.id}">${u.abbreviation}</option>`).join('');
+
 function serialize(form) {
   return new URLSearchParams(new FormData(form));
 }
@@ -122,9 +124,8 @@ function initIngredientFields() {
       div.innerHTML =
         `<input class="form-control ingredient-name" list="ingredientsList" placeholder="Ingredient">`+
         `<input type="hidden" name="ingredient_ids">`+
-        `<input type="hidden" name="ingredient_unit_ids">`+
+        `<select class="form-select form-select-sm ingredient-unit-select" name="ingredient_unit_ids">${UNIT_OPTIONS}</select>`+
         `<input class="form-control" type="number" step="0.01" name="ingredient_amounts" value="0">`+
-        `<span class="ingredient-unit"></span>`+
         `<button type="button" class="btn btn-secondary remove-ingredient-row">x</button>`;
       rowsDiv.appendChild(div);
     };
@@ -138,18 +139,15 @@ function initIngredientFields() {
       if (e.target.classList.contains('ingredient-name')) {
         const row = e.target.closest('.ingredient-row');
         const hidden = row.querySelector('input[name="ingredient_ids"]');
-        const unit = row.querySelector('.ingredient-unit');
-        const unitHidden = row.querySelector('input[name="ingredient_unit_ids"]');
+        const unitSel = row.querySelector('select[name="ingredient_unit_ids"]');
         const ing = findByName(e.target.value.trim());
         if (ing) {
           hidden.value = ing.id;
-          if (unitHidden) unitHidden.value = ing.unit_id || '';
-          unit.textContent = ing.unit || '';
+          if (unitSel) unitSel.value = ing.unit_id || '';
         } else {
           e.target.value = '';
           hidden.value = '';
-          if (unitHidden) unitHidden.value = '';
-          unit.textContent = '';
+          if (unitSel) unitSel.value = '';
         }
       }
     });
@@ -245,10 +243,11 @@ function initRecipeModal() {
           row.innerHTML =
             `<input class="form-control ingredient-name" list="ingredientsList" value="${ing ? ing.name : ''}">`+
             `<input type="hidden" name="ingredient_ids" value="${id}">`+
-            `<input type="hidden" name="ingredient_unit_ids" value="${unitId}">`+
+            `<select class="form-select form-select-sm ingredient-unit-select" name="ingredient_unit_ids">${UNIT_OPTIONS}</select>`+
             `<input class="form-control" type="number" step="0.01" name="ingredient_amounts" value="${amt}">`+
-            `<span class="ingredient-unit">${ing && ing.unit ? ing.unit : ''}</span>`+
             `<button type="button" class="btn btn-secondary remove-ingredient-row">x</button>`;
+          const sel = row.querySelector('select[name="ingredient_unit_ids"]');
+          if (sel) sel.value = unitId || (ing ? ing.unit_id : '');
           ingRows.appendChild(row);
         }
       }
@@ -273,7 +272,7 @@ function initRecipeModal() {
       const idField = row.querySelector('input[name="ingredient_ids"]');
       const id = idField ? idField.value : '';
       const amt = row.querySelector('input[name="ingredient_amounts"]').value;
-      const unitField = row.querySelector('input[name="ingredient_unit_ids"]');
+      const unitField = row.querySelector('select[name="ingredient_unit_ids"]');
       const unitId = unitField ? unitField.value : '';
       if (!id) return;
       const idInput = document.createElement('input');

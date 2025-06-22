@@ -49,10 +49,10 @@ module.exports = (db, io) => {
       res.status(500).send('DB Error');
     }
   });
-router.get('/admin/menu', async (req, res) => {
+  router.get('/admin/menu', async (req, res) => {
     try {
-      const { categories, stations, mods, modGroups, ingredients: publicIngredients } = await getMenuData(db);
-      res.render('admin/menu', { categories, stations, mods, modGroups, publicIngredients });
+      const { categories, stations, mods, modGroups, ingredients: publicIngredients, units } = await getMenuData(db);
+      res.render('admin/menu', { categories, stations, mods, modGroups, publicIngredients, units });
     } catch (err) {
       console.error('Error fetching menu data:', err);
       res.status(500).send('DB Error');
@@ -85,13 +85,11 @@ router.get('/admin/menu', async (req, res) => {
   const selectedGroups = groupIds.map(g => parseInt(g, 10)).filter(g => !isNaN(g));
   if (itemIngredients.length) {
     try {
-      const ingIds = itemIngredients.map(i => i.ingredient_id);
-      const [rows] = await db.promise().query('SELECT id, unit_id FROM ingredients WHERE id IN (?)', [ingIds]);
-      const map = {};
-      rows.forEach(r => { map[r.id] = r.unit_id; });
+      const [rows] = await db.promise().query('SELECT id FROM units');
+      const valid = new Set(rows.map(r => r.id));
       for (const ing of itemIngredients) {
-        if (!ing.unit_id || !map[ing.ingredient_id] || parseInt(ing.unit_id,10) !== parseInt(map[ing.ingredient_id],10)) {
-          return res.status(400).send('Ingredient unit mismatch');
+        if (!valid.has(ing.unit_id)) {
+          return res.status(400).send('Invalid unit selection');
         }
       }
     } catch (err) {
