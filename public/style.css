@@ -537,7 +537,9 @@ body.admin-screen {
   display: none;
 }
 /* Admin form layout */
-max-width: 1200px;
+.admin-container {
+  max-width: 1200px;
+  margin: 0 auto;
 }
 @media (max-width: 575.98px) {
 body.admin-screen {
