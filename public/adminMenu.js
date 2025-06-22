@@ -59,6 +59,10 @@ function initAdminMenu() {
       }
       const modNames = Array.from(form.querySelectorAll('input[name="modifier_ids"]:checked')).map(cb => cb.parentNode.textContent.trim());
       li.querySelector('.item-mods').textContent = modNames.length ? 'Extras: ' + modNames.join(', ') : 'Extras: None';
+      const recHidden = form.querySelector('input[name="recipe"]');
+      if (recHidden) {
+        li.querySelector('.item-recipe').textContent = 'Recipe: ' + (recHidden.value.trim() ? 'Yes' : 'No');
+      }
       li.querySelector('.item-edit-form').classList.add('hidden');
       li.querySelector('.item-view').classList.remove('hidden');
     });
@@ -229,10 +233,50 @@ function initIngredientFields() {
     document.querySelectorAll('.open-recipe-modal').forEach(btn => {
       btn.addEventListener('click', () => {
         currentForm = btn.closest('form');
-        modal.querySelector('.recipe-rows').innerHTML = '';
-        modal.querySelector('.ingredient-rows').innerHTML = '';
+        const recipeRows = modal.querySelector('.recipe-rows');
+        const ingRows = modal.querySelector('.ingredient-rows');
+        recipeRows.innerHTML = '';
+        ingRows.innerHTML = '';
         const input = modal.querySelector('.recipe-input');
         if (input) input.value = '';
+
+        if (currentForm) {
+          const recipeHidden = currentForm.querySelector('input[name="recipe"]');
+          if (recipeHidden && recipeHidden.value.trim()) {
+            recipeHidden.value.split(/\r?\n/).forEach(step => {
+              if (!step.trim()) return;
+              const div = document.createElement('div');
+              div.className = 'recipe-row d-flex gap-2 mb-1';
+              div.innerHTML =
+                `<input class="form-control" type="text" name="recipe_steps" value="${step}">`+
+                `<button type="button" class="btn btn-secondary remove-recipe-row">x</button>`;
+              recipeRows.appendChild(div);
+            });
+          }
+
+          const ids = Array.from(currentForm.querySelectorAll('input[name="ingredient_ids"]'));
+          const amts = Array.from(currentForm.querySelectorAll('input[name="ingredient_amounts"]'));
+          const units = Array.from(currentForm.querySelectorAll('input[name="ingredient_unit_ids"]'));
+          const ings = window.publicIngredients || [];
+          for (let i = 0; i < ids.length; i++) {
+            const id = ids[i].value;
+            if (!id) continue;
+            const amt = amts[i] ? amts[i].value : '';
+            const unitId = units[i] ? units[i].value : '';
+            const ing = ings.find(p => String(p.id) === String(id));
+            const row = document.createElement('div');
+            row.className = 'ingredient-row d-flex gap-2 mb-1 align-items-center';
+            row.innerHTML =
+              `<input class="form-control ingredient-name" list="ingredientsList" value="${ing ? ing.name : ''}">`+
+              `<input type="hidden" name="ingredient_ids" value="${id}">`+
+              `<input type="hidden" name="ingredient_unit_ids" value="${unitId}">`+
+              `<input class="form-control" type="number" step="0.01" name="ingredient_amounts" value="${amt}">`+
+              `<span class="ingredient-unit">${ing && ing.unit ? ing.unit : ''}</span>`+
+              `<button type="button" class="btn btn-secondary remove-ingredient-row">x</button>`;
+            ingRows.appendChild(row);
+          }
+        }
+
         modal.classList.remove('d-none');
         modal.classList.add('d-flex');
       });
@@ -274,7 +318,12 @@ function initIngredientFields() {
       });
 
       closeModal();
-      currentForm.submit();
+      if (typeof currentForm.requestSubmit === 'function') {
+        currentForm.requestSubmit();
+      } else {
+        const evt = new Event('submit', { cancelable: true });
+        currentForm.dispatchEvent(evt);
+      }
     });
   }
 }
