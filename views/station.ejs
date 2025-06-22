@@ -22,6 +22,7 @@
   <header class="top-bar">
     <h1 class="station-title"><span class="brand-name"><%= settings.brand_name || '' %></span> – <%= station.name %></h1>
     <div class="top-bar-links">
+      <label for="stationSelect" class="me-1">Switch Station:</label>
       <select id="stationSelect" class="station-switch">
         <% allStations.forEach(function(st){ %>
           <option value="<%= st.id %>" <%= st.id === station.id ? 'selected' : '' %>><%= st.name %></option>
