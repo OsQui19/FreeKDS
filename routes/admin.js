@@ -1241,6 +1241,7 @@ module.exports = (db, io) => {
     try {
       await receivePurchaseOrder(db, id);
       res.redirect(`/admin/purchase-orders/${id}?msg=Order+received`);
+      io.emit("reportsUpdated");
     } catch (err) {
       console.error("Error receiving order:", err);
       res.status(500).send("DB Error");
