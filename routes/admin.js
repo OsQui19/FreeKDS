@@ -11,6 +11,9 @@ const {
   updateItemIngredients,
   getSalesTotals,
   getIngredientUsage,
+  getTopMenuItems,
+  getCategorySales,
+  getLowStockIngredients,
   getSuppliers,
   getLocations,
   getPurchaseOrders,
@@ -556,6 +559,21 @@ module.exports = (db, io) => {
       res.json({ sales, usage });
     } catch (err) {
       console.error("Error fetching inventory stats:", err);
+      res.status(500).json({ error: "DB Error" });
+    }
+  });
+
+  router.get("/admin/reports/data", async (req, res) => {
+    try {
+      const { start, end } = req.query;
+      const sales = await getSalesTotals(db, start, end);
+      const usage = await getIngredientUsage(db, start, end);
+      const topItems = await getTopMenuItems(db, start, end);
+      const categorySales = await getCategorySales(db, start, end);
+      const lowStock = await getLowStockIngredients(db);
+      res.json({ sales, usage, topItems, categorySales, lowStock });
+    } catch (err) {
+      console.error("Error fetching reports data:", err);
       res.status(500).json({ error: "DB Error" });
     }
   });

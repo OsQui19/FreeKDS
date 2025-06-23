@@ -432,6 +432,55 @@ async function getIngredientUsage(db, start, end) {
   return rows;
 }
 
+async function getTopMenuItems(db, start, end, limit = 10) {
+  const endDate = end ? new Date(end) : new Date();
+  const startDate = start
+    ? new Date(start)
+    : new Date(endDate.getTime() - 29 * 86400000);
+  const sql = `SELECT mi.name, SUM(oi.quantity) AS qty,
+                      SUM(mi.price * oi.quantity) AS revenue
+                 FROM orders o
+                 JOIN order_items oi ON o.id = oi.order_id
+                 JOIN menu_items mi ON oi.menu_item_id = mi.id
+                WHERE o.created_at BETWEEN ? AND ?
+                GROUP BY mi.id
+                ORDER BY revenue DESC
+                LIMIT ?`;
+  const [rows] = await db
+    .promise()
+    .query(sql, [formatDateTime(startDate), formatDateTime(endDate), limit]);
+  return rows;
+}
+
+async function getCategorySales(db, start, end) {
+  const endDate = end ? new Date(end) : new Date();
+  const startDate = start
+    ? new Date(start)
+    : new Date(endDate.getTime() - 29 * 86400000);
+  const sql = `SELECT c.name, SUM(mi.price * oi.quantity) AS total
+                 FROM orders o
+                 JOIN order_items oi ON o.id = oi.order_id
+                 JOIN menu_items mi ON oi.menu_item_id = mi.id
+                 JOIN categories c ON mi.category_id = c.id
+                WHERE o.created_at BETWEEN ? AND ?
+                GROUP BY c.id
+                ORDER BY c.name`;
+  const [rows] = await db
+    .promise()
+    .query(sql, [formatDateTime(startDate), formatDateTime(endDate)]);
+  return rows;
+}
+
+async function getLowStockIngredients(db, threshold = 5) {
+  const sql = `SELECT ing.name, ing.quantity, u.abbreviation AS unit
+                 FROM ingredients ing
+                 LEFT JOIN units u ON ing.unit_id = u.id
+                WHERE ing.quantity <= ?
+                ORDER BY ing.quantity ASC, ing.name`;
+  const [rows] = await db.promise().query(sql, [threshold]);
+  return rows;
+}
+
 async function getSuppliers(db) {
   const [rows] = await db
     .promise()
@@ -504,6 +553,9 @@ module.exports = {
   logInventoryForOrder,
   getSalesTotals,
   getIngredientUsage,
+  getTopMenuItems,
+  getCategorySales,
+  getLowStockIngredients,
   getSuppliers,
   getLocations,
   getPurchaseOrders,
