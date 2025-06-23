@@ -56,6 +56,10 @@ function initAdminInventory() {
     const cat = catFilter ? catFilter.value : "";
     const tag = tagFilter ? tagFilter.value : "";
     rows.forEach((row) => {
+      if (row.classList.contains("add-row")) {
+        row.style.display = "";
+        return;
+      }
       const rowCat = row.dataset.category || "";
       const rowTags = row.dataset.tags || "";
       const catMatch = !cat || rowCat === cat;
