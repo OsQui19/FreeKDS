@@ -609,13 +609,6 @@ body.admin-screen {
     flex: 1 0 50%;
     text-align: center;
   }
-  #analyticsPane canvas {
-    height: 250px;
-  }
-}
-#analyticsPane canvas {
-  max-width: 100%;
-  height: 300px;
 }
 #reportsTab canvas {
   max-width: 100%;
