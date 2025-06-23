@@ -5,17 +5,19 @@ function initAdminInventory() {
     return new URLSearchParams(new FormData(form));
   }
   function handleForm(form) {
-    form.addEventListener("submit", (e) => {
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      fetch(form.action, {
+      const resp = await fetch(form.action, {
         method: form.method || "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: serialize(form),
-        redirect: "manual",
-      }).then(() => {
-        history.replaceState(null, "", window.location.pathname);
-        location.reload();
+        redirect: "follow",
       });
+      if (resp.redirected) {
+        window.location.href = resp.url;
+      } else {
+        location.reload();
+      }
     });
   }
   document
