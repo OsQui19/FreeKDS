@@ -44,10 +44,12 @@ function loadReports() {
       });
 
       if (marginEl) {
-        marginEl.textContent = margin[margin.length - 1].toFixed(2);
+        const lastMargin = margin.length ? margin[margin.length - 1] : 0;
+        marginEl.textContent = lastMargin.toFixed(2);
       }
       if (roiEl) {
-        roiEl.textContent = roi[roi.length - 1].toFixed(2);
+        const lastRoi = roi.length ? roi[roi.length - 1] : 0;
+        roiEl.textContent = lastRoi.toFixed(2);
       }
 
       if (usageEl) {
