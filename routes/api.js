@@ -60,9 +60,14 @@ module.exports = (db, io) => {
         );
       }
 
-      await logInventoryForOrder(conn, orderId, items).catch((err5) =>
-        console.error("Inventory log error:", err5),
-      );
+      try {
+        await logInventoryForOrder(conn, orderId, items);
+      } catch (err5) {
+        console.error("Inventory log error:", err5);
+        await conn.rollback();
+        conn.release();
+        return res.status(500).send("DB Error");
+      }
 
       const fetchSql = `SELECT oi.id AS order_item_id, oi.quantity, mi.name, mi.station_id,
                                 GROUP_CONCAT(m.name ORDER BY m.name SEPARATOR ', ') AS modifiers

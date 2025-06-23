@@ -443,7 +443,12 @@ module.exports = (db, io) => {
     const id = req.body.id;
     if (!id) return res.redirect("/admin?tab=inventory");
     db.query("DELETE FROM ingredients WHERE id=?", [id], (err) => {
-      if (err) console.error("Error deleting ingredient:", err);
+      if (err) {
+        console.error("Error deleting ingredient:", err);
+        return res.redirect(
+          "/admin?tab=inventory&error=Unable+to+delete+ingredient",
+        );
+      }
       res.redirect("/admin?tab=inventory&msg=Ingredient+deleted");
     });
   });
@@ -513,27 +518,34 @@ module.exports = (db, io) => {
       res.redirect("/admin?tab=inventory&msg=Tag+deleted");
     });
   });
-  router.post("/admin/inventory/transactions", (req, res) => {
+  router.post("/admin/inventory/transactions", async (req, res) => {
     const ingredientId = req.body.ingredient_id;
     const type = req.body.type || "adjust";
-    let qty = parseFloat(req.body.quantity);
+    const qty = parseFloat(req.body.quantity);
     if (!ingredientId || isNaN(qty))
       return res.redirect("/admin?tab=inventory");
-    db.query(
-      "INSERT INTO inventory_transactions (ingredient_id, type, quantity) VALUES (?, ?, ?)",
-      [ingredientId, type, qty],
-      (err) => {
-        if (err) console.error("Error inserting transaction:", err);
-      },
-    );
-    db.query(
-      "UPDATE ingredients SET quantity = quantity + ? WHERE id=?",
-      [qty, ingredientId],
-      (err2) => {
-        if (err2) console.error("Error updating quantity:", err2);
-        res.redirect("/admin?tab=inventory&msg=Transaction+recorded");
-      },
-    );
+
+    let conn;
+    try {
+      conn = await db.promise().getConnection();
+      await conn.beginTransaction();
+      await conn.query(
+        "INSERT INTO inventory_transactions (ingredient_id, type, quantity) VALUES (?, ?, ?)",
+        [ingredientId, type, qty],
+      );
+      await conn.query(
+        "UPDATE ingredients SET quantity = quantity + ? WHERE id=?",
+        [qty, ingredientId],
+      );
+      await conn.commit();
+      res.redirect("/admin?tab=inventory&msg=Transaction+recorded");
+    } catch (err) {
+      if (conn) await conn.rollback();
+      console.error("Error recording transaction:", err);
+      res.status(500).send("DB Error");
+    } finally {
+      if (conn) conn.release();
+    }
   });
 
   router.get("/admin/inventory/stats", async (req, res) => {

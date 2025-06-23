@@ -9,6 +9,14 @@
   <div class="tab-content">
     <div class="inventory-pane active" id="ingredientsPane">
       <div class="ingredient-list mb-3">
+        <div class="d-flex mb-2">
+          <select id="filterCategory" class="form-select form-select-sm me-2" style="width:auto;">
+            <option value="">All Categories</option>
+            <% itemCategories.forEach(cat => { %>
+              <option value="<%= cat.id %>"><%= cat.name %></option>
+            <% }) %>
+          </select>
+        </div>
         <table class="table table-sm ingredient-table">
           <thead>
             <tr>
@@ -24,7 +32,7 @@
           </thead>
           <tbody>
           <% ingredients.forEach(ing => { %>
-            <tr>
+            <tr data-category="<%= ing.category_id %>">
               <form action="/admin/ingredients" method="POST">
                 <input type="hidden" name="id" value="<%= ing.id %>">
                 <td><input class="form-control form-control-sm" type="text" name="name" value="<%= ing.name %>" required></td>
@@ -52,7 +60,7 @@
               </td>
             </tr>
           <% }) %>
-          <tr>
+          <tr data-category="">
             <form action="/admin/ingredients" method="POST">
               <td>
                 <span class="new-label">New:</span>
