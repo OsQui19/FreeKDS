@@ -84,23 +84,14 @@ function initAdminInventory() {
     const qtyInput = document.getElementById("quickAddQty");
     const btn = document.getElementById("quickAddBtn");
 
-    const toggle = () => {
+    const setId = () => {
       const ing = findByName(nameInput.value.trim());
-      if (ing) {
-        idField.value = ing.id;
-        qtyInput.style.display = "";
-        btn.style.display = "";
-        qtyInput.focus();
-      } else {
-        idField.value = "";
-        qtyInput.style.display = "none";
-        btn.style.display = "none";
-      }
+      idField.value = ing ? ing.id : "";
     };
 
-    nameInput.addEventListener("input", toggle);
+    nameInput.addEventListener("input", setId);
     form.addEventListener("submit", (e) => {
-      toggle();
+      setId();
       if (!idField.value) {
         e.preventDefault();
         alert("Please select a valid inventory item");
