@@ -630,3 +630,23 @@ body.admin-screen {
     height: 400px;
   }
 }
+
+/* Employees tabs */
+.employees-tabs .nav-tabs {
+  flex-wrap: wrap;
+}
+.employees-tabs .tab-content {
+  padding-top: 1rem;
+}
+.employees-pane {
+  display: none;
+}
+.employees-pane.active {
+  display: block;
+}
+@media (max-width: 575.98px) {
+  .employees-tabs .nav-tabs .nav-link {
+    flex: 1 0 50%;
+    text-align: center;
+  }
+}

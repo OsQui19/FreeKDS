@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
     suppliers: document.getElementById("tpl-suppliers").innerHTML,
     "purchase-orders": document.getElementById("tpl-purchase-orders").innerHTML,
     reports: document.getElementById("tpl-reports").innerHTML,
+    employees: document.getElementById("tpl-employees").innerHTML,
   };
   function show(type) {
     sideNav.querySelectorAll(".nav-link").forEach((l) => {
@@ -19,7 +20,16 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  ["stations", "menu", "theme", "inventory", "suppliers", "purchase-orders", "reports"].forEach((type) => {
+  [
+    "stations",
+    "menu",
+    "theme",
+    "inventory",
+    "suppliers",
+    "purchase-orders",
+    "reports",
+    "employees",
+  ].forEach((type) => {
     const pane = document.createElement("section");
     pane.className = "admin-window";
     pane.dataset.type = type;
