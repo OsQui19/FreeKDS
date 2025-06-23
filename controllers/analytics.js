@@ -10,12 +10,13 @@ async function fetchSalesTotals(db, start, end) {
                     FROM orders o
                     JOIN order_items oi ON o.id = oi.order_id
                     JOIN menu_items mi ON oi.menu_item_id = mi.id
-                    WHERE o.created_at BETWEEN ? AND ?
+                    WHERE o.status='completed' AND o.created_at BETWEEN ? AND ?
                     GROUP BY DATE(o.created_at)`;
   const costSql = `SELECT DATE(l.created_at) AS date, SUM(l.amount * ing.cost) AS cost
                    FROM inventory_log l
                    JOIN ingredients ing ON l.ingredient_id = ing.id
-                   WHERE l.created_at BETWEEN ? AND ?
+                   JOIN orders o ON l.order_id = o.id
+                   WHERE o.status='completed' AND l.created_at BETWEEN ? AND ?
                    GROUP BY DATE(l.created_at)`;
   const [salesRows] = await db.promise().query(salesSql, [formatDateTime(startDate), formatDateTime(endDate)]);
   const [costRows] = await db.promise().query(costSql, [formatDateTime(startDate), formatDateTime(endDate)]);
@@ -42,7 +43,8 @@ async function fetchIngredientUsage(db, start, end) {
   const sql = `SELECT ing.name, SUM(l.amount) AS total
                FROM inventory_log l
                JOIN ingredients ing ON l.ingredient_id = ing.id
-               WHERE l.created_at BETWEEN ? AND ?
+               JOIN orders o ON l.order_id = o.id
+               WHERE o.status='completed' AND l.created_at BETWEEN ? AND ?
                GROUP BY ing.id
                ORDER BY ing.name`;
   const [rows] = await db.promise().query(sql, [formatDateTime(startDate), formatDateTime(endDate)]);
@@ -57,7 +59,7 @@ async function fetchTopMenuItems(db, start, end, limit = 10) {
                  FROM orders o
                  JOIN order_items oi ON o.id = oi.order_id
                  JOIN menu_items mi ON oi.menu_item_id = mi.id
-                WHERE o.created_at BETWEEN ? AND ?
+                WHERE o.status='completed' AND o.created_at BETWEEN ? AND ?
                 GROUP BY mi.id
                 ORDER BY revenue DESC
                 LIMIT ?`;
@@ -73,7 +75,7 @@ async function fetchCategorySales(db, start, end) {
                  JOIN order_items oi ON o.id = oi.order_id
                  JOIN menu_items mi ON oi.menu_item_id = mi.id
                  JOIN categories c ON mi.category_id = c.id
-                WHERE o.created_at BETWEEN ? AND ?
+                WHERE o.status='completed' AND o.created_at BETWEEN ? AND ?
                 GROUP BY c.id
                 ORDER BY c.name`;
   const [rows] = await db.promise().query(sql, [formatDateTime(startDate), formatDateTime(endDate)]);
