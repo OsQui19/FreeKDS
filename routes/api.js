@@ -118,6 +118,8 @@ module.exports = (db, io) => {
         })),
       });
 
+      io.emit("reportsUpdated");
+
       res.json({ success: true, orderId });
     } catch (err) {
       if (conn) await conn.rollback();

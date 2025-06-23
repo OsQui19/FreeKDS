@@ -543,6 +543,7 @@ module.exports = (db, io) => {
         [qty, ingredientId],
       );
       await conn.commit();
+      io.emit("reportsUpdated");
       res.redirect("/admin?tab=inventory&msg=Transaction+recorded");
     } catch (err) {
       if (conn) await conn.rollback();

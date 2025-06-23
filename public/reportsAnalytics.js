@@ -1,6 +1,10 @@
 let salesChart;
 let usageChart;
 let categoryChart;
+<<<<<<< ours
+=======
+const socket = window.io ? io() : null;
+>>>>>>> theirs
 
 function loadReports() {
   const salesEl = document.getElementById('salesChart');
@@ -102,3 +106,10 @@ if (document.readyState === 'loading') {
 
 // refresh data every minute for near real-time updates
 setInterval(loadReports, 60000);
+<<<<<<< ours
+=======
+
+if (socket) {
+  socket.on('reportsUpdated', loadReports);
+}
+>>>>>>> theirs
