@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <%- include('partials/head') %>
+</head>
+<body class="admin-screen">
+  <%- include('partials/header') %>
+  <% if (req.query.msg) { %>
+  <div class="alert alert-success alert-dismissible fade show m-2" role="alert">
+    <%= req.query.msg %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+  <% } %>
+  <div class="container admin-container">
+    <h1>Purchase Order #<%= order.id %></h1>
+    <p>Supplier: <%= order.supplier_name %></p>
+    <p>Location: <%= order.location_name || '' %></p>
+    <p>Date: <%= order.order_date.toISOString ? order.order_date.toISOString().slice(0,10) : order.order_date %></p>
+    <p>Status: <%= order.status %></p>
+    <% if (order.status !== 'received') { %>
+    <form action="/admin/purchase-orders/<%= order.id %>/receive" method="POST" class="mb-3">
+      <button class="btn btn-success" type="submit">Mark Received</button>
+    </form>
+    <% } %>
+    <table class="table">
+      <thead><tr><th>Ingredient</th><th>Qty</th><th>Unit</th><th></th></tr></thead>
+      <tbody>
+        <% items.forEach(it => { %>
+        <tr>
+          <td><%= it.ingredient_name %></td>
+          <td><%= it.quantity %></td>
+          <td><%= it.unit || '' %></td>
+          <td>
+            <form action="/admin/purchase-order-items/delete" method="POST" onsubmit="return confirm('Delete item?');">
+              <input type="hidden" name="id" value="<%= it.id %>">
+              <input type="hidden" name="order_id" value="<%= order.id %>">
+              <button class="btn btn-secondary btn-sm" type="submit">Delete</button>
+            </form>
+          </td>
+        </tr>
+        <% }) %>
+        <tr>
+          <form action="/admin/purchase-order-items" method="POST" class="row g-2">
+            <input type="hidden" name="purchase_order_id" value="<%= order.id %>">
+            <td>
+              <select class="form-select" name="ingredient_id" required>
+                <option value="">Ingredient</option>
+                <% ingredients.forEach(i => { %>
+                <option value="<%= i.id %>"><%= i.name %></option>
+                <% }) %>
+              </select>
+            </td>
+            <td><input class="form-control" type="number" step="0.01" name="quantity" value="0" required></td>
+            <td>
+              <select class="form-select" name="unit_id">
+                <option value="">Unit</option>
+                <% units.forEach(u => { %>
+                <option value="<%= u.id %>"><%= u.abbreviation %></option>
+                <% }) %>
+              </select>
+            </td>
+            <td><button class="btn btn-primary btn-sm" type="submit">Add</button></td>
+          </form>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>
