@@ -26,14 +26,14 @@
         <button type="submit" class="btn btn-primary btn-sm">Save</button>
       </form>
     </div>
-    <div class="employees-pane" id="schedulePane">
-      <div class="row">
-        <div class="col-md-3">
-          <ul id="employeeList" class="list-group employee-list"></ul>
-        </div>
-        <div class="col-md-9">
-          <div id="scheduleGrid" class="table-responsive">
-            <table class="table table-bordered schedule-table" id="scheduleTable">
+      <div class="employees-pane" id="schedulePane">
+        <div class="row">
+          <div class="col-md-3">
+            <ul id="employeeList" class="list-group employee-list"></ul>
+          </div>
+          <div class="col-md-9">
+            <div id="scheduleGrid" class="table-responsive">
+              <table class="table table-bordered schedule-table" id="scheduleTable">
               <thead>
                 <tr>
                   <th>Time</th>
@@ -56,14 +56,43 @@
                 </tr>
                 <% } %>
               </tbody>
-            </table>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div id="scheduleModal" class="modal d-none">
+          <div class="modal-content modal-small">
+            <button id="scheduleModalClose" class="btn-secondary">Close</button>
+            <form id="scheduleForm">
+              <input type="hidden" name="employeeId" />
+              <div class="mb-2">
+                <label class="form-label">Day</label>
+                <select name="day" class="form-select form-select-sm">
+                  <option value="0">Mon</option>
+                  <option value="1">Tue</option>
+                  <option value="2">Wed</option>
+                  <option value="3">Thu</option>
+                  <option value="4">Fri</option>
+                  <option value="5">Sat</option>
+                  <option value="6">Sun</option>
+                </select>
+              </div>
+              <div class="mb-2">
+                <label class="form-label">Start</label>
+                <select name="start" class="form-select form-select-sm"></select>
+              </div>
+              <div class="mb-2">
+                <label class="form-label">End</label>
+                <select name="end" class="form-select form-select-sm"></select>
+              </div>
+              <button type="submit" class="btn btn-primary btn-sm">Save</button>
+            </form>
           </div>
         </div>
       </div>
+      <div class="employees-pane" id="hierarchyPane">
+        <p>Coming soon...</p>
+      </div>
     </div>
-    <div class="employees-pane" id="hierarchyPane">
-      <p>Coming soon...</p>
-    </div>
-  </div>
 </div>
 <script defer src="/employeesTab.js"></script>
