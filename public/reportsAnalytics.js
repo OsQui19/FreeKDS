@@ -1,3 +1,7 @@
+let salesChart;
+let usageChart;
+let categoryChart;
+
 function loadReports() {
   const salesEl = document.getElementById('salesChart');
   const usageEl = document.getElementById('usageChart');
@@ -24,7 +28,8 @@ function loadReports() {
       const margin = data.sales.map((r) => r.margin);
       const roi = data.sales.map((r) => r.roi);
 
-      new Chart(salesEl, {
+      if (salesChart) salesChart.destroy();
+      salesChart = new Chart(salesEl, {
         type: 'line',
         data: {
           labels,
@@ -45,9 +50,10 @@ function loadReports() {
       }
 
       if (usageEl) {
+        if (usageChart) usageChart.destroy();
         const usageLabels = data.usage.map((u) => u.name);
         const usageData = data.usage.map((u) => u.total);
-        new Chart(usageEl, {
+        usageChart = new Chart(usageEl, {
           type: 'bar',
           data: {
             labels: usageLabels,
@@ -61,13 +67,15 @@ function loadReports() {
 
       const catLabels = data.categorySales.map((c) => c.name);
       const catTotals = data.categorySales.map((c) => c.total);
-      new Chart(catEl, {
+      if (categoryChart) categoryChart.destroy();
+      categoryChart = new Chart(catEl, {
         type: 'bar',
         data: { labels: catLabels, datasets: [{ label: 'Sales', data: catTotals }] },
         options: { scales: { y: { beginAtZero: true } } },
       });
 
       if (topBody) {
+        topBody.innerHTML = '';
         data.topItems.forEach((it) => {
           const tr = document.createElement('tr');
           tr.innerHTML = `<td>${it.name}</td><td>${it.qty}</td><td>$${parseFloat(it.revenue).toFixed(2)}</td>`;
@@ -75,6 +83,7 @@ function loadReports() {
         });
       }
       if (lowBody) {
+        lowBody.innerHTML = '';
         data.lowStock.forEach((it) => {
           const tr = document.createElement('tr');
           tr.innerHTML = `<td>${it.name}</td><td>${it.quantity}</td><td>${it.unit || ''}</td>`;
@@ -90,3 +99,6 @@ if (document.readyState === 'loading') {
 } else {
   loadReports();
 }
+
+// refresh data every minute for near real-time updates
+setInterval(loadReports, 60000);
