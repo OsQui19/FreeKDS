@@ -1,6 +1,7 @@
 const express = require('express');
 const { updateItemModifiers, updateItemGroups, getMenuData, getStations, getIngredients, getUnits, updateItemIngredients, getSalesTotals, getIngredientUsage, getSuppliers, getLocations, getPurchaseOrders, getPurchaseOrderItems, receivePurchaseOrder } = require('../controllers/dbHelpers');
 const settingsCache = require('../controllers/settingsCache');
+const { convert } = require('../controllers/unitConversion');
 
 module.exports = (db, io) => {
   const router = express.Router();
@@ -534,6 +535,7 @@ module.exports = (db, io) => {
   });
 });
 
+<<<<<<< ours
   // Suppliers
   router.get('/admin/suppliers', async (req, res) => {
     try {
@@ -541,10 +543,27 @@ module.exports = (db, io) => {
       res.render('admin/suppliers', { suppliers });
     } catch (err) {
       console.error('Error fetching suppliers:', err);
+=======
+  router.get('/admin/purchase-orders', async (req, res) => {
+    try {
+      const [orders] = await db.promise().query(
+        `SELECT po.*, s.name AS supplier_name, l.name AS location_name
+           FROM purchase_orders po
+           JOIN suppliers s ON po.supplier_id = s.id
+           LEFT JOIN inventory_locations l ON po.location_id = l.id
+          ORDER BY po.id DESC`
+      );
+      const [suppliers] = await db.promise().query('SELECT * FROM suppliers ORDER BY name');
+      const [locations] = await db.promise().query('SELECT * FROM inventory_locations ORDER BY name');
+      res.render('admin/purchase_orders', { orders, suppliers, locations });
+    } catch (err) {
+      console.error('Error fetching purchase orders:', err);
+>>>>>>> theirs
       res.status(500).send('DB Error');
     }
   });
 
+<<<<<<< ours
   router.post('/admin/suppliers', (req, res) => {
     const id = req.body.id;
     const name = req.body.name;
@@ -579,10 +598,67 @@ module.exports = (db, io) => {
       res.render('admin/locations', { locations });
     } catch (err) {
       console.error('Error fetching locations:', err);
+=======
+  router.post('/admin/purchase-orders', async (req, res) => {
+    try {
+      const { order_date, supplier_id, location_id } = req.body;
+      if (!order_date || !supplier_id) return res.redirect('/admin/purchase-orders');
+      await db.promise().query(
+        'INSERT INTO purchase_orders (order_date, supplier_id, location_id) VALUES (?, ?, ?)',
+        [order_date, supplier_id, location_id || null]
+      );
+      res.redirect('/admin/purchase-orders?msg=Order+created');
+    } catch (err) {
+      console.error('Error creating purchase order:', err);
       res.status(500).send('DB Error');
     }
   });
 
+  router.post('/admin/purchase-orders/delete', async (req, res) => {
+    const { id } = req.body;
+    if (!id) return res.redirect('/admin/purchase-orders');
+    try {
+      await db.promise().query('DELETE FROM purchase_orders WHERE id=?', [id]);
+      res.redirect('/admin/purchase-orders?msg=Order+deleted');
+    } catch (err) {
+      console.error('Error deleting order:', err);
+      res.status(500).send('DB Error');
+    }
+  });
+
+  router.get('/admin/purchase-orders/:id', async (req, res) => {
+    const orderId = parseInt(req.params.id, 10);
+    if (isNaN(orderId)) return res.redirect('/admin/purchase-orders');
+    try {
+      const [[order]] = await db.promise().query(
+        `SELECT po.*, s.name AS supplier_name, l.name AS location_name
+           FROM purchase_orders po
+           JOIN suppliers s ON po.supplier_id = s.id
+           LEFT JOIN inventory_locations l ON po.location_id = l.id
+          WHERE po.id=?`,
+        [orderId]
+      );
+      if (!order) return res.redirect('/admin/purchase-orders');
+      const [items] = await db.promise().query(
+        `SELECT poi.*, ing.name AS ingredient_name, u.abbreviation AS unit
+           FROM purchase_order_items poi
+           JOIN ingredients ing ON poi.ingredient_id = ing.id
+           LEFT JOIN units u ON poi.unit_id = u.id
+          WHERE poi.purchase_order_id=?
+          ORDER BY poi.id`,
+        [orderId]
+      );
+      const [ingredients] = await db.promise().query('SELECT id, name FROM ingredients ORDER BY name');
+      const [units] = await db.promise().query('SELECT id, abbreviation FROM units ORDER BY name');
+      res.render('admin/purchase_order_detail', { order, items, ingredients, units });
+    } catch (err) {
+      console.error('Error fetching order detail:', err);
+>>>>>>> theirs
+      res.status(500).send('DB Error');
+    }
+  });
+
+<<<<<<< ours
   router.post('/admin/locations', (req, res) => {
     const id = req.body.id;
     const name = req.body.name;
@@ -618,10 +694,68 @@ module.exports = (db, io) => {
       res.render('admin/purchase_orders', { orders, suppliers, locations });
     } catch (err) {
       console.error('Error fetching purchase orders:', err);
+=======
+  router.post('/admin/purchase-orders/:id/receive', async (req, res) => {
+    const orderId = parseInt(req.params.id, 10);
+    if (isNaN(orderId)) return res.redirect('/admin/purchase-orders');
+    try {
+      const [items] = await db.promise().query(
+        `SELECT poi.ingredient_id, poi.quantity, poi.unit_id, ing.unit_id AS ing_unit
+           FROM purchase_order_items poi
+           JOIN ingredients ing ON poi.ingredient_id = ing.id
+          WHERE poi.purchase_order_id=?`,
+        [orderId]
+      );
+      for (const it of items) {
+        let qty = parseFloat(it.quantity);
+        const conv = convert(qty, it.unit_id || it.ing_unit, it.ing_unit);
+        if (conv !== null) qty = conv;
+        await db.promise().query(
+          'UPDATE ingredients SET quantity = quantity + ? WHERE id=?',
+          [qty, it.ingredient_id]
+        );
+        await db.promise().query(
+          'INSERT INTO inventory_transactions (ingredient_id, type, quantity) VALUES (?, ?, ?)',
+          [it.ingredient_id, 'purchase', qty]
+        );
+      }
+      await db.promise().query('UPDATE purchase_orders SET status="received" WHERE id=?', [orderId]);
+      res.redirect(`/admin/purchase-orders/${orderId}?msg=Order+received`);
+    } catch (err) {
+      console.error('Error receiving order:', err);
       res.status(500).send('DB Error');
     }
   });
 
+  router.post('/admin/purchase-order-items', async (req, res) => {
+    const { purchase_order_id, ingredient_id, quantity, unit_id } = req.body;
+    if (!purchase_order_id || !ingredient_id || !quantity) return res.redirect(`/admin/purchase-orders/${purchase_order_id}`);
+    try {
+      await db.promise().query(
+        'INSERT INTO purchase_order_items (purchase_order_id, ingredient_id, quantity, unit_id) VALUES (?, ?, ?, ?)',
+        [purchase_order_id, ingredient_id, quantity, unit_id || null]
+      );
+      res.redirect(`/admin/purchase-orders/${purchase_order_id}?msg=Item+added`);
+    } catch (err) {
+      console.error('Error adding order item:', err);
+      res.status(500).send('DB Error');
+    }
+  });
+
+  router.post('/admin/purchase-order-items/delete', async (req, res) => {
+    const { id, order_id } = req.body;
+    if (!id) return res.redirect(`/admin/purchase-orders/${order_id}`);
+    try {
+      await db.promise().query('DELETE FROM purchase_order_items WHERE id=?', [id]);
+      res.redirect(`/admin/purchase-orders/${order_id}?msg=Item+deleted`);
+    } catch (err) {
+      console.error('Error deleting order item:', err);
+>>>>>>> theirs
+      res.status(500).send('DB Error');
+    }
+  });
+
+<<<<<<< ours
   router.post('/admin/purchase-orders', (req, res) => {
     const supplier = req.body.supplier_id;
     const location = req.body.location_id || null;
@@ -645,10 +779,35 @@ module.exports = (db, io) => {
       res.render('admin/purchase_order_detail', { order, items, ingredients, units });
     } catch (err) {
       console.error('Error fetching order detail:', err);
+=======
+  router.get('/admin/suppliers', async (req, res) => {
+    try {
+      const [suppliers] = await db.promise().query('SELECT * FROM suppliers ORDER BY name');
+      res.render('admin/suppliers', { suppliers });
+    } catch (err) {
+      console.error('Error fetching suppliers:', err);
       res.status(500).send('DB Error');
     }
   });
 
+  router.post('/admin/suppliers', async (req, res) => {
+    const { id, name, contact_info } = req.body;
+    if (!name) return res.redirect('/admin/suppliers');
+    try {
+      if (id) {
+        await db.promise().query('UPDATE suppliers SET name=?, contact_info=? WHERE id=?', [name, contact_info || null, id]);
+      } else {
+        await db.promise().query('INSERT INTO suppliers (name, contact_info) VALUES (?, ?)', [name, contact_info || null]);
+      }
+      res.redirect('/admin/suppliers?msg=Supplier+saved');
+    } catch (err) {
+      console.error('Error saving supplier:', err);
+>>>>>>> theirs
+      res.status(500).send('DB Error');
+    }
+  });
+
+<<<<<<< ours
   router.post('/admin/purchase-orders/:id/receive', async (req, res) => {
     const id = req.params.id;
     try {
@@ -656,10 +815,21 @@ module.exports = (db, io) => {
       res.redirect(`/admin/purchase-orders/${id}?msg=Order+received`);
     } catch (err) {
       console.error('Error receiving order:', err);
+=======
+  router.post('/admin/suppliers/delete', async (req, res) => {
+    const { id } = req.body;
+    if (!id) return res.redirect('/admin/suppliers');
+    try {
+      await db.promise().query('DELETE FROM suppliers WHERE id=?', [id]);
+      res.redirect('/admin/suppliers?msg=Supplier+deleted');
+    } catch (err) {
+      console.error('Error deleting supplier:', err);
+>>>>>>> theirs
       res.status(500).send('DB Error');
     }
   });
 
+<<<<<<< ours
   router.post('/admin/purchase-orders/delete', (req, res) => {
     const id = req.body.id;
     if (!id) return res.redirect('/admin/purchase-orders');
@@ -689,6 +859,44 @@ module.exports = (db, io) => {
       if (err) console.error('Error deleting PO item:', err);
       res.redirect(`/admin/purchase-orders/${orderId}`);
     });
+=======
+  router.get('/admin/locations', async (req, res) => {
+    try {
+      const [locations] = await db.promise().query('SELECT * FROM inventory_locations ORDER BY name');
+      res.render('admin/locations', { locations });
+    } catch (err) {
+      console.error('Error fetching locations:', err);
+      res.status(500).send('DB Error');
+    }
+  });
+
+  router.post('/admin/locations', async (req, res) => {
+    const { id, name } = req.body;
+    if (!name) return res.redirect('/admin/locations');
+    try {
+      if (id) {
+        await db.promise().query('UPDATE inventory_locations SET name=? WHERE id=?', [name, id]);
+      } else {
+        await db.promise().query('INSERT INTO inventory_locations (name) VALUES (?)', [name]);
+      }
+      res.redirect('/admin/locations?msg=Location+saved');
+    } catch (err) {
+      console.error('Error saving location:', err);
+      res.status(500).send('DB Error');
+    }
+  });
+
+  router.post('/admin/locations/delete', async (req, res) => {
+    const { id } = req.body;
+    if (!id) return res.redirect('/admin/locations');
+    try {
+      await db.promise().query('DELETE FROM inventory_locations WHERE id=?', [id]);
+      res.redirect('/admin/locations?msg=Location+deleted');
+    } catch (err) {
+      console.error('Error deleting location:', err);
+      res.status(500).send('DB Error');
+    }
+>>>>>>> theirs
   });
 
   return router;
