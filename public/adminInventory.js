@@ -19,7 +19,9 @@ function initAdminInventory() {
     });
   }
   document
-    .querySelectorAll(".ingredient-list form, #transaction-form")
+    .querySelectorAll(
+      ".ingredient-list form, .category-list form, #transaction-form",
+    )
     .forEach(handleForm);
 
   const logForm = document.getElementById("logRangeForm");
