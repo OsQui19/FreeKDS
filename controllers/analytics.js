@@ -27,7 +27,13 @@ async function fetchSalesTotals(db, start, end) {
     if (!map[r.date]) map[r.date] = { date: r.date, total: 0, cost: r.cost };
     else map[r.date].cost = r.cost;
   });
-  return Object.values(map).sort((a, b) => new Date(a.date) - new Date(b.date));
+  const list = Object.values(map).sort((a, b) => new Date(a.date) - new Date(b.date));
+  list.forEach((r) => {
+    r.profit = (r.total || 0) - (r.cost || 0);
+    r.margin = r.total ? (r.profit / r.total) * 100 : 0;
+    r.roi = r.cost ? (r.profit / r.cost) * 100 : 0;
+  });
+  return list;
 }
 
 async function fetchIngredientUsage(db, start, end) {

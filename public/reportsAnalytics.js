@@ -1,8 +1,11 @@
 function loadReports() {
   const salesEl = document.getElementById('salesChart');
+  const usageEl = document.getElementById('usageChart');
   const catEl = document.getElementById('categoryChart');
   const topBody = document.getElementById('topItemsBody');
   const lowBody = document.getElementById('lowStockBody');
+  const marginEl = document.getElementById('profitMarginVal');
+  const roiEl = document.getElementById('roiVal');
   if (!salesEl || !catEl) return;
 
   function fmt(d) {
@@ -17,6 +20,10 @@ function loadReports() {
       const labels = data.sales.map((r) => r.date);
       const revenue = data.sales.map((r) => r.total);
       const cost = data.sales.map((r) => r.cost);
+      const profit = data.sales.map((r) => r.profit);
+      const margin = data.sales.map((r) => r.margin);
+      const roi = data.sales.map((r) => r.roi);
+
       new Chart(salesEl, {
         type: 'line',
         data: {
@@ -24,10 +31,33 @@ function loadReports() {
           datasets: [
             { label: 'Revenue', data: revenue, borderColor: 'blue', fill: false },
             { label: 'Cost', data: cost, borderColor: 'red', fill: false },
+            { label: 'Profit', data: profit, borderColor: 'green', fill: false },
           ],
         },
         options: { scales: { y: { beginAtZero: true } } },
       });
+
+      if (marginEl) {
+        marginEl.textContent = margin[margin.length - 1].toFixed(2);
+      }
+      if (roiEl) {
+        roiEl.textContent = roi[roi.length - 1].toFixed(2);
+      }
+
+      if (usageEl) {
+        const usageLabels = data.usage.map((u) => u.name);
+        const usageData = data.usage.map((u) => u.total);
+        new Chart(usageEl, {
+          type: 'bar',
+          data: {
+            labels: usageLabels,
+            datasets: [
+              { label: 'Total Used', data: usageData, backgroundColor: 'green' },
+            ],
+          },
+          options: { scales: { y: { beginAtZero: true } } },
+        });
+      }
 
       const catLabels = data.categorySales.map((c) => c.name);
       const catTotals = data.categorySales.map((c) => c.total);
