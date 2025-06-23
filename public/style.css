@@ -580,21 +580,16 @@ body.admin-screen {
     padding-right: 0;
   }
 }
-/* Inventory grid */
-.ingredient-list .header-row,
-.ingredient-list .ing-row {
-  display: grid;
-  grid-template-columns: 2fr 1fr 0.8fr 1fr 0.8fr auto auto auto;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-.ingredient-list .ing-row form {
+/* Inventory table */
+.ingredient-table form {
   display: contents;
 }
-
-.ingredient-list input.form-control {
+.ingredient-table input.form-control {
   padding: 2px 4px;
+}
+.ingredient-table th,
+.ingredient-table td {
+  vertical-align: middle;
 }
 /* Inventory tabs */
 .inventory-tabs .nav-tabs {
