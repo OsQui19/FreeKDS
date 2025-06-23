@@ -303,6 +303,51 @@ async function getIngredientUsage(db, start, end) {
   return rows;
 }
 
+async function getSuppliers(db) {
+  const [rows] = await db.promise().query('SELECT * FROM suppliers ORDER BY name');
+  return rows;
+}
+
+async function getLocations(db) {
+  const [rows] = await db.promise().query('SELECT * FROM inventory_locations ORDER BY name');
+  return rows;
+}
+
+async function getPurchaseOrders(db) {
+  const sql = `SELECT po.*, s.name AS supplier_name, l.name AS location_name
+               FROM purchase_orders po
+               LEFT JOIN suppliers s ON po.supplier_id = s.id
+               LEFT JOIN inventory_locations l ON po.location_id = l.id
+               ORDER BY po.order_date DESC, po.id DESC`;
+  const [rows] = await db.promise().query(sql);
+  return rows;
+}
+
+async function getPurchaseOrderItems(db, orderId) {
+  const sql = `SELECT poi.*, ing.name AS ingredient_name, u.abbreviation AS unit
+               FROM purchase_order_items poi
+               JOIN ingredients ing ON poi.ingredient_id = ing.id
+               LEFT JOIN units u ON poi.unit_id = u.id
+               WHERE poi.purchase_order_id=?`;
+  const [rows] = await db.promise().query(sql, [orderId]);
+  return rows;
+}
+
+async function receivePurchaseOrder(db, orderId) {
+  const items = await getPurchaseOrderItems(db, orderId);
+  for (const it of items) {
+    await db.promise().query(
+      'UPDATE ingredients SET quantity=quantity+? WHERE id=?',
+      [it.quantity, it.ingredient_id]
+    );
+    await db.promise().query(
+      'INSERT INTO inventory_transactions (ingredient_id, type, quantity) VALUES (?, "purchase", ?)',
+      [it.ingredient_id, it.quantity]
+    );
+  }
+  await db.promise().query('UPDATE purchase_orders SET status="received" WHERE id=?', [orderId]);
+}
+
 module.exports = {
   updateItemModifiers,
   updateItemGroups,
@@ -315,5 +360,10 @@ module.exports = {
   getUnits,
   logInventoryForOrder,
   getSalesTotals,
-  getIngredientUsage
+  getIngredientUsage,
+  getSuppliers,
+  getLocations,
+  getPurchaseOrders,
+  getPurchaseOrderItems,
+  receivePurchaseOrder
 };
