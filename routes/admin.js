@@ -535,7 +535,6 @@ module.exports = (db, io) => {
   });
 });
 
-<<<<<<< ours
   // Suppliers
   router.get('/admin/suppliers', async (req, res) => {
     try {
@@ -543,7 +542,9 @@ module.exports = (db, io) => {
       res.render('admin/suppliers', { suppliers });
     } catch (err) {
       console.error('Error fetching suppliers:', err);
-=======
+      res.status(500).send('DB Error');
+    }
+  });
   router.get('/admin/purchase-orders', async (req, res) => {
     try {
       const [orders] = await db.promise().query(
@@ -558,12 +559,10 @@ module.exports = (db, io) => {
       res.render('admin/purchase_orders', { orders, suppliers, locations });
     } catch (err) {
       console.error('Error fetching purchase orders:', err);
->>>>>>> theirs
       res.status(500).send('DB Error');
     }
   });
 
-<<<<<<< ours
   router.post('/admin/suppliers', (req, res) => {
     const id = req.body.id;
     const name = req.body.name;
@@ -598,7 +597,10 @@ module.exports = (db, io) => {
       res.render('admin/locations', { locations });
     } catch (err) {
       console.error('Error fetching locations:', err);
-=======
+      res.status(500).send('DB Error');
+    }
+  });
+
   router.post('/admin/purchase-orders', async (req, res) => {
     try {
       const { order_date, supplier_id, location_id } = req.body;
@@ -653,12 +655,10 @@ module.exports = (db, io) => {
       res.render('admin/purchase_order_detail', { order, items, ingredients, units });
     } catch (err) {
       console.error('Error fetching order detail:', err);
->>>>>>> theirs
       res.status(500).send('DB Error');
     }
   });
 
-<<<<<<< ours
   router.post('/admin/locations', (req, res) => {
     const id = req.body.id;
     const name = req.body.name;
@@ -694,7 +694,10 @@ module.exports = (db, io) => {
       res.render('admin/purchase_orders', { orders, suppliers, locations });
     } catch (err) {
       console.error('Error fetching purchase orders:', err);
-=======
+      res.status(500).send('DB Error');
+    }
+  });
+
   router.post('/admin/purchase-orders/:id/receive', async (req, res) => {
     const orderId = parseInt(req.params.id, 10);
     if (isNaN(orderId)) return res.redirect('/admin/purchase-orders');
@@ -750,12 +753,10 @@ module.exports = (db, io) => {
       res.redirect(`/admin/purchase-orders/${order_id}?msg=Item+deleted`);
     } catch (err) {
       console.error('Error deleting order item:', err);
->>>>>>> theirs
       res.status(500).send('DB Error');
     }
   });
 
-<<<<<<< ours
   router.post('/admin/purchase-orders', (req, res) => {
     const supplier = req.body.supplier_id;
     const location = req.body.location_id || null;
@@ -779,7 +780,9 @@ module.exports = (db, io) => {
       res.render('admin/purchase_order_detail', { order, items, ingredients, units });
     } catch (err) {
       console.error('Error fetching order detail:', err);
-=======
+      res.status(500).send('DB Error');
+    }
+  });
   router.get('/admin/suppliers', async (req, res) => {
     try {
       const [suppliers] = await db.promise().query('SELECT * FROM suppliers ORDER BY name');
@@ -802,12 +805,10 @@ module.exports = (db, io) => {
       res.redirect('/admin/suppliers?msg=Supplier+saved');
     } catch (err) {
       console.error('Error saving supplier:', err);
->>>>>>> theirs
       res.status(500).send('DB Error');
     }
   });
 
-<<<<<<< ours
   router.post('/admin/purchase-orders/:id/receive', async (req, res) => {
     const id = req.params.id;
     try {
@@ -815,7 +816,9 @@ module.exports = (db, io) => {
       res.redirect(`/admin/purchase-orders/${id}?msg=Order+received`);
     } catch (err) {
       console.error('Error receiving order:', err);
-=======
+      res.status(500).send('DB Error');
+    }
+  });
   router.post('/admin/suppliers/delete', async (req, res) => {
     const { id } = req.body;
     if (!id) return res.redirect('/admin/suppliers');
@@ -824,12 +827,10 @@ module.exports = (db, io) => {
       res.redirect('/admin/suppliers?msg=Supplier+deleted');
     } catch (err) {
       console.error('Error deleting supplier:', err);
->>>>>>> theirs
       res.status(500).send('DB Error');
     }
   });
 
-<<<<<<< ours
   router.post('/admin/purchase-orders/delete', (req, res) => {
     const id = req.body.id;
     if (!id) return res.redirect('/admin/purchase-orders');
@@ -859,7 +860,7 @@ module.exports = (db, io) => {
       if (err) console.error('Error deleting PO item:', err);
       res.redirect(`/admin/purchase-orders/${orderId}`);
     });
-=======
+  });
   router.get('/admin/locations', async (req, res) => {
     try {
       const [locations] = await db.promise().query('SELECT * FROM inventory_locations ORDER BY name');
@@ -896,7 +897,6 @@ module.exports = (db, io) => {
       console.error('Error deleting location:', err);
       res.status(500).send('DB Error');
     }
->>>>>>> theirs
   });
 
   return router;
