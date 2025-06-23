@@ -377,110 +377,6 @@ async function logInventoryForOrder(db, orderId, items) {
   }
 }
 
-function formatDateTime(dt) {
-  if (typeof dt === "string") dt = new Date(dt);
-  return dt.toISOString().slice(0, 19).replace("T", " ");
-}
-
-async function getSalesTotals(db, start, end) {
-  const endDate = end ? new Date(end) : new Date();
-  const startDate = start
-    ? new Date(start)
-    : new Date(endDate.getTime() - 29 * 86400000);
-  const salesSql = `SELECT DATE(o.created_at) AS date, SUM(mi.price * oi.quantity) AS total
-                    FROM orders o
-                    JOIN order_items oi ON o.id = oi.order_id
-                    JOIN menu_items mi ON oi.menu_item_id = mi.id
-                    WHERE o.created_at BETWEEN ? AND ?
-                    GROUP BY DATE(o.created_at)`;
-  const costSql = `SELECT DATE(l.created_at) AS date, SUM(l.amount * ing.cost) AS cost
-                   FROM inventory_log l
-                   JOIN ingredients ing ON l.ingredient_id = ing.id
-                   WHERE l.created_at BETWEEN ? AND ?
-                   GROUP BY DATE(l.created_at)`;
-  const [salesRows] = await db
-    .promise()
-    .query(salesSql, [formatDateTime(startDate), formatDateTime(endDate)]);
-  const [costRows] = await db
-    .promise()
-    .query(costSql, [formatDateTime(startDate), formatDateTime(endDate)]);
-  const map = {};
-  salesRows.forEach((r) => {
-    map[r.date] = { date: r.date, total: r.total, cost: 0 };
-  });
-  costRows.forEach((r) => {
-    if (!map[r.date]) map[r.date] = { date: r.date, total: 0, cost: r.cost };
-    else map[r.date].cost = r.cost;
-  });
-  return Object.values(map).sort((a, b) => new Date(a.date) - new Date(b.date));
-}
-
-async function getIngredientUsage(db, start, end) {
-  const endDate = end ? new Date(end) : new Date();
-  const startDate = start
-    ? new Date(start)
-    : new Date(endDate.getTime() - 29 * 86400000);
-  const sql = `SELECT ing.name, SUM(l.amount) AS total
-               FROM inventory_log l
-               JOIN ingredients ing ON l.ingredient_id = ing.id
-               WHERE l.created_at BETWEEN ? AND ?
-               GROUP BY ing.id
-               ORDER BY ing.name`;
-  const [rows] = await db
-    .promise()
-    .query(sql, [formatDateTime(startDate), formatDateTime(endDate)]);
-  return rows;
-}
-
-async function getTopMenuItems(db, start, end, limit = 10) {
-  const endDate = end ? new Date(end) : new Date();
-  const startDate = start
-    ? new Date(start)
-    : new Date(endDate.getTime() - 29 * 86400000);
-  const sql = `SELECT mi.name, SUM(oi.quantity) AS qty,
-                      SUM(mi.price * oi.quantity) AS revenue
-                 FROM orders o
-                 JOIN order_items oi ON o.id = oi.order_id
-                 JOIN menu_items mi ON oi.menu_item_id = mi.id
-                WHERE o.created_at BETWEEN ? AND ?
-                GROUP BY mi.id
-                ORDER BY revenue DESC
-                LIMIT ?`;
-  const [rows] = await db
-    .promise()
-    .query(sql, [formatDateTime(startDate), formatDateTime(endDate), limit]);
-  return rows;
-}
-
-async function getCategorySales(db, start, end) {
-  const endDate = end ? new Date(end) : new Date();
-  const startDate = start
-    ? new Date(start)
-    : new Date(endDate.getTime() - 29 * 86400000);
-  const sql = `SELECT c.name, SUM(mi.price * oi.quantity) AS total
-                 FROM orders o
-                 JOIN order_items oi ON o.id = oi.order_id
-                 JOIN menu_items mi ON oi.menu_item_id = mi.id
-                 JOIN categories c ON mi.category_id = c.id
-                WHERE o.created_at BETWEEN ? AND ?
-                GROUP BY c.id
-                ORDER BY c.name`;
-  const [rows] = await db
-    .promise()
-    .query(sql, [formatDateTime(startDate), formatDateTime(endDate)]);
-  return rows;
-}
-
-async function getLowStockIngredients(db, threshold = 5) {
-  const sql = `SELECT ing.name, ing.quantity, u.abbreviation AS unit
-                 FROM ingredients ing
-                 LEFT JOIN units u ON ing.unit_id = u.id
-                WHERE ing.quantity <= ?
-                ORDER BY ing.quantity ASC, ing.name`;
-  const [rows] = await db.promise().query(sql, [threshold]);
-  return rows;
-}
-
 async function getSuppliers(db) {
   const [rows] = await db
     .promise()
@@ -551,11 +447,6 @@ module.exports = {
   updateItemIngredients,
   getUnits,
   logInventoryForOrder,
-  getSalesTotals,
-  getIngredientUsage,
-  getTopMenuItems,
-  getCategorySales,
-  getLowStockIngredients,
   getSuppliers,
   getLocations,
   getPurchaseOrders,

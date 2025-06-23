@@ -9,17 +9,19 @@ const {
   getItemCategories,
   getTags,
   updateItemIngredients,
-  getSalesTotals,
-  getIngredientUsage,
-  getTopMenuItems,
-  getCategorySales,
-  getLowStockIngredients,
   getSuppliers,
   getLocations,
   getPurchaseOrders,
   getPurchaseOrderItems,
   receivePurchaseOrder,
 } = require("../controllers/dbHelpers");
+const {
+  fetchSalesTotals,
+  fetchIngredientUsage,
+  fetchTopMenuItems,
+  fetchCategorySales,
+  fetchLowStockIngredients,
+} = require("../controllers/analytics");
 const settingsCache = require("../controllers/settingsCache");
 const { convert } = require("../controllers/unitConversion");
 
@@ -554,8 +556,8 @@ module.exports = (db, io) => {
   router.get("/admin/inventory/stats", async (req, res) => {
     try {
       const { start, end } = req.query;
-      const sales = await getSalesTotals(db, start, end);
-      const usage = await getIngredientUsage(db, start, end);
+      const sales = await fetchSalesTotals(db, start, end);
+      const usage = await fetchIngredientUsage(db, start, end);
       res.json({ sales, usage });
     } catch (err) {
       console.error("Error fetching inventory stats:", err);
@@ -566,11 +568,11 @@ module.exports = (db, io) => {
   router.get("/admin/reports/data", async (req, res) => {
     try {
       const { start, end } = req.query;
-      const sales = await getSalesTotals(db, start, end);
-      const usage = await getIngredientUsage(db, start, end);
-      const topItems = await getTopMenuItems(db, start, end);
-      const categorySales = await getCategorySales(db, start, end);
-      const lowStock = await getLowStockIngredients(db);
+      const sales = await fetchSalesTotals(db, start, end);
+      const usage = await fetchIngredientUsage(db, start, end);
+      const topItems = await fetchTopMenuItems(db, start, end);
+      const categorySales = await fetchCategorySales(db, start, end);
+      const lowStock = await fetchLowStockIngredients(db);
       res.json({ sales, usage, topItems, categorySales, lowStock });
     } catch (err) {
       console.error("Error fetching reports data:", err);
