@@ -6,6 +6,8 @@ const {
   getStations,
   getIngredients,
   getUnits,
+  getItemCategories,
+  getTags,
   updateItemIngredients,
   getSalesTotals,
   getIngredientUsage,
@@ -32,6 +34,8 @@ module.exports = (db, io) => {
       } = await getMenuData(db);
       const stationRows = await getStations(db);
       const allIngredients = await getIngredients(db);
+      const itemCategories = await getItemCategories(db);
+      const tags = await getTags(db);
       const unitRows = await getUnits(db);
       const [logRows] = await db.promise()
         .query(`SELECT l.*, mi.name AS item_name, ing.name AS ingredient_name, u.abbreviation AS unit
@@ -66,6 +70,8 @@ module.exports = (db, io) => {
         mods,
         modGroups,
         ingredients: allIngredients,
+        itemCategories,
+        tags,
         publicIngredients,
         logs: logRows,
         summary,
@@ -370,6 +376,14 @@ module.exports = (db, io) => {
     const name = req.body.name;
     const unitIdRaw = req.body.unit_id;
     const unit = unitIdRaw ? parseInt(unitIdRaw, 10) : null;
+    const catRaw = req.body.category_id;
+    const categoryId = catRaw ? parseInt(catRaw, 10) : null;
+    let tagIds = req.body.tag_ids
+      ? Array.isArray(req.body.tag_ids)
+        ? req.body.tag_ids
+        : [req.body.tag_ids]
+      : [];
+    tagIds = tagIds.map((t) => parseInt(t, 10)).filter((t) => !isNaN(t));
     const sku = req.body.sku || null;
     let cost = parseFloat(req.body.cost);
     if (isNaN(cost)) cost = 0;
@@ -377,22 +391,49 @@ module.exports = (db, io) => {
     if (isNaN(qty)) qty = 0;
     const isPublic = req.body.is_public ? 1 : 0;
     if (!name) return res.redirect("/admin?tab=inventory");
+
+    const saveTags = (ingId, cb) => {
+      db.query(
+        "DELETE FROM ingredient_tags WHERE ingredient_id=?",
+        [ingId],
+        (err) => {
+          if (err) console.error(err);
+          if (tagIds.length === 0) return cb();
+          const values = tagIds.map((tid) => [ingId, tid]);
+          db.query(
+            "INSERT INTO ingredient_tags (ingredient_id, tag_id) VALUES ?",
+            [values],
+            (err2) => {
+              if (err2) console.error(err2);
+              cb();
+            },
+          );
+        },
+      );
+    };
     if (id) {
       db.query(
-        "UPDATE ingredients SET name=?, quantity=?, unit_id=?, sku=?, cost=?, is_public=? WHERE id=?",
-        [name, qty, unit, sku, cost, isPublic, id],
+        "UPDATE ingredients SET name=?, quantity=?, unit_id=?, category_id=?, sku=?, cost=?, is_public=? WHERE id=?",
+        [name, qty, unit, categoryId, sku, cost, isPublic, id],
         (err) => {
           if (err) console.error("Error updating ingredient:", err);
-          res.redirect("/admin?tab=inventory&msg=Ingredient+saved");
+          saveTags(id, () => {
+            res.redirect("/admin?tab=inventory&msg=Ingredient+saved");
+          });
         },
       );
     } else {
       db.query(
-        "INSERT INTO ingredients (name, quantity, unit_id, sku, cost, is_public) VALUES (?, ?, ?, ?, ?, ?)",
-        [name, qty, unit, sku, cost, isPublic],
-        (err) => {
-          if (err) console.error("Error inserting ingredient:", err);
-          res.redirect("/admin?tab=inventory&msg=Ingredient+saved");
+        "INSERT INTO ingredients (name, quantity, unit_id, category_id, sku, cost, is_public) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        [name, qty, unit, categoryId, sku, cost, isPublic],
+        (err, result) => {
+          if (err) {
+            console.error("Error inserting ingredient:", err);
+            return res.redirect("/admin?tab=inventory");
+          }
+          saveTags(result.insertId, () => {
+            res.redirect("/admin?tab=inventory&msg=Ingredient+saved");
+          });
         },
       );
     }
@@ -404,6 +445,72 @@ module.exports = (db, io) => {
     db.query("DELETE FROM ingredients WHERE id=?", [id], (err) => {
       if (err) console.error("Error deleting ingredient:", err);
       res.redirect("/admin?tab=inventory&msg=Ingredient+deleted");
+    });
+  });
+
+  router.post("/admin/item-categories", (req, res) => {
+    const { id, name, parent_id } = req.body;
+    if (!name) return res.redirect("/admin?tab=inventory");
+    if (id) {
+      db.query(
+        "UPDATE item_categories SET name=?, parent_id=? WHERE id=?",
+        [name, parent_id || null, id],
+        (err) => {
+          if (err) console.error("Error updating item category:", err);
+          res.redirect("/admin?tab=inventory&msg=Category+saved");
+        },
+      );
+    } else {
+      db.query(
+        "INSERT INTO item_categories (name, parent_id) VALUES (?, ?)",
+        [name, parent_id || null],
+        (err) => {
+          if (err) console.error("Error inserting item category:", err);
+          res.redirect("/admin?tab=inventory&msg=Category+saved");
+        },
+      );
+    }
+  });
+
+  router.post("/admin/item-categories/delete", (req, res) => {
+    const { id } = req.body;
+    if (!id) return res.redirect("/admin?tab=inventory");
+    db.query("DELETE FROM item_categories WHERE id=?", [id], (err) => {
+      if (err) console.error("Error deleting item category:", err);
+      res.redirect("/admin?tab=inventory&msg=Category+deleted");
+    });
+  });
+
+  router.post("/admin/tags", (req, res) => {
+    const { id, name } = req.body;
+    if (!name) return res.redirect("/admin?tab=inventory");
+    if (id) {
+      db.query(
+        "UPDATE tags SET name=? WHERE id=?",
+        [name, id],
+        (err) => {
+          if (err) console.error("Error updating tag:", err);
+          res.redirect("/admin?tab=inventory&msg=Tag+saved");
+        },
+      );
+    } else {
+      db.query(
+        "INSERT INTO tags (name) VALUES (?)",
+        [name],
+        (err) => {
+          if (err) console.error("Error inserting tag:", err);
+          res.redirect("/admin?tab=inventory&msg=Tag+saved");
+        },
+      );
+    }
+  });
+
+  router.post("/admin/tags/delete", (req, res) => {
+    const { id } = req.body;
+    if (!id) return res.redirect("/admin?tab=inventory");
+    db.query("DELETE FROM tags WHERE id=?", [id], (err) => {
+      if (err) console.error("Error deleting tag:", err);
+      res.redirect("/admin?tab=inventory&msg=Tag+deleted");
     });
   });
   router.post("/admin/inventory/transactions", (req, res) => {
@@ -665,6 +772,8 @@ module.exports = (db, io) => {
   router.get("/admin/inventory", async (req, res) => {
     try {
       const ingredients = await getIngredients(db);
+      const itemCategories = await getItemCategories(db);
+      const tags = await getTags(db);
       const unitRows = await getUnits(db);
       const logSql = `SELECT l.*, mi.name AS item_name, ing.name AS ingredient_name, u.abbreviation AS unit
                       FROM inventory_log l
@@ -689,6 +798,8 @@ module.exports = (db, io) => {
 
       res.render("admin/inventory", {
         ingredients,
+        itemCategories,
+        tags,
         logs,
         summary,
         transactions,

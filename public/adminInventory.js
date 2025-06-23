@@ -45,6 +45,25 @@ function initAdminInventory() {
         });
     });
   }
+
+  const catFilter = document.getElementById("filterCategory");
+  const tagFilter = document.getElementById("filterTag");
+  const rows = document.querySelectorAll(".ingredient-table tbody tr");
+
+  function applyFilter() {
+    const cat = catFilter ? catFilter.value : "";
+    const tag = tagFilter ? tagFilter.value : "";
+    rows.forEach((row) => {
+      const rowCat = row.dataset.category || "";
+      const rowTags = row.dataset.tags || "";
+      const catMatch = !cat || rowCat === cat;
+      const tagMatch = !tag || rowTags.includes(tag);
+      row.style.display = catMatch && tagMatch ? "" : "none";
+    });
+  }
+  if (catFilter) catFilter.addEventListener("change", applyFilter);
+  if (tagFilter) tagFilter.addEventListener("change", applyFilter);
+  applyFilter();
 }
 
 if (document.readyState === "loading") {

@@ -19,6 +19,9 @@ async function main() {
     "modifier_groups",
     "menu_items",
     "categories",
+    "ingredient_tags",
+    "tags",
+    "item_categories",
     "stations",
     "ingredients",
     "item_ingredients",
@@ -120,9 +123,48 @@ async function main() {
   );
   const modGroupId = modGroupRes.insertId;
 
+  const itemCats = [
+    { name: "Perishables", parent: null },
+    { name: "Meat", parent: "Perishables" },
+    { name: "Produce", parent: "Perishables" },
+  ];
+  const catIdMap = {};
+  for (const c of itemCats) {
+    const parentId = c.parent ? catIdMap[c.parent] : null;
+    const [res] = await db.query(
+      "INSERT INTO item_categories (name, parent_id) VALUES (?, ?)",
+      [c.name, parentId],
+    );
+    catIdMap[c.name] = res.insertId;
+  }
+
+  const tagNames = ["Gluten-Free", "Organic"];
+  for (const t of tagNames) {
+    await db.query("INSERT INTO tags (name) VALUES (?)", [t]);
+  }
+  const [tagRows] = await db.query("SELECT id, name FROM tags");
+  const tagMap = Object.fromEntries(tagRows.map((r) => [r.name, r.id]));
+
   const ingredientNames = ["Cheese", "Bacon", "Avocado"];
+  const ingredientInfo = {
+    Cheese: { cat: "Perishables", tags: ["Gluten-Free"] },
+    Bacon: { cat: "Meat", tags: ["Gluten-Free"] },
+    Avocado: { cat: "Produce", tags: ["Organic", "Gluten-Free"] },
+  };
   for (const name of ingredientNames) {
-    await db.query("INSERT INTO ingredients (name) VALUES (?)", [name]);
+    const catId = catIdMap[ingredientInfo[name].cat] || null;
+    await db.query(
+      "INSERT INTO ingredients (name, category_id) VALUES (?, ?)",
+      [name, catId],
+    );
+    const [row] = await db.query("SELECT LAST_INSERT_ID() AS id");
+    const ingId = row[0].id;
+    for (const tag of ingredientInfo[name].tags) {
+      await db.query(
+        "INSERT INTO ingredient_tags (ingredient_id, tag_id) VALUES (?, ?)",
+        [ingId, tagMap[tag]],
+      );
+    }
   }
 
   const [ingRows] = await db.query("SELECT id, name FROM ingredients");

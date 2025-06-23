@@ -124,6 +124,14 @@ CREATE TABLE units (
   to_base DECIMAL(10,4) NOT NULL DEFAULT 1
 );
 
+-- Item categories for ingredients
+CREATE TABLE item_categories (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(100) NOT NULL,
+  parent_id INT DEFAULT NULL,
+  FOREIGN KEY (parent_id) REFERENCES item_categories(id)
+);
+
 -- Seed common units
 INSERT INTO units (name, abbreviation, type, to_base) VALUES
   ('pounds', 'lb', 'weight', 453.592),
@@ -140,11 +148,26 @@ CREATE TABLE ingredients (
   name VARCHAR(100) NOT NULL,
   quantity DECIMAL(10,2) NOT NULL DEFAULT 0.00,
   unit_id INT DEFAULT NULL,
+  category_id INT DEFAULT NULL,
   sku VARCHAR(50) DEFAULT NULL,
   cost DECIMAL(10,2) DEFAULT 0.00,
   is_public BOOLEAN NOT NULL DEFAULT 0,
   FOREIGN KEY (unit_id) REFERENCES units(id),
+  FOREIGN KEY (category_id) REFERENCES item_categories(id),
   UNIQUE KEY uniq_ingredient_name (name)
+);
+
+CREATE TABLE tags (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE ingredient_tags (
+  ingredient_id INT NOT NULL,
+  tag_id INT NOT NULL,
+  PRIMARY KEY (ingredient_id, tag_id),
+  FOREIGN KEY (ingredient_id) REFERENCES ingredients(id) ON DELETE CASCADE,
+  FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE
 );
 
 -- Per-item ingredients
