@@ -23,6 +23,7 @@
               <th>Name</th>
               <th>Qty</th>
               <th>Unit</th>
+              <th>Category</th>
               <th>SKU</th>
               <th>Cost</th>
               <th>Public</th>
@@ -42,6 +43,14 @@
                     <option value="">Unit</option>
                     <% units.forEach(u => { %>
                       <option value="<%= u.id %>" <%= ing.unit_id === u.id ? 'selected' : '' %>><%= u.abbreviation %></option>
+                    <% }) %>
+                  </select>
+                </td>
+                <td>
+                  <select class="form-select form-select-sm" name="category_id">
+                    <option value="">No Category</option>
+                    <% itemCategories.forEach(c => { %>
+                      <option value="<%= c.id %>" <%= ing.category_id === c.id ? 'selected' : '' %>><%= c.name %></option>
                     <% }) %>
                   </select>
                 </td>
@@ -72,6 +81,14 @@
                   <option value="">Unit</option>
                   <% units.forEach(u => { %>
                     <option value="<%= u.id %>"><%= u.abbreviation %></option>
+                  <% }) %>
+                </select>
+              </td>
+              <td>
+                <select class="form-select form-select-sm" name="category_id">
+                  <option value="">No Category</option>
+                  <% itemCategories.forEach(c => { %>
+                    <option value="<%= c.id %>"><%= c.name %></option>
                   <% }) %>
                 </select>
               </td>
