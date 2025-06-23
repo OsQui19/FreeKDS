@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <%- include('partials/head') %>
+</head>
+<body class="admin-screen">
+  <%- include('partials/header') %>
+  <% if (req.query.msg) { %>
+  <div class="alert alert-success alert-dismissible fade show m-2" role="alert">
+    <%= req.query.msg %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+  <% } %>
+  <div class="container admin-container">
+    <h1>Suppliers</h1>
+    <table class="table">
+      <thead><tr><th>Name</th><th>Contact</th><th></th><th></th></tr></thead>
+      <tbody>
+        <% suppliers.forEach(s => { %>
+        <tr>
+          <form action="/admin/suppliers" method="POST">
+            <td>
+              <input type="hidden" name="id" value="<%= s.id %>">
+              <input class="form-control" type="text" name="name" value="<%= s.name %>" required>
+            </td>
+            <td><input class="form-control" type="text" name="contact_info" value="<%= s.contact_info || '' %>"></td>
+            <td><button class="btn btn-primary btn-sm" type="submit">Save</button></td>
+          </form>
+          <td>
+            <form action="/admin/suppliers/delete" method="POST" onsubmit="return confirm('Delete supplier \"<%= s.name %>\"?');">
+              <input type="hidden" name="id" value="<%= s.id %>">
+              <button class="btn btn-secondary btn-sm" type="submit">Delete</button>
+            </form>
+          </td>
+        </tr>
+        <% }) %>
+        <tr>
+          <form action="/admin/suppliers" method="POST">
+            <td><input class="form-control" type="text" name="name" placeholder="Name" required></td>
+            <td><input class="form-control" type="text" name="contact_info" placeholder="Contact"></td>
+            <td colspan="2"><button class="btn btn-primary btn-sm" type="submit">Add</button></td>
+          </form>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>
