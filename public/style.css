@@ -1,11 +1,13 @@
 /* style.css - Common styles for KDS station screens */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap");
 :root {
   --bg-color: #f8f8f8;
   --primary-color: #007aff;
-  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
   --card-radius: 8px;
-  --card-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  --card-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   --spacing-sm: 4px;
   --spacing-md: 8px;
   --spacing-lg: 16px;
@@ -22,7 +24,7 @@ body.station-screen {
   align-items: center;
   background: #ffffff;
   padding: var(--spacing-md) var(--spacing-lg);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 .station-title {
   font-size: 1.3em;
@@ -86,7 +88,7 @@ body.station-screen {
   break-inside: avoid;
   border: 1px solid #ddd;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 .ticket.selected {
   outline: 2px solid var(--primary-color);
@@ -118,7 +120,8 @@ body.station-screen {
   margin-left: 5px;
   font-weight: bold;
 }
-.ticket-header .order-time, .ticket-header .elapsed {
+.ticket-header .order-time,
+.ticket-header .elapsed {
   font-family: monospace;
   margin-left: 8px;
 }
@@ -169,8 +172,13 @@ body.station-screen {
 }
 
 @keyframes urgent-flash {
-  0%, 100% { border-color: #ff5555; }
-  50% { border-color: #ff0000; }
+  0%,
+  100% {
+    border-color: #ff5555;
+  }
+  50% {
+    border-color: #ff0000;
+  }
 }
 .no-orders {
   color: #888;
@@ -179,10 +187,18 @@ body.station-screen {
 }
 
 /* Color coding for order types */
-.order-type.dine-in { background: #0066cc; }   /* blue for dine-in */
-.order-type.to-go   { background: #cc6600; }   /* orange for to-go */
-.order-type.catering { background: #669900; }  /* greenish for catering */
-.order-type.online  { background: #8833cc; }   /* example: purple for online orders if used */
+.order-type.dine-in {
+  background: #0066cc;
+} /* blue for dine-in */
+.order-type.to-go {
+  background: #cc6600;
+} /* orange for to-go */
+.order-type.catering {
+  background: #669900;
+} /* greenish for catering */
+.order-type.online {
+  background: #8833cc;
+} /* example: purple for online orders if used */
 
 /* Action bar buttons */
 .action-bar {
@@ -192,9 +208,10 @@ body.station-screen {
   background: #ffffff;
   text-align: center;
   padding: var(--spacing-md) 0;
-  box-shadow: 0 -1px 2px rgba(0,0,0,0.1);
+  box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.1);
 }
-.action-bar .btn-primary, .action-bar .btn-secondary {
+.action-bar .btn-primary,
+.action-bar .btn-secondary {
   font-size: 1.3em;
   padding: var(--spacing-md) var(--spacing-lg);
   margin: 0 var(--spacing-md);
@@ -214,16 +231,19 @@ body.station-screen {
   background: #6c757d;
   color: #fff;
 }
-.btn-primary:active, .btn-secondary:active {
+.btn-primary:active,
+.btn-secondary:active {
   opacity: 0.8;
 }
 
 /* Modal for recipe */
 .modal {
   position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0,0,0,0.8);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
   color: #fff;
   display: flex;
   justify-content: center;
@@ -268,27 +288,37 @@ body.station-screen {
 }
 /* Admin interface "Bistro Warm" theme */
 body.admin-screen {
-    background: var(--bg-color, #ffffff);
-    color: #333;
-    font-family: var(--font-family, 'Inter', sans-serif);
-    padding: 20px;
-  }
-  .admin-screen .card {
-    border-radius: var(--card-radius);
-    box-shadow: var(--card-shadow);
-  }
+  background: var(--bg-color, #ffffff);
+  color: #333;
+  font-family: var(--font-family, "Inter", sans-serif);
+  padding: 20px;
+}
+.admin-screen .card {
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+}
 @media (max-width: 768px) {
-  .tickets-container { column-width: 260px; }
-  .action-bar .btn-primary, .action-bar .btn-secondary {
+  .tickets-container {
+    column-width: 260px;
+  }
+  .action-bar .btn-primary,
+  .action-bar .btn-secondary {
     font-size: 1.1em;
     padding: 12px 20px;
   }
 }
 
 @media (max-width: 500px) {
-  .tickets-container { column-count: 1; column-width: auto; }
-  .station-title { font-size: 1.1em; }
-  .ticket-header { font-size: 1em; }
+  .tickets-container {
+    column-count: 1;
+    column-width: auto;
+  }
+  .station-title {
+    font-size: 1.1em;
+  }
+  .ticket-header {
+    font-size: 1em;
+  }
 }
 /* Admin tab styles */
 .tab-bar {
@@ -345,9 +375,9 @@ body.admin-screen {
   justify-content: flex-start;
   color: #555;
   padding: 0 15px;
-  }
-  #sideNav .nav-link span {
-    margin-left: 8px;
+}
+#sideNav .nav-link span {
+  margin-left: 8px;
 }
 #sideNav .nav-link.active {
   background: var(--primary-color, #b55031);
@@ -369,9 +399,9 @@ body.admin-screen {
 .windows-container.flex-layout .admin-window.active {
   display: block;
   background: #fff;
-    border-radius: var(--card-radius);
-    box-shadow: var(--card-shadow);
-    padding: 15px;
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+  padding: 15px;
 }
 @media (min-width: 768px) {
   #sideNav {
@@ -525,8 +555,8 @@ body.admin-screen {
   margin-bottom: 5px;
   align-items: end;
 }
-.mod-row input[name=name],
-.mod-row input[name=price],
+.mod-row input[name="name"],
+.mod-row input[name="price"],
 .mod-row select {
   width: 100%;
 }
@@ -542,29 +572,29 @@ body.admin-screen {
   margin: 0 auto;
 }
 @media (max-width: 575.98px) {
-body.admin-screen {
-  padding: 10px;
-}
-.admin-container {
-  padding-left: 0;
-  padding-right: 0;
-}
+  body.admin-screen {
+    padding: 10px;
+  }
+  .admin-container {
+    padding-left: 0;
+    padding-right: 0;
+  }
 }
 /* Inventory grid */
 .ingredient-list .header-row,
 .ingredient-list .ing-row {
-display: grid;
-grid-template-columns: 2fr 1fr 0.8fr 1fr 0.8fr auto auto auto;
-gap: 0.5rem;
-align-items: center;
+  display: grid;
+  grid-template-columns: 2fr 1fr 0.8fr 1fr 0.8fr auto auto auto;
+  gap: 0.5rem;
+  align-items: center;
 }
 
 .ingredient-list .ing-row form {
-display: contents;
+  display: contents;
 }
 
 .ingredient-list input.form-control {
-padding: 2px 4px;
+  padding: 2px 4px;
 }
 /* Inventory tabs */
 .inventory-tabs .nav-tabs {
