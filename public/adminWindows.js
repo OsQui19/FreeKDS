@@ -6,6 +6,8 @@ document.addEventListener("DOMContentLoaded", () => {
     menu: document.getElementById("tpl-menu").innerHTML,
     theme: document.getElementById("tpl-theme").innerHTML,
     inventory: document.getElementById("tpl-inventory").innerHTML,
+    suppliers: document.getElementById("tpl-suppliers").innerHTML,
+    "purchase-orders": document.getElementById("tpl-purchase-orders").innerHTML,
   };
   function show(type) {
     sideNav.querySelectorAll(".nav-link").forEach((l) => {
@@ -16,7 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  ["stations", "menu", "theme", "inventory"].forEach((type) => {
+  ["stations", "menu", "theme", "inventory", "suppliers", "purchase-orders"].forEach((type) => {
     const pane = document.createElement("section");
     pane.className = "admin-window";
     pane.dataset.type = type;

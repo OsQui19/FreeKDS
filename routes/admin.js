@@ -54,6 +54,10 @@ module.exports = (db, io) => {
                           ORDER BY ing.name`;
       const [summary] = await db.promise().query(summarySql);
 
+      const suppliers = await getSuppliers(db);
+      const locations = await getLocations(db);
+      const orders = await getPurchaseOrders(db);
+
       const settings = res.locals.settings || {};
       res.render("admin/home", {
         stations: stationRows,
@@ -67,6 +71,9 @@ module.exports = (db, io) => {
         summary,
         transactions,
         units: unitRows,
+        suppliers,
+        locations,
+        orders,
         settings,
       });
     } catch (err) {
