@@ -312,8 +312,9 @@ function updateItemIngredients(db, itemId, ingList, callback) {
 }
 
 async function logInventoryForOrder(db, orderId, items) {
+  const conn = typeof db.promise === "function" ? db.promise() : db;
   for (const it of items) {
-    const [ings] = await db.promise().query(
+    const [ings] = await conn.query(
       `SELECT ii.ingredient_id, ii.amount, ii.unit_id AS item_unit_id, ing.unit_id AS ing_unit_id
          FROM item_ingredients ii
          JOIN ingredients ing ON ii.ingredient_id = ing.id
@@ -323,7 +324,7 @@ async function logInventoryForOrder(db, orderId, items) {
     let replaced = [];
     let modRows = [];
     if (Array.isArray(it.modifier_ids) && it.modifier_ids.length) {
-      const [rows] = await db.promise().query(
+      const [rows] = await conn.query(
         `SELECT m.ingredient_id, im.replaces_ingredient_id
            FROM item_modifiers im
            JOIN modifiers m ON im.modifier_id = m.id
@@ -345,15 +346,11 @@ async function logInventoryForOrder(db, orderId, items) {
         conv !== null
           ? conv * it.quantity
           : parseFloat(row.amount) * it.quantity;
-      await db
-        .promise()
-        .query("UPDATE ingredients SET quantity = quantity - ? WHERE id=?", [
+      await conn.query("UPDATE ingredients SET quantity = quantity - ? WHERE id=?", [
           used,
           row.ingredient_id,
         ]);
-      await db
-        .promise()
-        .query(
+      await conn.query(
           "INSERT INTO inventory_log (order_id, menu_item_id, ingredient_id, amount) VALUES (?, ?, ?, ?)",
           [orderId, it.menu_item_id, row.ingredient_id, used],
         );
@@ -361,15 +358,11 @@ async function logInventoryForOrder(db, orderId, items) {
 
     for (const modRow of modRows) {
       const used = 1 * it.quantity;
-      await db
-        .promise()
-        .query("UPDATE ingredients SET quantity = quantity - ? WHERE id=?", [
+      await conn.query("UPDATE ingredients SET quantity = quantity - ? WHERE id=?", [
           used,
           modRow.ingredient_id,
         ]);
-      await db
-        .promise()
-        .query(
+      await conn.query(
           "INSERT INTO inventory_log (order_id, menu_item_id, ingredient_id, amount) VALUES (?, ?, ?, ?)",
           [orderId, it.menu_item_id, modRow.ingredient_id, used],
         );

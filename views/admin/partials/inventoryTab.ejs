@@ -4,6 +4,7 @@
     <li class="nav-item"><a href="#" class="nav-link active" data-pane="itemsPane">Items</a></li>
     <li class="nav-item"><a href="#" class="nav-link" data-pane="usageLogPane">Usage Log</a></li>
     <li class="nav-item"><a href="#" class="nav-link" data-pane="usageSummaryPane">Usage Summary</a></li>
+    <li class="nav-item"><a href="#" class="nav-link" data-pane="analyticsPane">Analytics</a></li>
   </ul>
   <div class="tab-content">
     <div class="inventory-pane active" id="itemsPane">
@@ -253,6 +254,16 @@
         </tbody>
       </table>
     </div>
+    <div class="inventory-pane" id="analyticsPane">
+      <div class="row mb-3">
+        <div class="col-md-6 mb-3 mb-md-0">
+          <canvas id="salesChart"></canvas>
+        </div>
+        <div class="col-md-6">
+          <canvas id="usageChart"></canvas>
+        </div>
+      </div>
+    </div>
 
   </div>
 </div>
@@ -266,3 +277,5 @@
 </script>
 <script defer src="/adminInventory.js"></script>
 <script defer src="/inventoryTabs.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script defer src="/inventoryAnalytics.js"></script>
