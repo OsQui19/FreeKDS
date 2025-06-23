@@ -250,6 +250,16 @@ async function getUnits(db) {
   return rows;
 }
 
+async function insertUnit(db, unit) {
+  const { name, abbreviation, type, toBase } = unit;
+  const sql =
+    "INSERT INTO units (name, abbreviation, type, to_base) VALUES (?, ?, ?, ?)";
+  const [result] = await db
+    .promise()
+    .query(sql, [name, abbreviation, type, toBase]);
+  return result.insertId;
+}
+
 async function getCategories(db) {
   const [rows] = await db
     .promise()
@@ -439,6 +449,7 @@ module.exports = {
   getIngredients,
   updateItemIngredients,
   getUnits,
+  insertUnit,
   logInventoryForOrder,
   getSuppliers,
   getLocations,

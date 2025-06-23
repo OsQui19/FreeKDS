@@ -3,7 +3,10 @@ const {
   updateItemModifiers,
   getBumpedOrders,
   logInventoryForOrder,
+  insertUnit,
+  getUnits,
 } = require("../controllers/dbHelpers");
+const unitConversion = require("../controllers/unitConversion");
 
 module.exports = (db, io) => {
   const router = express.Router();
@@ -168,6 +171,37 @@ module.exports = (db, io) => {
         res.json({ recipe: null });
       }
     });
+  });
+
+  router.get("/api/units", async (req, res) => {
+    try {
+      const units = await getUnits(db);
+      res.json({ units });
+    } catch (err) {
+      console.error("Error fetching units:", err);
+      res.status(500).send("DB Error");
+    }
+  });
+
+  router.post("/api/units", async (req, res) => {
+    const { name, abbreviation, type, to_base } = req.body;
+    const toBase = parseFloat(to_base);
+    if (!name || !abbreviation || !type || isNaN(toBase)) {
+      return res.status(400).send("Invalid unit data");
+    }
+    try {
+      const id = await insertUnit(db, {
+        name,
+        abbreviation,
+        type,
+        toBase,
+      });
+      unitConversion.loadUnits(db);
+      res.json({ success: true, id });
+    } catch (err) {
+      console.error("Error inserting unit:", err);
+      res.status(500).send("DB Error");
+    }
   });
 
   return router;

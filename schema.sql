@@ -140,6 +140,8 @@ INSERT INTO units (name, abbreviation, type, to_base) VALUES
   ('kilograms', 'kg', 'weight', 1000),
   ('liters', 'l', 'volume', 1000),
   ('milliliters', 'ml', 'volume', 1),
+  ('fluid ounces', 'fl oz', 'volume', 29.5735),
+  ('gallons', 'gal', 'volume', 3785.41),
   ('each', 'ea', 'count', 1);
 
 -- Ingredients table for inventory tracking
