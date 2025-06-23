@@ -1,5 +1,16 @@
 <div id="reportsTab" class="container admin-container">
   <h1>Reports</h1>
+  <form id="reportsRangeForm" class="row g-2 mb-3">
+    <div class="col-auto">
+      <input type="date" id="reportStart" class="form-control form-control-sm" required />
+    </div>
+    <div class="col-auto">
+      <input type="date" id="reportEnd" class="form-control form-control-sm" required />
+    </div>
+    <div class="col-auto">
+      <button type="submit" class="btn btn-sm btn-primary">Load</button>
+    </div>
+  </form>
   <div class="row mb-3">
     <div class="col-md-6 mb-3 mb-md-0">
       <canvas id="salesChart"></canvas>

@@ -3,6 +3,10 @@ let usageChart;
 let categoryChart;
 const socket = window.io ? io() : null;
 
+function fmt(d) {
+  return d.toISOString().slice(0, 10);
+}
+
 function loadReports() {
   const salesEl = document.getElementById('salesChart');
   const usageEl = document.getElementById('usageChart');
@@ -13,11 +17,13 @@ function loadReports() {
   const roiEl = document.getElementById('roiVal');
   if (!salesEl || !catEl) return;
 
-  function fmt(d) {
-    return d.toISOString().slice(0, 10);
-  }
-  const end = new Date();
-  const start = new Date(end.getTime() - 29 * 86400000);
+  const startInput = document.getElementById('reportStart');
+  const endInput = document.getElementById('reportEnd');
+  const end = endInput && endInput.value ? new Date(endInput.value) : new Date();
+  const start =
+    startInput && startInput.value
+      ? new Date(startInput.value)
+      : new Date(end.getTime() - 29 * 86400000);
 
   fetch(`/admin/reports/data?start=${fmt(start)}&end=${fmt(end)}`)
     .then((r) => r.json())
@@ -97,15 +103,31 @@ function loadReports() {
     .catch((err) => console.error('Reports fetch error', err));
 }
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', loadReports);
-} else {
+function initReports() {
+  const rangeForm = document.getElementById('reportsRangeForm');
+  const startInput = document.getElementById('reportStart');
+  const endInput = document.getElementById('reportEnd');
+  if (startInput && endInput) {
+    const end = new Date();
+    const start = new Date(end.getTime() - 29 * 86400000);
+    startInput.value = fmt(start);
+    endInput.value = fmt(end);
+  }
+  if (rangeForm) {
+    rangeForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      loadReports();
+    });
+  }
   loadReports();
+  setInterval(loadReports, 60000);
+  if (socket) {
+    socket.on('reportsUpdated', loadReports);
+  }
 }
 
-// refresh data every minute for near real-time updates
-setInterval(loadReports, 60000);
-
-if (socket) {
-  socket.on('reportsUpdated', loadReports);
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initReports);
+} else {
+  initReports();
 }

@@ -61,6 +61,7 @@ module.exports = function (io, db) {
           () => {},
         );
         io.emit("orderCompleted", { orderId });
+        io.emit("reportsUpdated");
       } else {
         db.query(
           `INSERT INTO bumped_orders (order_id, station_id, order_number)
@@ -89,6 +90,7 @@ module.exports = function (io, db) {
           [orderId],
           () => {},
         );
+        io.emit("reportsUpdated");
         const fetchSql = `SELECT o.order_number, o.order_type, o.special_instructions, o.allergy, UNIX_TIMESTAMP(o.created_at) AS ts,
                                oi.quantity, mi.name, mi.station_id, mi.id AS item_id,
                                GROUP_CONCAT(m.name ORDER BY m.name SEPARATOR ', ') AS modifiers
