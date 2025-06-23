@@ -256,11 +256,30 @@ async function getCategories(db) {
     .query("SELECT * FROM categories ORDER BY sort_order, id");
   return rows;
 }
+async function getItemCategories(db) {
+  const [rows] = await db
+    .promise()
+    .query('SELECT * FROM item_categories ORDER BY name');
+  return rows;
+}
+
+async function getTags(db) {
+  const [rows] = await db.promise().query('SELECT * FROM tags ORDER BY name');
+  return rows;
+}
+
 async function getIngredients(db) {
-  const [rows] = await db.promise()
-    .query(`SELECT ing.id, ing.name, ing.quantity, ing.unit_id, u.abbreviation AS unit, ing.sku, ing.cost, ing.is_public
+  const [rows] = await db.promise().query(`SELECT ing.id, ing.name, ing.quantity, ing.unit_id,
+                                                u.abbreviation AS unit, ing.sku, ing.cost,
+                                                ing.is_public, ing.category_id,
+                                                c.name AS category_name,
+                                                GROUP_CONCAT(t.name ORDER BY t.name SEPARATOR ', ') AS tags
                                          FROM ingredients ing
                                          LEFT JOIN units u ON ing.unit_id = u.id
+                                         LEFT JOIN item_categories c ON ing.category_id = c.id
+                                         LEFT JOIN ingredient_tags it ON ing.id = it.ingredient_id
+                                         LEFT JOIN tags t ON it.tag_id = t.id
+                                         GROUP BY ing.id
                                          ORDER BY ing.name`);
   return rows;
 }
@@ -477,6 +496,8 @@ module.exports = {
   getMenuData,
   getStations,
   getCategories,
+  getItemCategories,
+  getTags,
   getIngredients,
   updateItemIngredients,
   getUnits,
