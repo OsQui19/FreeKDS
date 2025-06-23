@@ -566,7 +566,7 @@ display: contents;
 .ingredient-list input.form-control {
 padding: 2px 4px;
 }
-# Inventory tabs
+/* Inventory tabs */
 .inventory-tabs .nav-tabs {
   flex-wrap: wrap;
 }
