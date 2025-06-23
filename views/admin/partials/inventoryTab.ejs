@@ -16,6 +16,40 @@
             <% }) %>
           </select>
         </div>
+        <div class="mb-3" id="quickAddWrapper">
+          <form
+            id="quickAddForm"
+            action="/admin/inventory/transactions"
+            method="POST"
+            class="d-flex gap-2"
+          >
+            <input
+              id="quickAddName"
+              class="form-control form-control-sm"
+              list="inventoryItems"
+              placeholder="Inventory item"
+              autocomplete="off"
+            />
+            <input type="hidden" name="ingredient_id" id="quickAddId" />
+            <input
+              id="quickAddQty"
+              class="form-control form-control-sm"
+              type="number"
+              step="0.01"
+              name="quantity"
+              placeholder="Quantity"
+              style="width:6em; display:none;"
+            />
+            <button
+              id="quickAddBtn"
+              type="submit"
+              class="btn btn-secondary btn-sm"
+              style="display:none;"
+            >
+              Add
+            </button>
+          </form>
+        </div>
         <table class="table table-sm ingredient-table">
           <thead>
             <tr>
@@ -232,5 +266,13 @@
 
   </div>
 </div>
+<datalist id="inventoryItems">
+  <% ingredients.forEach(ing => { %>
+    <option value="<%= ing.name %>" data-id="<%= ing.id %>"></option>
+  <% }) %>
+</datalist>
+<script>
+  window.inventoryIngredients = <%- JSON.stringify(ingredients) %>;
+</script>
 <script defer src="/adminInventory.js"></script>
 <script defer src="/inventoryTabs.js"></script>

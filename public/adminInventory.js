@@ -72,6 +72,43 @@ function initAdminInventory() {
   if (catFilter) catFilter.addEventListener("change", applyFilter);
   if (tagFilter) tagFilter.addEventListener("change", applyFilter);
   applyFilter();
+
+  function initQuickAdd() {
+    const ings = window.inventoryIngredients || [];
+    const findByName = (name) =>
+      ings.find((i) => i.name.toLowerCase() === name.toLowerCase());
+    const form = document.getElementById("quickAddForm");
+    if (!form) return;
+    const nameInput = document.getElementById("quickAddName");
+    const idField = document.getElementById("quickAddId");
+    const qtyInput = document.getElementById("quickAddQty");
+    const btn = document.getElementById("quickAddBtn");
+
+    const toggle = () => {
+      const ing = findByName(nameInput.value.trim());
+      if (ing) {
+        idField.value = ing.id;
+        qtyInput.style.display = "";
+        btn.style.display = "";
+        qtyInput.focus();
+      } else {
+        idField.value = "";
+        qtyInput.style.display = "none";
+        btn.style.display = "none";
+      }
+    };
+
+    nameInput.addEventListener("input", toggle);
+    form.addEventListener("submit", (e) => {
+      toggle();
+      if (!idField.value) {
+        e.preventDefault();
+        alert("Please select a valid inventory item");
+      }
+    });
+  }
+
+  initQuickAdd();
 }
 
 if (document.readyState === "loading") {
