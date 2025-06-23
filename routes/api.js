@@ -6,6 +6,7 @@ const {
   insertUnit,
   getUnits,
 } = require("../controllers/dbHelpers");
+const { backupDatabase } = require("../controllers/dbBackup");
 const unitConversion = require("../controllers/unitConversion");
 
 module.exports = (db, io) => {
@@ -83,6 +84,7 @@ module.exports = (db, io) => {
 
       const [rows] = await conn.query(fetchSql, [orderId]);
       await conn.commit();
+      backupDatabase();
 
       const stationMap = {};
       rows.forEach((r) => {
