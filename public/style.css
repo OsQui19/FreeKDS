@@ -650,3 +650,17 @@ body.admin-screen {
     text-align: center;
   }
 }
+
+/* Scheduling */
+.employee-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+.employee-list .list-group-item {
+  cursor: grab;
+}
+.schedule-table td {
+  min-width: 90px;
+  height: 50px;
+  vertical-align: top;
+}

@@ -27,27 +27,38 @@
       </form>
     </div>
     <div class="employees-pane" id="schedulePane">
-      <div id="scheduleGrid" class="table-responsive">
-        <table class="table table-bordered">
-          <thead>
-            <tr>
-              <th>Employee</th>
-              <th>Mon</th>
-              <th>Tue</th>
-              <th>Wed</th>
-              <th>Thu</th>
-              <th>Fri</th>
-              <th>Sat</th>
-              <th>Sun</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Drag employees here</td>
-              <td colspan="7" class="text-center">Schedule grid</td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="row">
+        <div class="col-md-3">
+          <ul id="employeeList" class="list-group employee-list"></ul>
+        </div>
+        <div class="col-md-9">
+          <div id="scheduleGrid" class="table-responsive">
+            <table class="table table-bordered schedule-table" id="scheduleTable">
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Mon</th>
+                  <th>Tue</th>
+                  <th>Wed</th>
+                  <th>Thu</th>
+                  <th>Fri</th>
+                  <th>Sat</th>
+                  <th>Sun</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% for (let h = 9; h <= 18; h++) { %>
+                <tr>
+                  <th><%= h %>:00</th>
+                  <% for (let d = 0; d < 7; d++) { %>
+                  <td data-day="<%= d %>" data-hour="<%= h %>"></td>
+                  <% } %>
+                </tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
     <div class="employees-pane" id="hierarchyPane">
