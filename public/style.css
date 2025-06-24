@@ -671,3 +671,20 @@ body.admin-screen {
   cursor: pointer;
   white-space: normal;
 }
+
+#scheduleGrid.month-view {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+}
+
+#scheduleGrid.month-view .schedule-table td {
+  min-width: 60px;
+  height: 40px;
+  font-size: 0.75rem;
+}
+
+#scheduleGrid.month-view .schedule-table th,
+#scheduleGrid.month-view .schedule-table caption {
+  font-size: 0.8rem;
+}

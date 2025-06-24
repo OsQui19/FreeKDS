@@ -39,6 +39,28 @@ const HOURS = Array.from({ length: 10 }, (_, i) => 9 + i); // 9am-18pm
 const SCHEDULE_VIEW_KEY = "scheduleView";
 let scheduleView = localStorage.getItem(SCHEDULE_VIEW_KEY) || "week";
 
+function startOfWeek(date) {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = d.getDate() - ((day + 6) % 7); // monday as start
+  d.setDate(diff);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function weekLabel(base, offset) {
+  const start = new Date(base);
+  start.setDate(start.getDate() + offset * 7);
+  const end = new Date(start);
+  end.setDate(start.getDate() + 6);
+  const opts = { month: "short", day: "numeric" };
+  return (
+    start.toLocaleDateString(undefined, opts) +
+    " - " +
+    end.toLocaleDateString(undefined, opts)
+  );
+}
+
 function randomColor() {
   return (
     "#" +
@@ -210,6 +232,7 @@ function renderSchedule() {
   const grid = document.getElementById("scheduleGrid");
   if (!grid) return;
   grid.innerHTML = "";
+  grid.classList.toggle("month-view", scheduleView === "month");
   const schedule = loadSchedule();
   const employees = loadEmployees();
   if (scheduleView === "week") {
@@ -217,8 +240,10 @@ function renderSchedule() {
     grid.appendChild(table);
     fillWeekTable(table, schedule, employees);
   } else {
+    const base = startOfWeek(new Date());
     for (let w = 0; w < 4; w++) {
-      const table = buildWeekTable(`Week ${w + 1}`);
+      const label = weekLabel(base, w);
+      const table = buildWeekTable(label);
       grid.appendChild(table);
       fillWeekTable(table, schedule, employees);
     }
