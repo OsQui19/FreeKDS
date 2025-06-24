@@ -39,8 +39,14 @@ module.exports = (db, io) => {
       for (const it of items) {
         if (!it.menu_item_id || !it.quantity) continue;
         const [res2] = await conn.query(
-          "INSERT INTO order_items (order_id, menu_item_id, quantity) VALUES (?, ?, ?)",
-          [orderId, it.menu_item_id, it.quantity],
+          "INSERT INTO order_items (order_id, menu_item_id, quantity, special_instructions, allergy) VALUES (?, ?, ?, ?, ?)",
+          [
+            orderId,
+            it.menu_item_id,
+            it.quantity,
+            it.special_instructions || null,
+            it.allergy ? 1 : 0,
+          ],
         );
         orderItemInfo.push({
           id: res2.insertId,
@@ -74,6 +80,7 @@ module.exports = (db, io) => {
       }
 
       const fetchSql = `SELECT oi.id AS order_item_id, oi.quantity, mi.name, mi.station_id,
+                                oi.special_instructions, oi.allergy,
                                 GROUP_CONCAT(m.name ORDER BY m.name SEPARATOR ', ') AS modifiers
                                 FROM order_items oi
                                 JOIN menu_items mi ON oi.menu_item_id = mi.id
@@ -94,6 +101,8 @@ module.exports = (db, io) => {
           name: r.name,
           stationId: r.station_id,
           modifiers: r.modifiers ? r.modifiers.split(", ") : [],
+          specialInstructions: r.special_instructions || "",
+          allergy: !!r.allergy,
         });
       });
       const createdTs = Math.floor(Date.now() / 1000);
@@ -120,6 +129,8 @@ module.exports = (db, io) => {
           name: r.name,
           stationId: r.station_id,
           modifiers: r.modifiers ? r.modifiers.split(", ") : [],
+          specialInstructions: r.special_instructions || "",
+          allergy: !!r.allergy,
         })),
       });
 

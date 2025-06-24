@@ -89,6 +89,8 @@ CREATE TABLE order_items (
   order_id      INT NOT NULL,
   menu_item_id  INT NOT NULL,
   quantity      INT NOT NULL DEFAULT 1,
+  special_instructions TEXT,
+  allergy      BOOLEAN DEFAULT FALSE,
   FOREIGN KEY (order_id)     REFERENCES orders(id) ON DELETE CASCADE,
   FOREIGN KEY (menu_item_id) REFERENCES menu_items(id)
   -- Note: If a menu_item is deleted, this FK (without ON DELETE CASCADE) will prevent deletion if referenced by orders.

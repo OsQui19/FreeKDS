@@ -112,13 +112,15 @@ body.station-screen {
 .ticket-header .order-num {
   font-weight: bold;
 }
-.ticket-header .allergy-label {
+.allergy-label {
   background: #d9534f;
   color: #fff;
   padding: 2px 4px;
   border-radius: 3px;
-  margin-left: 5px;
   font-weight: bold;
+}
+.ticket-header .allergy-label {
+  margin-left: 5px;
 }
 .ticket-header .order-time,
 .ticket-header .elapsed {

@@ -47,19 +47,20 @@
   <h3>Your Order</h3>
   <ul id="cartItems"></ul>
   <div id="cartTotal" class="cart-total">$0.00</div>
-  <div class="mb-2">
-    <label for="instructions">Special Instructions:</label><br>
-    <textarea id="instructions" rows="3" class="w-100"></textarea>
-  </div>
-  <div class="mb-2">
-    <label><input type="checkbox" id="allergy"> Allergy</label>
-  </div>
   <button id="submitBtn" class="btn" disabled>Submit Order</button>
 </div>
 <div id="modModal" class="modal d-none">
   <div class="modal-content modal-small bg-white text-dark p-3">
     <h3 id="modTitle"></h3>
     <div id="modOptions"></div>
+    <div class="mb-2">
+      <label for="modInstructions" class="form-label">Special Instructions:</label>
+      <textarea id="modInstructions" rows="2" class="form-control"></textarea>
+    </div>
+    <div class="mb-2 form-check">
+      <input type="checkbox" id="modAllergy" class="form-check-input">
+      <label for="modAllergy" class="form-check-label">Allergy</label>
+    </div>
     <button id="modConfirm" class="btn">Add Item</button>
     <button id="modCancel" class="btn">Cancel</button>
   </div>

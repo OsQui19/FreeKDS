@@ -49,6 +49,7 @@ module.exports = (db) => {
                             o.special_instructions, o.allergy,
                             UNIX_TIMESTAMP(o.created_at) AS ts,
                             oi.id AS order_item_id, oi.quantity,
+                            oi.special_instructions AS item_instructions, oi.allergy AS item_allergy,
                             mi.name, mi.station_id, mi.id AS item_id,
                             GROUP_CONCAT(m.name ORDER BY m.name SEPARATOR ', ') AS modifiers
                      FROM orders o
@@ -83,6 +84,8 @@ module.exports = (db) => {
               stationId: row.station_id,
               itemId: row.item_id,
               modifiers: row.modifiers ? row.modifiers.split(", ") : [],
+              specialInstructions: row.item_instructions || "",
+              allergy: !!row.item_allergy,
             });
           });
           const orders = Object.values(ordersMap);

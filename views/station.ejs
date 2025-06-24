@@ -82,6 +82,12 @@
                   <% }); %>
                 </ul>
               <% } %>
+              <% if (item.specialInstructions) { %>
+                <div class="ticket-instructions"><%= item.specialInstructions %></div>
+              <% } %>
+              <% if (item.allergy) { %>
+                <div class="allergy-label">ALLERGY</div>
+              <% } %>
             </li>
           <% }); %>
         </ul>
