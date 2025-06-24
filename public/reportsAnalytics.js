@@ -8,18 +8,19 @@ function fmt(d) {
 }
 
 function loadReports() {
-  const salesEl = document.getElementById('salesChart');
-  const usageEl = document.getElementById('usageChart');
-  const catEl = document.getElementById('categoryChart');
-  const topBody = document.getElementById('topItemsBody');
-  const lowBody = document.getElementById('lowStockBody');
-  const marginEl = document.getElementById('profitMarginVal');
-  const roiEl = document.getElementById('roiVal');
+  const salesEl = document.getElementById("salesChart");
+  const usageEl = document.getElementById("usageChart");
+  const catEl = document.getElementById("categoryChart");
+  const topBody = document.getElementById("topItemsBody");
+  const lowBody = document.getElementById("lowStockBody");
+  const marginEl = document.getElementById("profitMarginVal");
+  const roiEl = document.getElementById("roiVal");
   if (!salesEl || !catEl) return;
 
-  const startInput = document.getElementById('reportStart');
-  const endInput = document.getElementById('reportEnd');
-  const end = endInput && endInput.value ? new Date(endInput.value) : new Date();
+  const startInput = document.getElementById("reportStart");
+  const endInput = document.getElementById("reportEnd");
+  const end =
+    endInput && endInput.value ? new Date(endInput.value) : new Date();
   const start =
     startInput && startInput.value
       ? new Date(startInput.value)
@@ -35,15 +36,32 @@ function loadReports() {
       const margin = data.sales.map((r) => r.margin);
       const roi = data.sales.map((r) => r.roi);
 
+      if (!labels.length) {
+        labels.push(fmt(start));
+        revenue.push(0);
+        cost.push(0);
+        profit.push(0);
+      }
+
       if (salesChart) salesChart.destroy();
       salesChart = new Chart(salesEl, {
-        type: 'line',
+        type: "line",
         data: {
           labels,
           datasets: [
-            { label: 'Revenue', data: revenue, borderColor: 'blue', fill: false },
-            { label: 'Cost', data: cost, borderColor: 'red', fill: false },
-            { label: 'Profit', data: profit, borderColor: 'green', fill: false },
+            {
+              label: "Revenue",
+              data: revenue,
+              borderColor: "blue",
+              fill: false,
+            },
+            { label: "Cost", data: cost, borderColor: "red", fill: false },
+            {
+              label: "Profit",
+              data: profit,
+              borderColor: "green",
+              fill: false,
+            },
           ],
         },
         options: { scales: { y: { beginAtZero: true } } },
@@ -62,12 +80,20 @@ function loadReports() {
         if (usageChart) usageChart.destroy();
         const usageLabels = data.usage.map((u) => u.name);
         const usageData = data.usage.map((u) => u.total);
+        if (!usageLabels.length) {
+          usageLabels.push("No Data");
+          usageData.push(0);
+        }
         usageChart = new Chart(usageEl, {
-          type: 'bar',
+          type: "bar",
           data: {
             labels: usageLabels,
             datasets: [
-              { label: 'Total Used', data: usageData, backgroundColor: 'green' },
+              {
+                label: "Total Used",
+                data: usageData,
+                backgroundColor: "green",
+              },
             ],
           },
           options: { scales: { y: { beginAtZero: true } } },
@@ -76,37 +102,44 @@ function loadReports() {
 
       const catLabels = data.categorySales.map((c) => c.name);
       const catTotals = data.categorySales.map((c) => c.total);
+      if (!catLabels.length) {
+        catLabels.push("No Data");
+        catTotals.push(0);
+      }
       if (categoryChart) categoryChart.destroy();
       categoryChart = new Chart(catEl, {
-        type: 'bar',
-        data: { labels: catLabels, datasets: [{ label: 'Sales', data: catTotals }] },
+        type: "bar",
+        data: {
+          labels: catLabels,
+          datasets: [{ label: "Sales", data: catTotals }],
+        },
         options: { scales: { y: { beginAtZero: true } } },
       });
 
       if (topBody) {
-        topBody.innerHTML = '';
+        topBody.innerHTML = "";
         data.topItems.forEach((it) => {
-          const tr = document.createElement('tr');
+          const tr = document.createElement("tr");
           tr.innerHTML = `<td>${it.name}</td><td>${it.qty}</td><td>$${parseFloat(it.revenue).toFixed(2)}</td>`;
           topBody.appendChild(tr);
         });
       }
       if (lowBody) {
-        lowBody.innerHTML = '';
+        lowBody.innerHTML = "";
         data.lowStock.forEach((it) => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `<td>${it.name}</td><td>${it.quantity}</td><td>${it.unit || ''}</td>`;
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td>${it.name}</td><td>${it.quantity}</td><td>${it.unit || ""}</td>`;
           lowBody.appendChild(tr);
         });
       }
     })
-    .catch((err) => console.error('Reports fetch error', err));
+    .catch((err) => console.error("Reports fetch error", err));
 }
 
 function initReports() {
-  const rangeForm = document.getElementById('reportsRangeForm');
-  const startInput = document.getElementById('reportStart');
-  const endInput = document.getElementById('reportEnd');
+  const rangeForm = document.getElementById("reportsRangeForm");
+  const startInput = document.getElementById("reportStart");
+  const endInput = document.getElementById("reportEnd");
   if (startInput && endInput) {
     const end = new Date();
     const start = new Date(end.getTime() - 29 * 86400000);
@@ -114,7 +147,7 @@ function initReports() {
     endInput.value = fmt(end);
   }
   if (rangeForm) {
-    rangeForm.addEventListener('submit', (e) => {
+    rangeForm.addEventListener("submit", (e) => {
       e.preventDefault();
       loadReports();
     });
@@ -122,12 +155,12 @@ function initReports() {
   loadReports();
   setInterval(loadReports, 60000);
   if (socket) {
-    socket.on('reportsUpdated', loadReports);
+    socket.on("reportsUpdated", loadReports);
   }
 }
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initReports);
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initReports);
 } else {
   initReports();
 }
