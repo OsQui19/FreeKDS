@@ -672,6 +672,14 @@ body.admin-screen {
   white-space: normal;
 }
 
+@media (max-width: 768px) {
+  .schedule-table td {
+    min-width: 60px;
+    height: 40px;
+    font-size: 0.75rem;
+  }
+}
+
 #scheduleGrid.month-view {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

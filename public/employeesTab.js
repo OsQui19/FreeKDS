@@ -37,6 +37,12 @@ function initEmployeesTabs() {
 const EMPLOYEE_KEY = "employees";
 const SCHEDULE_KEY = "schedule";
 const HOURS = Array.from({ length: 10 }, (_, i) => 9 + i); // 9am-18pm
+
+function formatHour(h) {
+  const d = new Date();
+  d.setHours(h, 0, 0, 0);
+  return d.toLocaleString([], { hour: "numeric", hour12: true });
+}
 const SCHEDULE_VIEW_KEY = "scheduleView";
 const SCHEDULE_WEEK_OFFSET_KEY = "scheduleWeekOffset";
 let scheduleView = localStorage.getItem(SCHEDULE_VIEW_KEY) || "week";
@@ -239,7 +245,7 @@ function buildWeekTable(label) {
   HOURS.forEach((h) => {
     const tr = document.createElement("tr");
     const th = document.createElement("th");
-    th.textContent = `${h}:00`;
+    th.textContent = formatHour(h);
     tr.appendChild(th);
     for (let d = 0; d < 7; d++) {
       const td = document.createElement("td");
@@ -329,13 +335,7 @@ function enableScheduleDnD() {
       if (!id) return;
       const day = parseInt(cell.dataset.day, 10);
       const start = parseInt(cell.dataset.hour, 10);
-      const end = parseInt(prompt("End hour", start + 1), 10);
-      if (!end || end <= start) return;
-      const schedule = loadSchedule();
-      if (!schedule[day]) schedule[day] = [];
-      schedule[day].push({ id, start, end });
-      saveSchedule(schedule);
-      renderSchedule();
+      showScheduleModal(id, { day, range: { start, end: start + 1 } });
     });
   });
 }
@@ -380,46 +380,63 @@ function updateWeekLabel() {
 function setupWeekNav() {
   const prev = document.getElementById("prevWeek");
   const next = document.getElementById("nextWeek");
-  if (prev) {
-    prev.addEventListener("click", () => {
-      scheduleWeekOffset -= 1;
-      localStorage.setItem(SCHEDULE_WEEK_OFFSET_KEY, scheduleWeekOffset);
-      renderSchedule();
-      updateWeekLabel();
-    });
+  function changeWeek(delta) {
+    scheduleWeekOffset += delta;
+    localStorage.setItem(SCHEDULE_WEEK_OFFSET_KEY, scheduleWeekOffset);
+    renderSchedule();
+    updateWeekLabel();
   }
-  if (next) {
-    next.addEventListener("click", () => {
-      scheduleWeekOffset += 1;
-      localStorage.setItem(SCHEDULE_WEEK_OFFSET_KEY, scheduleWeekOffset);
-      renderSchedule();
-      updateWeekLabel();
-    });
-  }
+  if (prev) prev.addEventListener("click", () => changeWeek(-1));
+  if (next) next.addEventListener("click", () => changeWeek(1));
+  setupSwipeNav(changeWeek);
   updateWeekLabel();
+}
+
+function setupSwipeNav(changeWeek) {
+  const grid = document.getElementById("scheduleGrid");
+  if (!grid) return;
+  let startX = null;
+  grid.addEventListener("touchstart", (e) => {
+    startX = e.touches[0].clientX;
+  });
+  grid.addEventListener("touchend", (e) => {
+    if (startX === null) return;
+    const diff = e.changedTouches[0].clientX - startX;
+    if (Math.abs(diff) > 50) {
+      changeWeek(diff > 0 ? -1 : 1);
+    }
+    startX = null;
+  });
 }
 
 function populateTimeSelect(select) {
   select.innerHTML = HOURS.map(
-    (h) => `<option value="${h}">${h}:00</option>`,
+    (h) => `<option value="${h}">${formatHour(h)}</option>`,
   ).join("");
 }
 
-function showScheduleModal(empId, editInfo) {
+function showScheduleModal(empId, opts = {}) {
   const modal = document.getElementById("scheduleModal");
   const form = document.getElementById("scheduleForm");
   const closeBtn = document.getElementById("scheduleModalClose");
   if (!modal || !form) return;
   populateTimeSelect(form.elements.start);
   populateTimeSelect(form.elements.end);
+  const { day, range, index } = opts;
+  const editing = typeof index === "number";
   form.elements.employeeId.value = empId;
-  if (editInfo) {
-    form.elements.day.value = editInfo.day;
-    form.elements.start.value = editInfo.range.start;
-    form.elements.end.value = editInfo.range.end;
+  if (editing) {
+    form.elements.day.value = day;
+    form.elements.start.value = range.start;
+    form.elements.end.value = range.end;
   } else {
     form.reset();
     form.elements.employeeId.value = empId;
+    if (day != null) form.elements.day.value = day;
+    if (range) {
+      form.elements.start.value = range.start;
+      form.elements.end.value = range.end;
+    }
   }
   modal.classList.remove("d-none");
   modal.classList.add("d-block");
@@ -444,8 +461,8 @@ function showScheduleModal(empId, editInfo) {
     const id = data.get("employeeId");
     const schedule = loadSchedule();
     if (!schedule[day]) schedule[day] = [];
-    if (editInfo) {
-      schedule[editInfo.day][editInfo.index] = { id, start, end };
+    if (editing) {
+      schedule[opts.day][opts.index] = { id, start, end };
     } else {
       schedule[day].push({ id, start, end });
     }
@@ -455,14 +472,14 @@ function showScheduleModal(empId, editInfo) {
   }
   function onDelete() {
     const schedule = loadSchedule();
-    schedule[editInfo.day].splice(editInfo.index, 1);
+    schedule[opts.day].splice(opts.index, 1);
     saveSchedule(schedule);
     renderSchedule();
     close();
   }
   form.addEventListener("submit", onSubmit);
   closeBtn.addEventListener("click", close);
-  if (editInfo) {
+  if (editing) {
     deleteBtn = document.createElement("button");
     deleteBtn.type = "button";
     deleteBtn.className = "btn btn-danger btn-sm me-2";
