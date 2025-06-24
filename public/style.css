@@ -664,4 +664,5 @@ body.admin-screen {
   height: 50px;
   vertical-align: top;
   cursor: pointer;
+  white-space: normal;
 }

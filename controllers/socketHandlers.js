@@ -93,6 +93,7 @@ module.exports = function (io, db) {
         io.emit("reportsUpdated");
         const fetchSql = `SELECT o.order_number, o.order_type, o.special_instructions, o.allergy, UNIX_TIMESTAMP(o.created_at) AS ts,
                                oi.quantity, mi.name, mi.station_id, mi.id AS item_id,
+                               oi.special_instructions AS item_instructions, oi.allergy AS item_allergy,
                                GROUP_CONCAT(m.name ORDER BY m.name SEPARATOR ', ') AS modifiers
                         FROM orders o
                         JOIN order_items oi ON o.id = oi.order_id
@@ -117,6 +118,8 @@ module.exports = function (io, db) {
               stationId: r.station_id,
               itemId: r.item_id,
               modifiers: r.modifiers ? r.modifiers.split(", ") : [],
+              specialInstructions: r.item_instructions || "",
+              allergy: !!r.item_allergy,
             });
           });
           const orderNumber = rows[0].order_number || orderId;
@@ -148,6 +151,8 @@ module.exports = function (io, db) {
               stationId: r.station_id,
               itemId: r.item_id,
               modifiers: r.modifiers ? r.modifiers.split(", ") : [],
+              specialInstructions: r.item_instructions || "",
+              allergy: !!r.item_allergy,
             })),
           });
         });

@@ -74,8 +74,8 @@ function getBumpedOrders(db, stationId, callback, limit = 20) {
     if (err || infoRows.length === 0) return callback(err, []);
     const orderIds = infoRows.map((r) => r.order_id);
     const itemsSql = `SELECT oi.order_id, oi.quantity, mi.name, mi.station_id,
-                             mi.id AS item_id,
-                             GROUP_CONCAT(m.name ORDER BY m.name SEPARATOR ', ') AS modifiers
+                             mi.id AS item_id, oi.special_instructions,
+                             oi.allergy, GROUP_CONCAT(m.name ORDER BY m.name SEPARATOR ', ') AS modifiers
                       FROM order_items oi
                       JOIN menu_items mi ON oi.menu_item_id = mi.id
                       LEFT JOIN order_item_modifiers oim ON oi.id = oim.order_item_id
@@ -105,6 +105,8 @@ function getBumpedOrders(db, stationId, callback, limit = 20) {
             stationId: row.station_id,
             itemId: row.item_id,
             modifiers: row.modifiers ? row.modifiers.split(", ") : [],
+            specialInstructions: row.special_instructions || "",
+            allergy: !!row.allergy,
           });
         }
       });

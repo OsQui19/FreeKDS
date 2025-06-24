@@ -20,6 +20,8 @@ function renderCart() {
     const li = document.createElement("li");
     let text = `${c.quantity}× ${c.name}`;
     if (c.modifierNames.length) text += ` (${c.modifierNames.join(", ")})`;
+    if (c.allergy) text += " [ALLERGY]";
+    if (c.instructions) text += ` - ${c.instructions}`;
     li.textContent = text;
     total += c.quantity * (c.price || 0);
     const rm = document.createElement("button");
@@ -35,27 +37,22 @@ function renderCart() {
   submitBtn.disabled = cart.length === 0;
   totalEl.textContent = `Total: $${total.toFixed(2)}`;
 }
-function addToCart(itemId, modIds) {
+function addToCart(itemId, modIds, instructions, allergy) {
   const item = itemMap[itemId];
   if (!item) return;
-  const key = itemId + ":" + modIds.slice().sort().join(",");
-  let entry = cart.find((c) => c.key === key);
   const modNames = modIds
     .map((id) => (item.modifiers.find((m) => m.id === id) || {}).name)
     .filter(Boolean);
-  if (entry) {
-    entry.quantity += 1;
-  } else {
-    cart.push({
-      key,
-      itemId,
-      name: item.name,
-      price: item.price,
-      modifierIds: modIds,
-      modifierNames: modNames,
-      quantity: 1,
-    });
-  }
+  cart.push({
+    itemId,
+    name: item.name,
+    price: item.price,
+    modifierIds: modIds,
+    modifierNames: modNames,
+    quantity: 1,
+    instructions: instructions || "",
+    allergy: !!allergy,
+  });
   renderCart();
 }
 // modifier modal logic
@@ -65,12 +62,18 @@ const modTitle = document.getElementById("modTitle");
 const modOptions = document.getElementById("modOptions");
 const modConfirm = document.getElementById("modConfirm");
 const modCancel = document.getElementById("modCancel");
+const modInstructions = document.getElementById("modInstructions");
+const modAllergy = document.getElementById("modAllergy");
 modConfirm.addEventListener("click", () => {
   if (!currentItem) return;
   const chosen = Array.from(
     modOptions.querySelectorAll("input[type=checkbox]:checked"),
   ).map((cb) => parseInt(cb.value, 10));
-  addToCart(currentItem.id, chosen);
+  const instr = modInstructions.value.trim();
+  const allergy = modAllergy.checked;
+  addToCart(currentItem.id, chosen, instr, allergy);
+  modInstructions.value = "";
+  modAllergy.checked = false;
   modModal.classList.add("d-none");
 });
 modCancel.addEventListener("click", () => {
@@ -80,6 +83,8 @@ function showModifierModal(item) {
   currentItem = item;
   modTitle.textContent = `Add ${item.name}`;
   modOptions.innerHTML = "";
+  modInstructions.value = "";
+  modAllergy.checked = false;
   const groups = {};
   item.modifiers.forEach((m) => {
     const gid = m.group_id || "extras";
@@ -112,24 +117,19 @@ document.querySelectorAll("#menu .item-card .btn").forEach((btn) => {
     const id = parseInt(btn.getAttribute("data-id"), 10);
     const item = itemMap[id];
     if (!item) return;
-    if (item.modifiers && item.modifiers.length) {
-      showModifierModal(item);
-    } else {
-      addToCart(id, []);
-    }
+    showModifierModal(item);
   });
 });
 submitBtn.addEventListener("click", () => {
   const payload = {
     order_number: window.TABLE || null,
     order_type: orderTypeEl ? orderTypeEl.value : null,
-    special_instructions:
-      document.getElementById("instructions").value.trim() || null,
-    allergy: document.getElementById("allergy").checked,
     items: cart.map((c) => ({
       menu_item_id: c.itemId,
       quantity: c.quantity,
       modifier_ids: c.modifierIds,
+      special_instructions: c.instructions || null,
+      allergy: !!c.allergy,
     })),
   };
   fetch("/api/orders", {
@@ -141,8 +141,6 @@ submitBtn.addEventListener("click", () => {
     .then((data) => {
       cart.length = 0;
       renderCart();
-      document.getElementById("instructions").value = "";
-      document.getElementById("allergy").checked = false;
       alert("Order placed!");
     })
     .catch((err) => {

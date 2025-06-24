@@ -76,6 +76,12 @@ function createTicketElement({
       }
       itemsHTML += "</ul>";
     }
+    if (item.specialInstructions) {
+      itemsHTML += `<div class="ticket-instructions">${item.specialInstructions}</div>`;
+    }
+    if (item.allergy) {
+      itemsHTML += '<div class="allergy-label">ALLERGY</div>';
+    }
     itemsHTML += `</li>`;
   }
   itemsHTML += `</ul>`;
