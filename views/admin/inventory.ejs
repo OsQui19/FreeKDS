@@ -5,12 +5,7 @@
 </head>
 <body class="admin-screen">
   <%- include('partials/header') %>
-  <% if (req.query.msg) { %>
-  <div class="alert alert-success alert-dismissible fade show m-2" role="alert">
-    <%= req.query.msg %>
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-  </div>
-  <% } %>
+  <%- include('partials/flashMessage') %>
   <%- include('partials/inventoryTab') %>
 </body>
 </html>

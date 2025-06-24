@@ -14,12 +14,7 @@
 <body class="admin-screen">
   <%- include('partials/header') %>
   <%- include('partials/sidenav') %>
-  <% if (req.query.msg) { %>
-  <div class="alert alert-success alert-dismissible fade show m-2" role="alert">
-    <%= req.query.msg %>
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-  </div>
-  <% } %>
+  <%- include('partials/flashMessage') %>
   <div id="windowsContainer" class="windows-container flex-layout"></div>
   <template id="tpl-stations"><%- include('partials/stationsTab') %></template>
   <template id="tpl-menu"><%- include('partials/menuTab') %></template>

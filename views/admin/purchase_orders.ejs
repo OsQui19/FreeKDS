@@ -6,12 +6,7 @@
 <body class="admin-screen">
   <%- include('partials/header') %>
   <%- include('partials/sidenav') %>
-  <% if (req.query.msg) { %>
-  <div class="alert alert-success alert-dismissible fade show m-2" role="alert">
-    <%= req.query.msg %>
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-  </div>
-  <% } %>
+  <%- include('partials/flashMessage') %>
   <div class="container admin-container">
     <h1>Purchase Orders</h1>
     <table class="table mb-3">
