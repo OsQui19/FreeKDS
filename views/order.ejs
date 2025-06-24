@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="/order.css">
   <%- include('partials/theme-vars') %>
 </head>
-<body>
+<body class="menu-layout-<%= settings.menu_layout === 'list' ? 'list' : 'grid' %>">
 <header class="menu-header">
   <h1 class="menu-title">Menu</h1>
   <div class="mt-1 order-type-select">

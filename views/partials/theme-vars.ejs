@@ -2,7 +2,11 @@
   :root {
     --bg-color: <%= settings.theme_bg_color || '#222222' %>;
     --primary-color: <%= settings.theme_primary_color || '#0084ff' %>;
+    --text-color: <%= settings.text_color || '#000000' %>;
     --font-family: <%= settings.font_family || 'Inter, sans-serif' %>;
+    --button-radius: <%= settings.button_radius || 6 %>px;
+    --card-shadow: <%= settings.card_shadow || '0 2px 6px rgba(0, 0, 0, 0.08)' %>;
+    --menu-layout: <%= settings.menu_layout || 'grid' %>;
   }
   <%- settings.custom_css || '' %>
 </style>

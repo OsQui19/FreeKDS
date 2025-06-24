@@ -30,9 +30,43 @@
       </div>
     </div>
     <div class="row mb-3">
+      <label for="text-color" class="col-sm-4 col-form-label">Text Color:</label>
+      <div class="col-sm-8">
+        <input id="text-color" class="form-control" type="color" name="text_color" value="<%= settings.text_color || '#000000' %>">
+      </div>
+    </div>
+    <div class="row mb-3">
+      <label for="button-radius" class="col-sm-4 col-form-label">Button Radius:</label>
+      <div class="col-sm-8">
+        <input id="button-radius" class="form-control" type="number" step="1" name="button_radius" value="<%= settings.button_radius || 6 %>">
+      </div>
+    </div>
+    <div class="row mb-3">
+      <label for="card-shadow" class="col-sm-4 col-form-label">Card Shadow:</label>
+      <div class="col-sm-8">
+        <input id="card-shadow" class="form-control" type="text" name="card_shadow" value="<%= settings.card_shadow || '0 2px 6px rgba(0,0,0,0.08)' %>">
+      </div>
+    </div>
+    <div class="row mb-3">
+      <label for="menu-layout" class="col-sm-4 col-form-label">Menu Layout:</label>
+      <div class="col-sm-8">
+        <select id="menu-layout" class="form-select" name="menu_layout">
+          <option value="grid" <%= settings.menu_layout !== 'list' ? 'selected' : '' %>>Grid</option>
+          <option value="list" <%= settings.menu_layout === 'list' ? 'selected' : '' %>>List</option>
+        </select>
+      </div>
+    </div>
+    <div class="row mb-3">
       <label for="font-family" class="col-sm-4 col-form-label">Font Family:</label>
       <div class="col-sm-8">
-        <input id="font-family" class="form-control" type="text" name="font_family" value="<%= settings.font_family || '' %>">
+        <input id="font-family" class="form-control" list="fontOptions" type="text" name="font_family" value="<%= settings.font_family || '' %>">
+        <datalist id="fontOptions">
+          <option value="Inter, sans-serif">
+          <option value="Arial, sans-serif">
+          <option value="Georgia, serif">
+          <option value="'Times New Roman', serif">
+          <option value="Courier New, monospace">
+        </datalist>
       </div>
     </div>
     <div class="mb-3">
@@ -44,6 +78,10 @@
     </div>
     <div class="col-12 col-md-7">
       <iframe id="menuPreview" class="w-100" src="/order" title="Menu preview"></iframe>
+      <div class="mt-2 text-end">
+        <button type="button" id="togglePreview" class="btn btn-secondary btn-sm me-2">Hide Preview</button>
+        <button type="button" id="resetPreview" class="btn btn-secondary btn-sm">Reset to Defaults</button>
+      </div>
     </div>
   </div>
   </div>

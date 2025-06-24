@@ -865,6 +865,10 @@ module.exports = (db, io) => {
       "ticket_layout",
       "font_family",
       "custom_css",
+      "text_color",
+      "button_radius",
+      "card_shadow",
+      "menu_layout",
     ];
     const settings = {};
     allowed.forEach((k) => {
