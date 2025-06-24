@@ -260,86 +260,103 @@
   </div>
 
   <!-- Management options -->
-  <h3>Add New Category</h3>
-  <button class="btn btn-secondary mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#newCategoryForm">Show Form</button>
-  <div id="newCategoryForm" class="card collapse mb-4">
-    <div class="card-body">
-      <form action="/admin/categories" method="POST" class="mod-row">
-        <input class="form-control" type="text" name="name" placeholder="Category name" required>
-        <button type="submit" class="btn btn-primary">Add Category</button>
-      </form>
-    </div>
-    <h3>Modifier Groups</h3>
-  <button class="btn btn-secondary mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#groupSection">Show Groups</button>
-  <div id="groupSection" class="card collapse mb-4">
-    <div class="card-body">
-      <div class="mod-group-list">
-        <% modGroups.forEach(g => { %>
-          <div class="mod-row mb-2">
-             <form action="/admin/modifier-groups" method="POST" class="d-flex gap-2 flex-grow-1">
-              <input type="hidden" name="id" value="<%= g.id %>">
-              <input class="form-control" type="text" name="name" value="<%= g.name %>" required>
-              <button type="submit" class="btn btn-primary">Save</button>
-            </form>
-            <form action="/admin/modifier-groups/delete" method="POST" onsubmit="return confirm('Delete group \"<%= g.name %>\"?');">
-              <input type="hidden" name="id" value="<%= g.id %>">
-              <button type="submit" class="btn btn-secondary">Delete</button>
-            </form>
-          </div>
-        <% }); %>
-        <form action="/admin/modifier-groups" method="POST" class="mod-row mt-2">
-          <input class="form-control" type="text" name="name" placeholder="New group name" required>
-          <button type="submit" class="btn btn-primary">Add Group</button>
-        </form>
+  <div class="accordion mb-4" id="menuManageAccordion">
+    <div class="accordion-item">
+      <h2 class="accordion-header" id="headingCategory">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCategory" aria-expanded="false" aria-controls="collapseCategory">
+          Add New Category
+        </button>
+      </h2>
+      <div id="collapseCategory" class="accordion-collapse collapse" aria-labelledby="headingCategory" data-bs-parent="#menuManageAccordion">
+        <div class="accordion-body">
+          <form action="/admin/categories" method="POST" class="d-flex gap-2">
+            <input class="form-control" type="text" name="name" placeholder="Category name" required>
+            <button type="submit" class="btn btn-primary">Add</button>
+          </form>
+        </div>
       </div>
     </div>
-  </div>
-  <h3>Modifiers</h3>
-  <button class="btn btn-secondary mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#modifierSection">Show Modifiers</button>
-  <div id="modifierSection" class="card collapse mb-4">
-    <div class="card-body">
-      <div class="mod-list">
-        <% mods.forEach(mod => { %>
-          <div class="mod-row">
-            <form action="/admin/modifiers" method="POST" class="d-flex gap-2 align-items-end flex-grow-1">
-              <input type="hidden" name="id" value="<%= mod.id %>">
-              <span class="me-1">(<%= mod.id %>)</span>
-              <input class="form-control mod-name" list="ingredientsList" type="text" name="name" value="<%= mod.ingredient_name || mod.name %>" required>
-              <input type="hidden" name="ingredient_id" value="<%= mod.ingredient_id || '' %>">
-              <input class="form-control" type="number" step="0.01" name="price" value="<%= Number(mod.price).toFixed(2) %>" required>
+    <div class="accordion-item">
+      <h2 class="accordion-header" id="headingGroups">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseGroups" aria-expanded="false" aria-controls="collapseGroups">
+          Modifier Groups
+        </button>
+      </h2>
+      <div id="collapseGroups" class="accordion-collapse collapse" aria-labelledby="headingGroups" data-bs-parent="#menuManageAccordion">
+        <div class="accordion-body">
+          <div class="mod-group-list">
+            <% modGroups.forEach(g => { %>
+              <div class="mod-row mb-2">
+                <form action="/admin/modifier-groups" method="POST" class="d-flex gap-2 flex-grow-1">
+                  <input type="hidden" name="id" value="<%= g.id %>">
+                  <input class="form-control" type="text" name="name" value="<%= g.name %>" required>
+                  <button type="submit" class="btn btn-primary">Save</button>
+                </form>
+                <form action="/admin/modifier-groups/delete" method="POST" onsubmit="return confirm('Delete group \"<%= g.name %>\"?');">
+                  <input type="hidden" name="id" value="<%= g.id %>">
+                  <button type="submit" class="btn btn-secondary">Delete</button>
+                </form>
+              </div>
+            <% }); %>
+            <form action="/admin/modifier-groups" method="POST" class="mod-row mt-2">
+              <input class="form-control" type="text" name="name" placeholder="New group name" required>
+              <button type="submit" class="btn btn-primary">Add Group</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="accordion-item">
+      <h2 class="accordion-header" id="headingModifiers">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseModifiers" aria-expanded="false" aria-controls="collapseModifiers">
+          Modifiers
+        </button>
+      </h2>
+      <div id="collapseModifiers" class="accordion-collapse collapse" aria-labelledby="headingModifiers" data-bs-parent="#menuManageAccordion">
+        <div class="accordion-body">
+          <div class="mod-list">
+            <% mods.forEach(mod => { %>
+              <div class="mod-row">
+                <form action="/admin/modifiers" method="POST" class="d-flex gap-2 align-items-end flex-grow-1">
+                  <input type="hidden" name="id" value="<%= mod.id %>">
+                  <span class="me-1">(<%= mod.id %>)</span>
+                  <input class="form-control mod-name" list="ingredientsList" type="text" name="name" value="<%= mod.ingredient_name || mod.name %>" required>
+                  <input type="hidden" name="ingredient_id" value="<%= mod.ingredient_id || '' %>">
+                  <input class="form-control" type="number" step="0.01" name="price" value="<%= Number(mod.price).toFixed(2) %>" required>
+                  <select class="form-select" name="group_id">
+                    <option value="">No Group</option>
+                    <% modGroups.forEach(g => { %>
+                      <option value="<%= g.id %>" <%= mod.group_id === g.id ? 'selected' : '' %>><%= g.name %></option>
+                    <% }); %>
+                  </select>
+                  <button type="submit" class="btn btn-primary">Save</button>
+                </form>
+                <form action="/admin/modifiers/delete" method="POST" onsubmit="return confirm('Delete modifier \"<%= mod.name %>\"?');">
+                  <input type="hidden" name="id" value="<%= mod.id %>">
+                  <button type="submit" class="btn btn-secondary">Delete</button>
+                </form>
+              </div>
+            <% }); %>
+          </div>
+          <div class="mod-row mt-3">
+            <form id="addModifierForm" action="/admin/modifiers" method="POST" class="d-flex gap-2 align-items-end">
+              <span class="me-1">New:</span>
+              <input class="form-control mod-name" list="ingredientsList" type="text" name="name" placeholder="Modifier ingredient" required>
+              <input type="hidden" name="ingredient_id">
+              <input class="form-control" type="number" step="0.01" name="price" placeholder="Price" value="0" required>
               <select class="form-select" name="group_id">
                 <option value="">No Group</option>
                 <% modGroups.forEach(g => { %>
-                  <option value="<%= g.id %>" <%= mod.group_id === g.id ? 'selected' : '' %>><%= g.name %></option>
+                  <option value="<%= g.id %>"><%= g.name %></option>
                 <% }); %>
               </select>
-              <button type="submit" class="btn btn-primary">Save</button>
-            </form>
-            <form action="/admin/modifiers/delete" method="POST" onsubmit="return confirm('Delete modifier \"<%= mod.name %>\"?');">
-              <input type="hidden" name="id" value="<%= mod.id %>">
-              <button type="submit" class="btn btn-secondary">Delete</button>
+              <button type="submit" class="btn btn-primary">Add Modifier</button>
             </form>
           </div>
-        <% }); %>
         </div>
-        <div class="mod-row mt-3">
-          <form id="addModifierForm" action="/admin/modifiers" method="POST" class="d-flex gap-2 align-items-end">
-            <span class="me-1">New:</span>
-            <input class="form-control mod-name" list="ingredientsList" type="text" name="name" placeholder="Modifier ingredient" required>
-            <input type="hidden" name="ingredient_id">
-            <input class="form-control" type="number" step="0.01" name="price" placeholder="Price" value="0" required>
-            <select class="form-select" name="group_id">
-              <option value="">No Group</option>
-              <% modGroups.forEach(g => { %>
-                <option value="<%= g.id %>"><%= g.name %></option>
-              <% }); %>
-            </select>
-            <button type="submit" class="btn btn-primary">Add Modifier</button>
-          </form>
       </div>
     </div>
   </div>
-</div>
   <!-- Include SortableJS for drag-and-drop reordering -->
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <datalist id="ingredientsList">
