@@ -40,7 +40,17 @@ const EMPLOYEE_KEY = "employees";
 const SCHEDULE_KEY = "schedule";
 const HOURS = Array.from({ length: 10 }, (_, i) => 9 + i); // 9am-18pm
 const SCHEDULE_VIEW_KEY = "scheduleView";
+const SCHEDULE_WEEK_OFFSET_KEY = "scheduleWeekOffset";
 let scheduleView = localStorage.getItem(SCHEDULE_VIEW_KEY) || "week";
+let scheduleWeekOffset =
+  parseInt(localStorage.getItem(SCHEDULE_WEEK_OFFSET_KEY), 10) || 0;
+
+function updateScheduleToggleBtn() {
+  const btn = document.getElementById("toggleScheduleView");
+  if (btn) {
+    btn.textContent = scheduleView === "week" ? "Monthly View" : "Weekly View";
+  }
+}
 
 function startOfWeek(date) {
   const d = new Date(date);
@@ -220,7 +230,9 @@ function fillWeekTable(table, schedule, employees) {
     ranges.forEach((r) => {
       const emp = employees.find((e) => e.id === r.id);
       for (let h = r.start; h < r.end; h++) {
-        const cell = table.querySelector(`td[data-day="${day}"][data-hour="${h}"]`);
+        const cell = table.querySelector(
+          `td[data-day="${day}"][data-hour="${h}"]`,
+        );
         if (!cell) continue;
         if (h === r.start) {
           cell.textContent = emp ? `${emp.name} (${emp.position})` : "";
@@ -238,15 +250,25 @@ function renderSchedule() {
   grid.classList.toggle("month-view", scheduleView === "month");
   const schedule = loadSchedule();
   const employees = loadEmployees();
+  const base = startOfWeek(new Date());
   if (scheduleView === "week") {
-    const table = buildWeekTable();
+    const label = weekLabel(base, scheduleWeekOffset);
+    const table = buildWeekTable(label);
     grid.appendChild(table);
     fillWeekTable(table, schedule, employees);
   } else {
-    const base = startOfWeek(new Date());
     for (let w = 0; w < 4; w++) {
       const label = weekLabel(base, w);
       const table = buildWeekTable(label);
+      table.dataset.weekIndex = w;
+      table.addEventListener("click", () => {
+        scheduleWeekOffset = w;
+        localStorage.setItem(SCHEDULE_WEEK_OFFSET_KEY, scheduleWeekOffset);
+        scheduleView = "week";
+        localStorage.setItem(SCHEDULE_VIEW_KEY, scheduleView);
+        renderSchedule();
+        updateScheduleToggleBtn();
+      });
       grid.appendChild(table);
       fillWeekTable(table, schedule, employees);
     }
@@ -284,7 +306,11 @@ function enableScheduleEditing() {
       const hour = parseInt(cell.dataset.hour, 10);
       const info = findRange(day, hour);
       if (info) {
-        showScheduleModal(info.range.id, { day, index: info.index, range: info.range });
+        showScheduleModal(info.range.id, {
+          day,
+          index: info.index,
+          range: info.range,
+        });
       }
     });
   });
@@ -293,16 +319,13 @@ function enableScheduleEditing() {
 function setupScheduleViewToggle() {
   const btn = document.getElementById("toggleScheduleView");
   if (!btn) return;
-  function update() {
-    btn.textContent = scheduleView === "week" ? "Monthly View" : "Weekly View";
-  }
   btn.addEventListener("click", () => {
     scheduleView = scheduleView === "week" ? "month" : "week";
     localStorage.setItem(SCHEDULE_VIEW_KEY, scheduleView);
     renderSchedule();
-    update();
+    updateScheduleToggleBtn();
   });
-  update();
+  updateScheduleToggleBtn();
 }
 
 function populateTimeSelect(select) {

@@ -679,9 +679,9 @@ body.admin-screen {
 }
 
 #scheduleGrid.month-view .schedule-table td {
-  min-width: 60px;
-  height: 40px;
-  font-size: 0.75rem;
+  min-width: 54px;
+  height: 30px;
+  font-size: 0.65rem;
 }
 
 #scheduleGrid.month-view .schedule-table th,
