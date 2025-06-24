@@ -843,18 +843,19 @@ module.exports = (db, io) => {
       res.status(500).send("DB Error");
     }
   });
-  router.get("/admin/theme", (req, res) => {
-    db.query("SELECT * FROM settings", (err, rows) => {
-      if (err) {
-        console.error("Error fetching settings:", err);
-        return res.status(500).send("DB Error");
-      }
+  router.get("/admin/theme", async (req, res) => {
+    try {
+      const [rows] = await db.promise().query("SELECT * FROM settings");
       const settings = {};
       rows.forEach((r) => {
         settings[r.setting_key] = r.setting_value;
       });
-      res.render("admin/themes", { settings });
-    });
+      const stations = await getStations(db);
+      res.render("admin/themes", { settings, stations });
+    } catch (err) {
+      console.error("Error fetching settings:", err);
+      res.status(500).send("DB Error");
+    }
   });
 
   router.post("/admin/settings", (req, res) => {

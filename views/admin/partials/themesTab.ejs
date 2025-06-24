@@ -77,7 +77,10 @@
     </form>
     </div>
     <div class="col-12 col-md-7">
-      <iframe id="menuPreview" class="w-100" src="/order" title="Menu preview"></iframe>
+      <iframe id="menuPreview" class="w-100 mb-3" src="/order" title="Menu preview"></iframe>
+      <% if (stations && stations.length) { %>
+      <iframe id="stationPreview" class="w-100" src="/station/<%= stations[0].id %>" title="Station preview"></iframe>
+      <% } %>
       <div class="mt-2 text-end">
         <button type="button" id="togglePreview" class="btn btn-secondary btn-sm me-2">Hide Preview</button>
         <button type="button" id="resetPreview" class="btn btn-secondary btn-sm">Reset to Defaults</button>

@@ -29,6 +29,7 @@ function initEmployeesTabs() {
   renderEmployeeList();
   renderSchedule();
   setupScheduleViewToggle();
+  setupWeekNav();
 }
 
 const EMPLOYEE_KEY = "employees";
@@ -69,6 +70,37 @@ function weekLabel(base, offset) {
   );
 }
 
+function weekKey(date) {
+  return date.toISOString().split("T")[0];
+}
+
+function currentWeekKey() {
+  const base = startOfWeek(new Date());
+  base.setDate(base.getDate() + scheduleWeekOffset * 7);
+  return weekKey(base);
+}
+
+function loadAllSchedules() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(SCHEDULE_KEY)) || {};
+    // migrate old format (no week key)
+    const isOldFormat = Object.keys(raw).some((k) => /^\d$/.test(k));
+    if (isOldFormat) {
+      const key = currentWeekKey();
+      const obj = { [key]: raw };
+      localStorage.setItem(SCHEDULE_KEY, JSON.stringify(obj));
+      return obj;
+    }
+    return raw;
+  } catch {
+    return {};
+  }
+}
+
+function saveAllSchedules(obj) {
+  localStorage.setItem(SCHEDULE_KEY, JSON.stringify(obj));
+}
+
 function randomColor() {
   return (
     "#" +
@@ -94,13 +126,16 @@ function saveEmployees(arr) {
   localStorage.setItem(EMPLOYEE_KEY, JSON.stringify(arr));
 }
 
-function loadSchedule() {
+function loadScheduleForOffset(offset) {
   try {
-    const raw = JSON.parse(localStorage.getItem(SCHEDULE_KEY)) || {};
-    // migrate old format (object of hours) to array of ranges
-    Object.keys(raw).forEach((day) => {
-      if (Array.isArray(raw[day])) return;
-      const obj = raw[day] || {};
+    const all = loadAllSchedules();
+    const base = startOfWeek(new Date());
+    base.setDate(base.getDate() + offset * 7);
+    const key = weekKey(base);
+    const week = all[key] || {};
+    Object.keys(week).forEach((day) => {
+      if (Array.isArray(week[day])) return;
+      const obj = week[day] || {};
       const arr = [];
       let current = null;
       HOURS.forEach((h) => {
@@ -116,20 +151,29 @@ function loadSchedule() {
           current = null;
         }
       });
-      raw[day] = arr;
+      week[day] = arr;
     });
-    return raw;
+    return week;
   } catch {
     return {};
   }
 }
 
-function saveSchedule(obj) {
-  localStorage.setItem(SCHEDULE_KEY, JSON.stringify(obj));
+function loadSchedule() {
+  return loadScheduleForOffset(scheduleWeekOffset);
 }
 
-function findRange(day, hour) {
-  const schedule = loadSchedule();
+function saveSchedule(obj, offset = scheduleWeekOffset) {
+  const all = loadAllSchedules();
+  const base = startOfWeek(new Date());
+  base.setDate(base.getDate() + offset * 7);
+  const key = weekKey(base);
+  all[key] = obj;
+  saveAllSchedules(all);
+}
+
+function findRange(day, hour, offset = scheduleWeekOffset) {
+  const schedule = loadScheduleForOffset(offset);
   const ranges = schedule[day] || [];
   for (let i = 0; i < ranges.length; i++) {
     const r = ranges[i];
@@ -243,10 +287,10 @@ function renderSchedule() {
   if (!grid) return;
   grid.innerHTML = "";
   grid.classList.toggle("month-view", scheduleView === "month");
-  const schedule = loadSchedule();
   const employees = loadEmployees();
   const base = startOfWeek(new Date());
   if (scheduleView === "week") {
+    const schedule = loadSchedule();
     const label = weekLabel(base, scheduleWeekOffset);
     const table = buildWeekTable(label);
     grid.appendChild(table);
@@ -265,7 +309,8 @@ function renderSchedule() {
         updateScheduleToggleBtn();
       });
       grid.appendChild(table);
-      fillWeekTable(table, schedule, employees);
+      const weekSchedule = loadScheduleForOffset(w);
+      fillWeekTable(table, weekSchedule, employees);
     }
   }
   enableScheduleDnD();
@@ -321,6 +366,35 @@ function setupScheduleViewToggle() {
     updateScheduleToggleBtn();
   });
   updateScheduleToggleBtn();
+}
+
+function updateWeekLabel() {
+  const span = document.getElementById("currentWeekLabel");
+  if (!span) return;
+  const base = startOfWeek(new Date());
+  span.textContent = weekLabel(base, scheduleWeekOffset);
+}
+
+function setupWeekNav() {
+  const prev = document.getElementById("prevWeek");
+  const next = document.getElementById("nextWeek");
+  if (prev) {
+    prev.addEventListener("click", () => {
+      scheduleWeekOffset -= 1;
+      localStorage.setItem(SCHEDULE_WEEK_OFFSET_KEY, scheduleWeekOffset);
+      renderSchedule();
+      updateWeekLabel();
+    });
+  }
+  if (next) {
+    next.addEventListener("click", () => {
+      scheduleWeekOffset += 1;
+      localStorage.setItem(SCHEDULE_WEEK_OFFSET_KEY, scheduleWeekOffset);
+      renderSchedule();
+      updateWeekLabel();
+    });
+  }
+  updateWeekLabel();
 }
 
 function populateTimeSelect(select) {
