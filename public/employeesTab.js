@@ -1,10 +1,10 @@
 function initEmployeesTabs() {
-  const links = document.querySelectorAll("#employeesTabs .nav-link");
+  const tabs = document.getElementById("employeesTabs");
   const panes = document.querySelectorAll(".employees-pane");
   const STORAGE_KEY = "activeEmployeesPane";
 
   function activate(id) {
-    links.forEach((l) => {
+    tabs.querySelectorAll(".nav-link").forEach((l) => {
       l.classList.toggle("active", l.dataset.pane === id);
     });
     panes.forEach((p) => {
@@ -13,12 +13,14 @@ function initEmployeesTabs() {
     if (id) localStorage.setItem(STORAGE_KEY, id);
   }
 
-  links.forEach((link) => {
-    link.addEventListener("click", (e) => {
+  if (tabs) {
+    tabs.addEventListener("click", (e) => {
+      const link = e.target.closest(".nav-link");
+      if (!link) return;
       e.preventDefault();
       activate(link.dataset.pane);
     });
-  });
+  }
 
   const saved = localStorage.getItem(STORAGE_KEY);
   if (saved && document.getElementById(saved)) {
