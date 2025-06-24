@@ -533,6 +533,16 @@ function bindForms() {
     });
   });
 
+  document.querySelectorAll(".add-item-form form").forEach((form) => {
+    handleForm(form, () => {
+      showAlert("Item saved");
+      form.reset();
+      const hiddenBox = form.querySelector(".hidden-ingredients");
+      if (hiddenBox) hiddenBox.innerHTML = "";
+      updateModReplaceOptions(form);
+    });
+  });
+
   document
     .querySelectorAll('.mod-row form[action="/admin/modifiers"]')
     .forEach((form) => {
