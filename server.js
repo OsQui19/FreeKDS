@@ -6,6 +6,7 @@ const { Server } = require("socket.io");
 const settingsCache = require("./controllers/settingsCache");
 const unitConversion = require("./controllers/unitConversion");
 const { scheduleDailyLog } = require("./controllers/dailyUsage");
+const { scheduleDailyBackup } = require("./controllers/dbBackup");
 require("dotenv").config();
 const app = express();
 const server = http.createServer(app);
@@ -30,6 +31,7 @@ db.getConnection((err, connection) => {
   settingsCache.loadSettings(db);
   unitConversion.loadUnits(db);
   scheduleDailyLog(db);
+  scheduleDailyBackup();
 });
 
 // Middleware to parse request body

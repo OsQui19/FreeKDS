@@ -29,6 +29,17 @@ function backupDatabase(cb) {
   });
 }
 
+function scheduleDailyBackup() {
+  const now = new Date();
+  const next = new Date(now);
+  next.setHours(3, 0, 0, 0);
+  if (next <= now) next.setDate(next.getDate() + 1);
+  setTimeout(() => {
+    backupDatabase();
+    scheduleDailyBackup();
+  }, next - now);
+}
+
 function restoreDatabase(file, cb) {
   const cmd = `mysql -h ${process.env.DB_HOST || '127.0.0.1'} -u ${process.env.DB_USER || 'freekds'} -p${process.env.DB_PASS || ''} ${process.env.DB_NAME || 'kds_db'} < "${file}"`;
   exec(cmd, (err) => {
@@ -41,4 +52,4 @@ function restoreDatabase(file, cb) {
   });
 }
 
-module.exports = { backupDatabase, restoreDatabase, BACKUP_DIR };
+module.exports = { backupDatabase, restoreDatabase, BACKUP_DIR, scheduleDailyBackup };
