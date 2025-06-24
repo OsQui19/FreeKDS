@@ -535,11 +535,8 @@ function bindForms() {
 
   document.querySelectorAll(".add-item-form form").forEach((form) => {
     handleForm(form, () => {
-      showAlert("Item saved");
-      form.reset();
-      const hiddenBox = form.querySelector(".hidden-ingredients");
-      if (hiddenBox) hiddenBox.innerHTML = "";
-      updateModReplaceOptions(form);
+      // Reload to display the newly added item in its category
+      window.location.reload();
     });
   });
 
