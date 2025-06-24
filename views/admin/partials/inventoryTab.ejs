@@ -8,13 +8,14 @@
   <div class="tab-content">
     <div class="inventory-pane active" id="itemsPane">
       <div class="ingredient-list mb-3">
-        <div class="d-flex mb-2">
+        <div class="d-flex mb-2 align-items-center">
           <select id="filterCategory" class="form-select form-select-sm me-2" style="width:auto;">
             <option value="">All Categories</option>
             <% itemCategories.forEach(cat => { %>
               <option value="<%= cat.id %>"><%= cat.name %></option>
             <% }) %>
           </select>
+          <button id="addCategoryBtn" type="button" class="btn btn-primary btn-sm">Add</button>
         </div>
         <div class="mb-3" id="quickAddWrapper">
           <form
@@ -135,73 +136,17 @@
         </table>
         <form id="newIngredientForm" action="/admin/ingredients" method="POST" class="d-none"></form>
       </div>
-      <h3>Item Categories</h3>
-      <button
-        class="btn btn-secondary mb-2"
-        type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#categorySection"
-      >
-        Show Categories
-      </button>
-      <div id="categorySection" class="card collapse mb-4">
-        <div class="card-body">
-          <div class="category-list">
-            <% itemCategories.forEach(cat => { %>
-              <div class="mod-row mb-2">
-                <form
-                  action="/admin/item-categories"
-                  method="POST"
-                  class="d-flex gap-2 flex-grow-1"
-                >
-                  <input type="hidden" name="id" value="<%= cat.id %>" />
-                  <input
-                    class="form-control"
-                    type="text"
-                    name="name"
-                    value="<%= cat.name %>"
-                    required
-                  />
-                  <select class="form-select" name="parent_id">
-                    <option value="">No Parent</option>
-                    <% itemCategories.forEach(p => { %>
-                      <option
-                        value="<%= p.id %>"
-                        <%= cat.parent_id === p.id ? 'selected' : '' %>
-                      >
-                        <%= p.name %>
-                      </option>
-                    <% }) %>
-                  </select>
-                  <button type="submit" class="btn btn-primary">Save</button>
-                </form>
-                <form
-                  action="/admin/item-categories/delete"
-                  method="POST"
-                  onsubmit="return confirm('Delete category \"<%= cat.name %>\"?');"
-                >
-                  <input type="hidden" name="id" value="<%= cat.id %>" />
-                  <button type="submit" class="btn btn-secondary">Delete</button>
-                </form>
-              </div>
-            <% }) %>
-            <form action="/admin/item-categories" method="POST" class="mod-row mt-2">
-              <input
-                class="form-control"
-                type="text"
-                name="name"
-                placeholder="Category name"
-                required
-              />
-              <select class="form-select" name="parent_id">
-                <option value="">No Parent</option>
-                <% itemCategories.forEach(p => { %>
-                  <option value="<%= p.id %>"><%= p.name %></option>
-                <% }) %>
-              </select>
-              <button type="submit" class="btn btn-primary">Add Category</button>
-            </form>
-          </div>
+
+      <div id="addCategoryModal" class="modal d-none">
+        <div class="modal-content modal-small">
+          <button id="addCategoryCancel" class="btn-secondary btn-sm mb-2">Close</button>
+          <form id="addCategoryForm" action="/admin/item-categories" method="POST">
+            <div class="mb-2">
+              <label class="form-label">Category Name</label>
+              <input type="text" name="name" class="form-control form-control-sm" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm">Add</button>
+          </form>
         </div>
       </div>
     </div>

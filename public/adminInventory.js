@@ -22,7 +22,7 @@ function initAdminInventory() {
   }
   document
     .querySelectorAll(
-      ".ingredient-list form, .category-list form, #transaction-form",
+      ".ingredient-list form, #transaction-form",
     )
     .forEach(handleForm);
 
@@ -100,6 +100,28 @@ function initAdminInventory() {
   }
 
   initQuickAdd();
+
+  function initAddCategoryModal() {
+    const btn = document.getElementById("addCategoryBtn");
+    const modal = document.getElementById("addCategoryModal");
+    const cancel = document.getElementById("addCategoryCancel");
+    const form = document.getElementById("addCategoryForm");
+    if (!btn || !modal || !form || !cancel) return;
+
+    const close = () => {
+      modal.classList.add("d-none");
+      modal.classList.remove("d-flex");
+    };
+
+    btn.addEventListener("click", () => {
+      modal.classList.remove("d-none");
+      modal.classList.add("d-flex");
+    });
+    cancel.addEventListener("click", close);
+    handleForm(form);
+  }
+
+  initAddCategoryModal();
 }
 
 if (document.readyState === "loading") {
