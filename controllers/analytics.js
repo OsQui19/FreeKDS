@@ -92,10 +92,28 @@ async function fetchLowStockIngredients(db, threshold = 5) {
   return rows;
 }
 
+async function fetchAverageBumpTimes(db, start, end) {
+  const endDate = end ? new Date(end) : new Date();
+  const startDate = start ? new Date(start) : new Date(endDate.getTime() - 29 * 86400000);
+  const sql = `SELECT s.id AS station_id, s.name,
+                      AVG(TIMESTAMPDIFF(SECOND, o.created_at, bo.bumped_at)) AS avg_seconds
+                 FROM bumped_orders bo
+                 JOIN orders o ON bo.order_id = o.id
+                 JOIN stations s ON bo.station_id = s.id
+                WHERE bo.bumped_at BETWEEN ? AND ?
+                GROUP BY s.id
+                ORDER BY s.name`;
+  const [rows] = await db
+    .promise()
+    .query(sql, [formatDateTime(startDate), formatDateTime(endDate)]);
+  return rows;
+}
+
 module.exports = {
   fetchSalesTotals,
   fetchIngredientUsage,
   fetchTopMenuItems,
   fetchCategorySales,
   fetchLowStockIngredients,
+  fetchAverageBumpTimes,
 };

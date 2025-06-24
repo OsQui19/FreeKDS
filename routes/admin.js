@@ -21,6 +21,7 @@ const {
   fetchTopMenuItems,
   fetchCategorySales,
   fetchLowStockIngredients,
+  fetchAverageBumpTimes,
 } = require("../controllers/analytics");
 const settingsCache = require("../controllers/settingsCache");
 const { convert } = require("../controllers/unitConversion");
@@ -574,7 +575,8 @@ module.exports = (db, io) => {
       const topItems = await fetchTopMenuItems(db, start, end);
       const categorySales = await fetchCategorySales(db, start, end);
       const lowStock = await fetchLowStockIngredients(db);
-      res.json({ sales, usage, topItems, categorySales, lowStock });
+      const avgTimes = await fetchAverageBumpTimes(db, start, end);
+      res.json({ sales, usage, topItems, categorySales, lowStock, avgTimes });
     } catch (err) {
       console.error("Error fetching reports data:", err);
       res.status(500).json({ error: "DB Error" });

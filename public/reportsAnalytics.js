@@ -13,6 +13,7 @@ function loadReports() {
   const catEl = document.getElementById("categoryChart");
   const topBody = document.getElementById("topItemsBody");
   const lowBody = document.getElementById("lowStockBody");
+  const avgBody = document.getElementById("avgTimesBody");
   const marginEl = document.getElementById("profitMarginVal");
   const roiEl = document.getElementById("roiVal");
   if (!salesEl || !catEl) return;
@@ -130,6 +131,15 @@ function loadReports() {
           const tr = document.createElement("tr");
           tr.innerHTML = `<td>${it.name}</td><td>${it.quantity}</td><td>${it.unit || ""}</td>`;
           lowBody.appendChild(tr);
+        });
+      }
+      if (avgBody) {
+        avgBody.innerHTML = "";
+        data.avgTimes.forEach((row) => {
+          const tr = document.createElement("tr");
+          const mins = row.avg_seconds / 60;
+          tr.innerHTML = `<td>${row.name}</td><td>${mins.toFixed(1)}</td>`;
+          avgBody.appendChild(tr);
         });
       }
     })
