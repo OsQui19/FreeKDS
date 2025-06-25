@@ -276,6 +276,9 @@ function setupOnboardingForm() {
       name,
       position: data.get("position") || "",
       start_date: data.get("start_date") || "",
+      username: (data.get("username") || "").trim(),
+      password: (data.get("password") || "").trim(),
+      role: data.get("role") || "FOH",
       color: randomColor(),
     };
     const employees = loadEmployees();

@@ -19,6 +19,21 @@
             <input type="date" class="form-control form-control-sm" name="start_date" />
           </div>
         </div>
+        <div class="row g-2 mb-3">
+          <div class="col-sm-4">
+            <input type="text" class="form-control form-control-sm" name="username" placeholder="Username" />
+          </div>
+          <div class="col-sm-4">
+            <input type="password" class="form-control form-control-sm" name="password" placeholder="Password" autocomplete="new-password" />
+          </div>
+          <div class="col-sm-4">
+            <select name="role" class="form-select form-select-sm">
+              <option value="FOH" selected>Employee</option>
+              <option value="BOH">Back of House</option>
+              <option value="management">Manager</option>
+            </select>
+          </div>
+        </div>
         <div class="mb-3">
           <label class="form-label">Documents</label>
           <input type="file" class="form-control form-control-sm" name="documents" multiple />

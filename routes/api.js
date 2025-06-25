@@ -8,6 +8,7 @@ const {
 } = require("../controllers/dbHelpers");
 const { backupDatabase } = require("../controllers/dbBackup");
 const unitConversion = require("../controllers/unitConversion");
+const bcrypt = require("bcrypt");
 
 module.exports = (db, io) => {
   const router = express.Router();
@@ -233,15 +234,42 @@ module.exports = (db, io) => {
   });
 
   router.post("/api/employees", async (req, res) => {
+    if (!req.session.user || req.session.user.role !== "management") {
+      return res.status(403).send("Forbidden");
+    }
     if (!Array.isArray(req.body.employees))
       return res.status(400).send("Invalid data");
     try {
+      const employees = req.body.employees;
       await db
         .promise()
         .query(
           "INSERT INTO settings (setting_key, setting_value) VALUES ('employees', ?) ON DUPLICATE KEY UPDATE setting_value=VALUES(setting_value)",
-          [JSON.stringify(req.body.employees)],
+          [JSON.stringify(employees)],
         );
+
+      const allowedRoles = ["FOH", "BOH", "management"];
+      for (const emp of employees) {
+        if (!emp.username) continue;
+        let role = allowedRoles.includes(emp.role) ? emp.role : "FOH";
+        if (role === "management" && req.session.user.role !== "management") {
+          role = "FOH";
+        }
+        if (emp.password) {
+          const hash = await bcrypt.hash(emp.password, 10);
+          await db
+            .promise()
+            .query(
+              "INSERT INTO employees (username, password_hash, role) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE password_hash=VALUES(password_hash), role=VALUES(role)",
+              [emp.username, hash, role],
+            );
+        } else {
+          await db
+            .promise()
+            .query("UPDATE employees SET role=? WHERE username=?", [role, emp.username]);
+        }
+      }
+
       res.json({ success: true });
     } catch (err) {
       console.error("Error saving employees:", err);
