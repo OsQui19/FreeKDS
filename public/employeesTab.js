@@ -33,6 +33,7 @@ function initEmployeesTabs() {
   setupScheduleViewToggle();
   setupWeekNav();
   setupHourRangeControls();
+  renderHierarchy();
 }
 
 const EMPLOYEE_KEY = "employees";
@@ -521,6 +522,22 @@ function showScheduleModal(empId, opts = {}) {
     form.prepend(deleteBtn);
     deleteBtn.addEventListener("click", onDelete);
   }
+}
+
+function renderHierarchy() {
+  const ul = document.getElementById("hierarchyTree");
+  if (!ul) return;
+  const employees = loadEmployees();
+  const managers = employees.filter((e) => e.position === "Manager");
+  ul.innerHTML = managers
+    .map((m) => {
+      const subs = employees
+        .filter((e) => e.manager_id === m.id)
+        .map((s) => `<li>${s.name}</li>`) // simplistic
+        .join("");
+      return `<li>${m.name}<ul>${subs}</ul></li>`;
+    })
+    .join("");
 }
 
 if (document.readyState === "loading") {

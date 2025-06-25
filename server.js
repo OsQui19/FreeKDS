@@ -3,6 +3,7 @@ const mysql = require("mysql2");
 const path = require("path");
 const http = require("http");
 const { Server } = require("socket.io");
+const session = require("express-session");
 const settingsCache = require("./controllers/settingsCache");
 const unitConversion = require("./controllers/unitConversion");
 const { scheduleDailyLog } = require("./controllers/dailyUsage");
@@ -37,6 +38,18 @@ db.getConnection((err, connection) => {
 // Middleware to parse request body
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "keyboard cat",
+    resave: false,
+    saveUninitialized: false,
+  }),
+);
+
+app.use((req, res, next) => {
+  if (req.session.user || req.path === "/login") return next();
+  return res.redirect("/login");
+});
 
 // Serve static files (for style.css, images, etc.)
 app.use(express.static(path.join(__dirname, "public")));
@@ -55,11 +68,17 @@ app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 const setupSocketHandlers = require("./controllers/socketHandlers");
 const adminRoutes = require("./routes/admin")(db, io);
+const authRoutes = require("./routes/auth")(db);
 const stationRoutes = require("./routes/stations")(db);
 const apiRoutes = require("./routes/api")(db, io);
+app.use(authRoutes);
 app.use(adminRoutes);
 app.use(stationRoutes);
 app.use(apiRoutes);
+app.get('/', (req, res) => {
+  if (!req.session.user) return res.redirect('/login');
+  res.redirect('/stations');
+});
 setupSocketHandlers(io, db);
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {

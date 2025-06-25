@@ -252,6 +252,21 @@ CREATE TABLE purchase_order_items (
   FOREIGN KEY (unit_id) REFERENCES units(id)
 );
 
+CREATE TABLE employees (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  username VARCHAR(50) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  role VARCHAR(20) NOT NULL DEFAULT 'FOH'
+);
+
+CREATE TABLE time_clock (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  employee_id INT NOT NULL,
+  clock_in DATETIME NOT NULL,
+  clock_out DATETIME DEFAULT NULL,
+  FOREIGN KEY (employee_id) REFERENCES employees(id)
+);
+
 -- Performance indexes
 CREATE INDEX idx_orders_created_at ON orders(created_at);
 CREATE INDEX idx_inventory_log_created_at ON inventory_log(created_at);

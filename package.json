@@ -8,9 +8,11 @@
     "seed": "node tests/seed.js"
   },
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "dotenv": "^16.3.1",
     "ejs": "^3.1.9",
     "express": "^4.19.2",
+    "express-session": "^1.18.1",
     "mysql2": "^3.14.1",
     "socket.io": "^4.7.4"
   },
