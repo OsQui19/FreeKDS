@@ -79,7 +79,7 @@ app.use(stationRoutes);
 app.use(apiRoutes);
 app.get('/', (req, res) => {
   if (!req.session.user) return res.redirect('/login');
-  res.redirect('/stations');
+  res.render('home');
 });
 setupSocketHandlers(io, db);
 const PORT = process.env.PORT || 3000;

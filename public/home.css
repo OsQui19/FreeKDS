@@ -1,0 +1,13 @@
+body.home-page {
+  min-height: 100vh;
+  background: var(--bg-color, #f8f8f8);
+  font-family: var(--font-family, 'Inter', sans-serif);
+}
+
+.home-page h1 {
+  color: var(--primary-color, #007aff);
+}
+
+.home-page .btn-lg {
+  font-size: 1.5rem;
+}
