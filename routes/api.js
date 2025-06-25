@@ -217,5 +217,69 @@ module.exports = (db, io) => {
     }
   });
 
+  router.get("/api/employees", async (req, res) => {
+    try {
+      const [rows] = await db
+        .promise()
+        .query(
+          "SELECT setting_value FROM settings WHERE setting_key='employees' LIMIT 1",
+        );
+      const employees = rows.length ? JSON.parse(rows[0].setting_value) : [];
+      res.json({ employees });
+    } catch (err) {
+      console.error("Error fetching employees:", err);
+      res.status(500).send("DB Error");
+    }
+  });
+
+  router.post("/api/employees", async (req, res) => {
+    if (!Array.isArray(req.body.employees))
+      return res.status(400).send("Invalid data");
+    try {
+      await db
+        .promise()
+        .query(
+          "INSERT INTO settings (setting_key, setting_value) VALUES ('employees', ?) ON DUPLICATE KEY UPDATE setting_value=VALUES(setting_value)",
+          [JSON.stringify(req.body.employees)],
+        );
+      res.json({ success: true });
+    } catch (err) {
+      console.error("Error saving employees:", err);
+      res.status(500).send("DB Error");
+    }
+  });
+
+  router.get("/api/schedule", async (req, res) => {
+    try {
+      const [rows] = await db
+        .promise()
+        .query(
+          "SELECT setting_value FROM settings WHERE setting_key='schedule' LIMIT 1",
+        );
+      const schedule = rows.length ? JSON.parse(rows[0].setting_value) : {};
+      res.json({ schedule });
+    } catch (err) {
+      console.error("Error fetching schedule:", err);
+      res.status(500).send("DB Error");
+    }
+  });
+
+  router.post("/api/schedule", async (req, res) => {
+    if (!req.body.schedule || typeof req.body.schedule !== "object")
+      return res.status(400).send("Invalid data");
+    try {
+      await db
+        .promise()
+        .query(
+          "INSERT INTO settings (setting_key, setting_value) VALUES ('schedule', ?) ON DUPLICATE KEY UPDATE setting_value=VALUES(setting_value)",
+          [JSON.stringify(req.body.schedule)],
+        );
+      res.json({ success: true });
+    } catch (err) {
+      console.error("Error saving schedule:", err);
+      res.status(500).send("DB Error");
+    }
+  });
+
   return router;
 };

@@ -1,6 +1,8 @@
-function initEmployeesTabs() {
+async function initEmployeesTabs() {
   const tabList = document.getElementById("employeesTabs");
+  const links = tabList ? tabList.querySelectorAll(".nav-link") : [];
   const panes = document.querySelectorAll(".employees-pane");
+  const links = tabList ? tabList.querySelectorAll(".nav-link") : [];
   const STORAGE_KEY = "activeEmployeesPane";
 
   function activate(id) {
@@ -32,6 +34,8 @@ function initEmployeesTabs() {
     activate(panes[0].id);
   }
 
+  await Promise.all([syncEmployeesFromServer(), syncScheduleFromServer()]);
+
   setupOnboardingForm();
   renderEmployeeList();
   renderSchedule();
@@ -45,6 +49,32 @@ const EMPLOYEE_KEY = "employees";
 const SCHEDULE_KEY = "schedule";
 const HOURS_START_KEY = "scheduleStartHour";
 const HOURS_END_KEY = "scheduleEndHour";
+
+async function syncEmployeesFromServer() {
+  try {
+    const res = await fetch("/api/employees");
+    if (!res.ok) return;
+    const data = await res.json();
+    if (Array.isArray(data.employees)) {
+      localStorage.setItem(EMPLOYEE_KEY, JSON.stringify(data.employees));
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
+async function syncScheduleFromServer() {
+  try {
+    const res = await fetch("/api/schedule");
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.schedule) {
+      localStorage.setItem(SCHEDULE_KEY, JSON.stringify(data.schedule));
+    }
+  } catch {
+    /* ignore */
+  }
+}
 let hoursStart = parseInt(localStorage.getItem(HOURS_START_KEY), 10);
 let hoursEnd = parseInt(localStorage.getItem(HOURS_END_KEY), 10);
 if (isNaN(hoursStart)) hoursStart = 9;
@@ -122,6 +152,11 @@ function loadAllSchedules() {
 
 function saveAllSchedules(obj) {
   localStorage.setItem(SCHEDULE_KEY, JSON.stringify(obj));
+  fetch("/api/schedule", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ schedule: obj }),
+  }).catch(() => {});
 }
 
 function randomColor() {
@@ -147,6 +182,11 @@ function loadEmployees() {
 
 function saveEmployees(arr) {
   localStorage.setItem(EMPLOYEE_KEY, JSON.stringify(arr));
+  fetch("/api/employees", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ employees: arr }),
+  }).catch(() => {});
 }
 
 function loadScheduleForOffset(offset) {
