@@ -22,11 +22,13 @@ async function fetchSalesTotals(db, start, end) {
   const [costRows] = await db.promise().query(costSql, [formatDateTime(startDate), formatDateTime(endDate)]);
   const map = {};
   salesRows.forEach((r) => {
-    map[r.date] = { date: r.date, total: r.total, cost: 0 };
+    const total = parseFloat(r.total) || 0;
+    map[r.date] = { date: r.date, total, cost: 0 };
   });
   costRows.forEach((r) => {
-    if (!map[r.date]) map[r.date] = { date: r.date, total: 0, cost: r.cost };
-    else map[r.date].cost = r.cost;
+    const cost = parseFloat(r.cost) || 0;
+    if (!map[r.date]) map[r.date] = { date: r.date, total: 0, cost };
+    else map[r.date].cost = cost;
   });
   const list = Object.values(map).sort((a, b) => new Date(a.date) - new Date(b.date));
   list.forEach((r) => {
@@ -47,8 +49,10 @@ async function fetchIngredientUsage(db, start, end) {
                WHERE o.status='completed' AND l.created_at BETWEEN ? AND ?
                GROUP BY ing.id
                ORDER BY ing.name`;
-  const [rows] = await db.promise().query(sql, [formatDateTime(startDate), formatDateTime(endDate)]);
-  return rows;
+  const [rows] = await db
+    .promise()
+    .query(sql, [formatDateTime(startDate), formatDateTime(endDate)]);
+  return rows.map((r) => ({ name: r.name, total: parseFloat(r.total) || 0 }));
 }
 
 async function fetchTopMenuItems(db, start, end, limit = 10) {
@@ -63,8 +67,14 @@ async function fetchTopMenuItems(db, start, end, limit = 10) {
                 GROUP BY mi.id
                 ORDER BY revenue DESC
                 LIMIT ?`;
-  const [rows] = await db.promise().query(sql, [formatDateTime(startDate), formatDateTime(endDate), limit]);
-  return rows;
+  const [rows] = await db
+    .promise()
+    .query(sql, [formatDateTime(startDate), formatDateTime(endDate), limit]);
+  return rows.map((r) => ({
+    name: r.name,
+    qty: parseFloat(r.qty) || 0,
+    revenue: parseFloat(r.revenue) || 0,
+  }));
 }
 
 async function fetchCategorySales(db, start, end) {
@@ -78,8 +88,10 @@ async function fetchCategorySales(db, start, end) {
                 WHERE o.status='completed' AND o.created_at BETWEEN ? AND ?
                 GROUP BY c.id
                 ORDER BY c.name`;
-  const [rows] = await db.promise().query(sql, [formatDateTime(startDate), formatDateTime(endDate)]);
-  return rows;
+  const [rows] = await db
+    .promise()
+    .query(sql, [formatDateTime(startDate), formatDateTime(endDate)]);
+  return rows.map((r) => ({ name: r.name, total: parseFloat(r.total) || 0 }));
 }
 
 async function fetchLowStockIngredients(db, threshold = 5) {
@@ -89,7 +101,11 @@ async function fetchLowStockIngredients(db, threshold = 5) {
                 WHERE ing.quantity <= ?
                 ORDER BY ing.quantity ASC, ing.name`;
   const [rows] = await db.promise().query(sql, [threshold]);
-  return rows;
+  return rows.map((r) => ({
+    name: r.name,
+    quantity: parseFloat(r.quantity) || 0,
+    unit: r.unit,
+  }));
 }
 
 async function fetchAverageBumpTimes(db, start, end) {
@@ -106,7 +122,11 @@ async function fetchAverageBumpTimes(db, start, end) {
   const [rows] = await db
     .promise()
     .query(sql, [formatDateTime(startDate), formatDateTime(endDate)]);
-  return rows;
+  return rows.map((r) => ({
+    station_id: r.station_id,
+    name: r.name,
+    avg_seconds: parseFloat(r.avg_seconds) || 0,
+  }));
 }
 
 module.exports = {
