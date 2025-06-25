@@ -1,10 +1,10 @@
 function initEmployeesTabs() {
-  const tabs = document.getElementById("employeesTabs");
+  const links = document.querySelectorAll("#employeesTabs .nav-link");
   const panes = document.querySelectorAll(".employees-pane");
   const STORAGE_KEY = "activeEmployeesPane";
 
   function activate(id) {
-    tabs.querySelectorAll(".nav-link").forEach((l) => {
+    links.forEach((l) => {
       l.classList.toggle("active", l.dataset.pane === id);
     });
     panes.forEach((p) => {
@@ -13,18 +13,18 @@ function initEmployeesTabs() {
     if (id) localStorage.setItem(STORAGE_KEY, id);
   }
 
-  if (tabs) {
-    tabs.querySelectorAll('.nav-link').forEach((link) => {
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        activate(link.dataset.pane);
-      });
+  links.forEach((link) => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      activate(link.dataset.pane);
     });
-  }
+  });
 
   const saved = localStorage.getItem(STORAGE_KEY);
   if (saved && document.getElementById(saved)) {
     activate(saved);
+  } else if (panes.length) {
+    activate(panes[0].id);
   }
 
   setupOnboardingForm();
