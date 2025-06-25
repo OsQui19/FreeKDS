@@ -103,10 +103,11 @@ CREATE TABLE order_item_modifiers (
   FOREIGN KEY (order_item_id) REFERENCES order_items(id) ON DELETE CASCADE,
   FOREIGN KEY (modifier_id)   REFERENCES modifiers(id) ON DELETE CASCADE
 );
--- Settings table: key-value store for configuration (brand name, theme colors, etc.)
+-- Settings table: key-value store for configuration
+-- (brand name, theme colors, employee data, etc.)
 CREATE TABLE settings (
   setting_key   VARCHAR(50) PRIMARY KEY,
-  setting_value VARCHAR(255)
+  setting_value TEXT
 );
 CREATE TABLE bumped_orders (
   order_id INT NOT NULL,
