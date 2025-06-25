@@ -30,6 +30,10 @@ body.login-page {
 .login-container {
   width: 100%;
   max-width: 420px;
+<<<<<<< ours
+=======
+  margin: auto;
+>>>>>>> theirs
   padding: 2rem;
   background: var(--card-bg, #fff);
   border: 1px solid var(--card-border);
@@ -83,7 +87,11 @@ body.login-page {
 
 @media (max-width: 576px) {
   .login-container {
+<<<<<<< ours
     margin: 0 1rem;
+=======
+    margin: auto 1rem;
+>>>>>>> theirs
     padding: 1.5rem;
   }
   .login-card {
