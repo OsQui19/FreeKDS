@@ -31,9 +31,16 @@ module.exports = (db, io) => {
   const router = express.Router();
   router.use((req, res, next) => {
     if (!req.session.user) return next();
-    if (req.session.user.role !== 'management') {
-      logSecurityEvent(db, 'unauthorized', req.session.user.id, req.originalUrl, false, req.ip);
-      return res.status(403).send('Forbidden');
+    if (req.session.user.role !== "management") {
+      logSecurityEvent(
+        db,
+        "unauthorized",
+        req.session.user.id,
+        req.originalUrl,
+        false,
+        req.ip,
+      );
+      return res.status(403).send("Forbidden");
     }
     next();
   });
@@ -505,23 +512,15 @@ module.exports = (db, io) => {
     const { id, name } = req.body;
     if (!name) return res.redirect("/admin?tab=inventory");
     if (id) {
-      db.query(
-        "UPDATE tags SET name=? WHERE id=?",
-        [name, id],
-        (err) => {
-          if (err) console.error("Error updating tag:", err);
-          res.redirect("/admin?tab=inventory&msg=Tag+saved");
-        },
-      );
+      db.query("UPDATE tags SET name=? WHERE id=?", [name, id], (err) => {
+        if (err) console.error("Error updating tag:", err);
+        res.redirect("/admin?tab=inventory&msg=Tag+saved");
+      });
     } else {
-      db.query(
-        "INSERT INTO tags (name) VALUES (?)",
-        [name],
-        (err) => {
-          if (err) console.error("Error inserting tag:", err);
-          res.redirect("/admin?tab=inventory&msg=Tag+saved");
-        },
-      );
+      db.query("INSERT INTO tags (name) VALUES (?)", [name], (err) => {
+        if (err) console.error("Error inserting tag:", err);
+        res.redirect("/admin?tab=inventory&msg=Tag+saved");
+      });
     }
   });
 
@@ -874,6 +873,7 @@ module.exports = (db, io) => {
       "brand_name",
       "theme_primary_color",
       "theme_bg_color",
+      "theme_wallpaper",
       "ticket_layout",
       "font_family",
       "custom_css",

@@ -40,6 +40,13 @@ document.addEventListener("DOMContentLoaded", () => {
         root.setProperty("--primary-color", form.theme_primary_color.value);
       if (form.theme_bg_color)
         root.setProperty("--bg-color", form.theme_bg_color.value);
+      if (form.theme_wallpaper)
+        root.setProperty(
+          "--bg-image",
+          form.theme_wallpaper.value
+            ? `url(${form.theme_wallpaper.value})`
+            : "none",
+        );
       if (form.font_family)
         root.setProperty("--font-family", form.font_family.value);
       if (form.text_color)

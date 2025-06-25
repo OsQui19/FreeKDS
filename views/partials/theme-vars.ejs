@@ -5,6 +5,7 @@
       presentable even before any custom settings are applied.
     */
     --bg-color: <%= settings.theme_bg_color || '#f8f8f8' %>;
+    --bg-image: <%= settings.theme_wallpaper ? 'url(' + settings.theme_wallpaper + ')' : 'none' %>;
     --primary-color: <%= settings.theme_primary_color || '#007aff' %>;
     --text-color: <%= settings.text_color || '#000000' %>;
     --font-family: <%= settings.font_family || 'Inter, sans-serif' %>;

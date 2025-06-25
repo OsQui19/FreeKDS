@@ -24,6 +24,12 @@
       </div>
     </div>
     <div class="row mb-3">
+      <label for="theme-wallpaper" class="col-sm-4 col-form-label">Wallpaper URL:</label>
+      <div class="col-sm-8">
+        <input id="theme-wallpaper" class="form-control" type="text" name="theme_wallpaper" value="<%= settings.theme_wallpaper || '' %>">
+      </div>
+    </div>
+    <div class="row mb-3">
       <label for="ticket-layout" class="col-sm-4 col-form-label">Ticket Layout Columns:</label>
       <div class="col-sm-8">
         <input id="ticket-layout" class="form-control" type="number" name="ticket_layout" min="1" value="<%= settings.ticket_layout || 1 %>">
