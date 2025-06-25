@@ -1,3 +1,20 @@
+const storage = {
+  get(key) {
+    try {
+      return localStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  },
+  set(key, value) {
+    try {
+      localStorage.setItem(key, value);
+    } catch {
+      /* ignore */
+    }
+  },
+};
+
 async function initEmployeesTabs() {
   const tabList = document.getElementById("employeesTabs");
   const links = tabList ? tabList.querySelectorAll(".nav-link") : [];
@@ -13,7 +30,7 @@ async function initEmployeesTabs() {
     panes.forEach((p) => {
       p.classList.toggle("active", p.id === id);
     });
-    if (id) localStorage.setItem(STORAGE_KEY, id);
+    if (id) storage.set(STORAGE_KEY, id);
     if (id === "schedulePane") {
       renderSchedule();
     }
@@ -26,7 +43,7 @@ async function initEmployeesTabs() {
     });
   });
 
-  const saved = localStorage.getItem(STORAGE_KEY);
+  const saved = storage.get(STORAGE_KEY);
   if (saved && document.getElementById(saved)) {
     activate(saved);
   } else if (panes.length) {
@@ -55,7 +72,7 @@ async function syncEmployeesFromServer() {
     if (!res.ok) return;
     const data = await res.json();
     if (Array.isArray(data.employees)) {
-      localStorage.setItem(EMPLOYEE_KEY, JSON.stringify(data.employees));
+      storage.set(EMPLOYEE_KEY, JSON.stringify(data.employees));
     }
   } catch {
     /* ignore */
@@ -68,14 +85,14 @@ async function syncScheduleFromServer() {
     if (!res.ok) return;
     const data = await res.json();
     if (data.schedule) {
-      localStorage.setItem(SCHEDULE_KEY, JSON.stringify(data.schedule));
+      storage.set(SCHEDULE_KEY, JSON.stringify(data.schedule));
     }
   } catch {
     /* ignore */
   }
 }
-let hoursStart = parseInt(localStorage.getItem(HOURS_START_KEY), 10);
-let hoursEnd = parseInt(localStorage.getItem(HOURS_END_KEY), 10);
+let hoursStart = parseInt(storage.get(HOURS_START_KEY), 10);
+let hoursEnd = parseInt(storage.get(HOURS_END_KEY), 10);
 if (isNaN(hoursStart)) hoursStart = 9;
 if (isNaN(hoursEnd)) hoursEnd = 18;
 function getHours() {
@@ -89,9 +106,9 @@ function formatHour(h) {
 }
 const SCHEDULE_VIEW_KEY = "scheduleView";
 const SCHEDULE_WEEK_OFFSET_KEY = "scheduleWeekOffset";
-let scheduleView = localStorage.getItem(SCHEDULE_VIEW_KEY) || "week";
+let scheduleView = storage.get(SCHEDULE_VIEW_KEY) || "week";
 let scheduleWeekOffset =
-  parseInt(localStorage.getItem(SCHEDULE_WEEK_OFFSET_KEY), 10) || 0;
+  parseInt(storage.get(SCHEDULE_WEEK_OFFSET_KEY), 10) || 0;
 
 function updateScheduleToggleBtn() {
   const btn = document.getElementById("toggleScheduleView");
@@ -134,13 +151,13 @@ function currentWeekKey() {
 
 function loadAllSchedules() {
   try {
-    const raw = JSON.parse(localStorage.getItem(SCHEDULE_KEY)) || {};
+    const raw = JSON.parse(storage.get(SCHEDULE_KEY)) || {};
     // migrate old format (no week key)
     const isOldFormat = Object.keys(raw).some((k) => /^\d$/.test(k));
     if (isOldFormat) {
       const key = currentWeekKey();
       const obj = { [key]: raw };
-      localStorage.setItem(SCHEDULE_KEY, JSON.stringify(obj));
+      storage.set(SCHEDULE_KEY, JSON.stringify(obj));
       return obj;
     }
     return raw;
@@ -150,7 +167,7 @@ function loadAllSchedules() {
 }
 
 function saveAllSchedules(obj) {
-  localStorage.setItem(SCHEDULE_KEY, JSON.stringify(obj));
+  storage.set(SCHEDULE_KEY, JSON.stringify(obj));
   fetch("/api/schedule", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -169,7 +186,7 @@ function randomColor() {
 
 function loadEmployees() {
   try {
-    const arr = JSON.parse(localStorage.getItem(EMPLOYEE_KEY)) || [];
+    const arr = JSON.parse(storage.get(EMPLOYEE_KEY)) || [];
     arr.forEach((e) => {
       if (!e.color) e.color = randomColor();
     });
@@ -180,7 +197,7 @@ function loadEmployees() {
 }
 
 function saveEmployees(arr) {
-  localStorage.setItem(EMPLOYEE_KEY, JSON.stringify(arr));
+  storage.set(EMPLOYEE_KEY, JSON.stringify(arr));
   fetch("/api/employees", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -364,9 +381,9 @@ function renderSchedule() {
       table.dataset.weekIndex = w;
       table.addEventListener("click", () => {
         scheduleWeekOffset = w;
-        localStorage.setItem(SCHEDULE_WEEK_OFFSET_KEY, scheduleWeekOffset);
+        storage.set(SCHEDULE_WEEK_OFFSET_KEY, scheduleWeekOffset);
         scheduleView = "week";
-        localStorage.setItem(SCHEDULE_VIEW_KEY, scheduleView);
+        storage.set(SCHEDULE_VIEW_KEY, scheduleView);
         renderSchedule();
         updateScheduleToggleBtn();
       });
@@ -417,7 +434,7 @@ function setupScheduleViewToggle() {
   if (!btn) return;
   btn.addEventListener("click", () => {
     scheduleView = scheduleView === "week" ? "month" : "week";
-    localStorage.setItem(SCHEDULE_VIEW_KEY, scheduleView);
+    storage.set(SCHEDULE_VIEW_KEY, scheduleView);
     renderSchedule();
     updateScheduleToggleBtn();
   });
@@ -436,7 +453,7 @@ function setupWeekNav() {
   const next = document.getElementById("nextWeek");
   function changeWeek(delta) {
     scheduleWeekOffset += delta;
-    localStorage.setItem(SCHEDULE_WEEK_OFFSET_KEY, scheduleWeekOffset);
+    storage.set(SCHEDULE_WEEK_OFFSET_KEY, scheduleWeekOffset);
     renderSchedule();
     updateWeekLabel();
   }
@@ -480,8 +497,8 @@ function setupHourRangeControls() {
     if (end <= start) return;
     hoursStart = start;
     hoursEnd = end;
-    localStorage.setItem(HOURS_START_KEY, hoursStart);
-    localStorage.setItem(HOURS_END_KEY, hoursEnd);
+    storage.set(HOURS_START_KEY, hoursStart);
+    storage.set(HOURS_END_KEY, hoursEnd);
     renderSchedule();
   }
   startSel.addEventListener("change", apply);
