@@ -32,11 +32,20 @@ function initEmployeesTabs() {
   renderSchedule();
   setupScheduleViewToggle();
   setupWeekNav();
+  setupHourRangeControls();
 }
 
 const EMPLOYEE_KEY = "employees";
 const SCHEDULE_KEY = "schedule";
-const HOURS = Array.from({ length: 10 }, (_, i) => 9 + i); // 9am-18pm
+const HOURS_START_KEY = "scheduleStartHour";
+const HOURS_END_KEY = "scheduleEndHour";
+let hoursStart = parseInt(localStorage.getItem(HOURS_START_KEY), 10);
+let hoursEnd = parseInt(localStorage.getItem(HOURS_END_KEY), 10);
+if (isNaN(hoursStart)) hoursStart = 9;
+if (isNaN(hoursEnd)) hoursEnd = 18;
+function getHours() {
+  return Array.from({ length: hoursEnd - hoursStart + 1 }, (_, i) => hoursStart + i);
+}
 
 function formatHour(h) {
   const d = new Date();
@@ -146,7 +155,7 @@ function loadScheduleForOffset(offset) {
       const obj = week[day] || {};
       const arr = [];
       let current = null;
-      HOURS.forEach((h) => {
+      for (let h = 0; h < 24; h++) {
         const eid = obj[h];
         if (eid) {
           if (current && current.id === eid) {
@@ -158,7 +167,7 @@ function loadScheduleForOffset(offset) {
         } else {
           current = null;
         }
-      });
+      }
       week[day] = arr;
     });
     return week;
@@ -242,7 +251,7 @@ function buildWeekTable(label) {
   thead.innerHTML =
     "<tr><th>Time</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th><th>Sun</th></tr>";
   const tbody = document.createElement("tbody");
-  HOURS.forEach((h) => {
+  getHours().forEach((h) => {
     const tr = document.createElement("tr");
     const th = document.createElement("th");
     th.textContent = formatHour(h);
@@ -409,10 +418,35 @@ function setupSwipeNav(changeWeek) {
   });
 }
 
-function populateTimeSelect(select) {
-  select.innerHTML = HOURS.map(
-    (h) => `<option value="${h}">${formatHour(h)}</option>`,
+function setupHourRangeControls() {
+  const startSel = document.getElementById("scheduleStartHour");
+  const endSel = document.getElementById("scheduleEndHour");
+  if (!startSel || !endSel) return;
+  const opts = Array.from({ length: 24 }, (_, i) =>
+    `<option value="${i}">${formatHour(i)}</option>`,
   ).join("");
+  startSel.innerHTML = opts;
+  endSel.innerHTML = opts;
+  startSel.value = hoursStart;
+  endSel.value = hoursEnd;
+  function apply() {
+    const start = parseInt(startSel.value, 10);
+    const end = parseInt(endSel.value, 10);
+    if (end <= start) return;
+    hoursStart = start;
+    hoursEnd = end;
+    localStorage.setItem(HOURS_START_KEY, hoursStart);
+    localStorage.setItem(HOURS_END_KEY, hoursEnd);
+    renderSchedule();
+  }
+  startSel.addEventListener("change", apply);
+  endSel.addEventListener("change", apply);
+}
+
+function populateTimeSelect(select) {
+  select.innerHTML = getHours()
+    .map((h) => `<option value="${h}">${formatHour(h)}</option>`)
+    .join("");
 }
 
 function showScheduleModal(empId, opts = {}) {
