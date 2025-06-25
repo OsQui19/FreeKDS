@@ -1,13 +1,18 @@
 function initEmployeesTabs() {
   const tabList = document.getElementById("employeesTabs");
+<<<<<<< ours
   const links = tabList ? tabList.querySelectorAll(".nav-link") : [];
+=======
+>>>>>>> theirs
   const panes = document.querySelectorAll(".employees-pane");
   const STORAGE_KEY = "activeEmployeesPane";
 
   function activate(id) {
-    links.forEach((l) => {
-      l.classList.toggle("active", l.dataset.pane === id);
-    });
+    if (tabList) {
+      tabList.querySelectorAll(".nav-link").forEach((l) => {
+        l.classList.toggle("active", l.dataset.pane === id);
+      });
+    }
     panes.forEach((p) => {
       p.classList.toggle("active", p.id === id);
     });
