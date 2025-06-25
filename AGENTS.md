@@ -26,6 +26,10 @@ This file explains how to set up and run the project for Codex or anyone else cl
    ```bash
    npm run seed
    ```
+3. (Optional) Create an initial admin account:
+   ```bash
+   npm run create-admin [username] [password]
+   ```
 
 ## 3. Running the application
 Start the server with one of the following commands:

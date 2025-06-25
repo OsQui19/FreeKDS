@@ -267,6 +267,13 @@ CREATE TABLE time_clock (
   FOREIGN KEY (employee_id) REFERENCES employees(id)
 );
 
+<<<<<<< ours
+=======
+-- Insert a default admin account (username: admin, password: admin123)
+INSERT INTO employees (username, password_hash, role) VALUES
+  ('admin', '$2b$10$UdVjIQZ7XYMqYRnv4S3cdOv1Fly6pOyzNP3T8elgSwXW0wkGAnoqq', 'management');
+
+>>>>>>> theirs
 -- Performance indexes
 CREATE INDEX idx_orders_created_at ON orders(created_at);
 CREATE INDEX idx_inventory_log_created_at ON inventory_log(created_at);
