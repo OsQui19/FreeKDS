@@ -2,7 +2,6 @@ async function initEmployeesTabs() {
   const tabList = document.getElementById("employeesTabs");
   const links = tabList ? tabList.querySelectorAll(".nav-link") : [];
   const panes = document.querySelectorAll(".employees-pane");
-  const links = tabList ? tabList.querySelectorAll(".nav-link") : [];
   const STORAGE_KEY = "activeEmployeesPane";
 
   function activate(id) {
