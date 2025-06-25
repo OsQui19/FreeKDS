@@ -4,17 +4,41 @@ function initEmployeesTabs() {
   const STORAGE_KEY = "activeEmployeesPane";
 
   function activate(id) {
+<<<<<<< ours
+<<<<<<< ours
     links.forEach((l) => {
       l.classList.toggle("active", l.dataset.pane === id);
     });
+=======
+=======
+>>>>>>> theirs
+    if (tabs) {
+      tabs.querySelectorAll(".nav-link").forEach((l) => {
+        l.classList.toggle("active", l.dataset.pane === id);
+      });
+    }
+<<<<<<< ours
+>>>>>>> theirs
+=======
+>>>>>>> theirs
     panes.forEach((p) => {
       p.classList.toggle("active", p.id === id);
     });
     if (id) localStorage.setItem(STORAGE_KEY, id);
   }
 
+<<<<<<< ours
   links.forEach((link) => {
     link.addEventListener("click", (e) => {
+=======
+  if (tabs) {
+    tabs.addEventListener("click", (e) => {
+      const link = e.target.closest(".nav-link");
+      if (!link) return;
+<<<<<<< ours
+>>>>>>> theirs
+=======
+>>>>>>> theirs
       e.preventDefault();
       activate(link.dataset.pane);
     });
