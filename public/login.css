@@ -22,17 +22,29 @@ body.login-page {
   justify-content: center;
   padding: 1rem;
   background: var(--bg-color);
+  background-size: cover;
+  background-position: center;
   font-family: var(--font-family);
+}
+
+.login-container {
+  width: 100%;
+  max-width: 420px;
+  padding: 2rem;
+  background: var(--card-bg, #fff);
+  border: 1px solid var(--card-border);
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+  backdrop-filter: blur(4px);
 }
 
 .login-card {
   width: 100%;
   max-width: 360px;
   padding: 2rem;
-  background: var(--card-bg, #fff);
-  border: 1px solid var(--card-border);
+  background: transparent;
+  border: none;
   border-radius: var(--card-radius);
-  box-shadow: var(--card-shadow);
 }
 .login-card .card-body {
   padding: 2rem;
@@ -70,8 +82,12 @@ body.login-page {
 }
 
 @media (max-width: 576px) {
-  .login-card {
+  .login-container {
     margin: 0 1rem;
+    padding: 1.5rem;
+  }
+  .login-card {
+    max-width: none;
   }
   .login-card .card-body {
     padding: 1.5rem;
