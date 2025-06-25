@@ -14,11 +14,11 @@ function initEmployeesTabs() {
   }
 
   if (tabs) {
-    tabs.addEventListener("click", (e) => {
-      const link = e.target.closest(".nav-link");
-      if (!link) return;
-      e.preventDefault();
-      activate(link.dataset.pane);
+    tabs.querySelectorAll('.nav-link').forEach((link) => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        activate(link.dataset.pane);
+      });
     });
   }
 
