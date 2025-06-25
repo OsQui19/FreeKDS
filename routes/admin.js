@@ -407,10 +407,11 @@ module.exports = (db, io) => {
       : [];
     tagIds = tagIds.map((t) => parseInt(t, 10)).filter((t) => !isNaN(t));
     const sku = req.body.sku || null;
-    let cost = parseFloat(req.body.cost);
-    if (isNaN(cost)) cost = 0;
+    let totalCost = parseFloat(req.body.cost);
+    if (isNaN(totalCost)) totalCost = 0;
     let qty = parseFloat(req.body.quantity);
     if (isNaN(qty)) qty = 0;
+    const cost = qty > 0 ? totalCost / qty : totalCost;
     const isPublic = req.body.is_public ? 1 : 0;
     if (!name) return res.redirect("/admin?tab=inventory");
 

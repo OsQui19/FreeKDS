@@ -293,7 +293,12 @@ async function getIngredients(db) {
                                          LEFT JOIN tags t ON it.tag_id = t.id
                                          GROUP BY ing.id
                                          ORDER BY ing.name`);
-  return rows;
+  return rows.map((r) => {
+    const qty = parseFloat(r.quantity);
+    const unitCost = parseFloat(r.cost);
+    const totalCost = !isNaN(qty) && !isNaN(unitCost) ? qty * unitCost : unitCost;
+    return { ...r, cost: totalCost };
+  });
 }
 
 function updateItemIngredients(db, itemId, ingList, callback) {
