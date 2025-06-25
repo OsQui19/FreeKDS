@@ -6,6 +6,9 @@ function initEmployeesTabs() {
   function activate(id) {
 <<<<<<< ours
 <<<<<<< ours
+<<<<<<< ours
+=======
+>>>>>>> theirs
     links.forEach((l) => {
       l.classList.toggle("active", l.dataset.pane === id);
     });
@@ -28,6 +31,7 @@ function initEmployeesTabs() {
   }
 
 <<<<<<< ours
+<<<<<<< ours
   links.forEach((link) => {
     link.addEventListener("click", (e) => {
 =======
@@ -38,6 +42,10 @@ function initEmployeesTabs() {
 <<<<<<< ours
 >>>>>>> theirs
 =======
+>>>>>>> theirs
+=======
+  links.forEach((link) => {
+    link.addEventListener("click", (e) => {
 >>>>>>> theirs
       e.preventDefault();
       activate(link.dataset.pane);
