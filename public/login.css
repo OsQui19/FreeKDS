@@ -20,31 +20,19 @@ body.login-page {
   display: flex;
   align-items: center;
   justify-content: center;
-<<<<<<< ours
   padding: 1rem;
-  background: linear-gradient(135deg, var(--color-bg-start), var(--color-bg-end));
-=======
   background: var(--bg-color);
->>>>>>> theirs
   font-family: var(--font-family);
 }
 
 .login-card {
   width: 100%;
   max-width: 360px;
-<<<<<<< ours
   padding: 2rem;
-  background: var(--card-bg);
-<<<<<<< ours
+  background: var(--card-bg, #fff);
   border: 1px solid var(--card-border);
-=======
-  border: 1px solid rgba(0, 0, 0, 0.1);
->>>>>>> theirs
-=======
->>>>>>> theirs
   border-radius: var(--card-radius);
   box-shadow: var(--card-shadow);
-  border: none;
 }
 .login-card .card-body {
   padding: 2rem;
