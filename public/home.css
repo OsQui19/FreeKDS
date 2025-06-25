@@ -2,7 +2,8 @@
   --font-family: 'Inter', sans-serif;
   --color-primary: #4F46E5;
   --color-accent: #A78BFA;
-  --color-bg: #F9FAFB;
+  --color-bg-start: #F9FAFB;
+  --color-bg-end: #EEF2FF;
   --btn-radius: 12px;
   --btn-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   --transition-fast: 0.2s ease-in-out;
@@ -14,7 +15,7 @@ body.home-page {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-bg);
+  background: linear-gradient(135deg, var(--color-bg-start), var(--color-bg-end));
   font-family: var(--font-family);
   padding: 2rem;
 }
@@ -43,11 +44,14 @@ body.home-page {
   font-size: 1.25rem;
   border-radius: var(--btn-radius);
   box-shadow: var(--btn-shadow);
+  background-color: var(--color-primary);
+  color: #fff;
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 .home-page .btn:hover {
   transform: translateY(-3px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  background-color: var(--color-accent);
 }
 
 @media (max-width: 768px) {
@@ -57,6 +61,13 @@ body.home-page {
   .home-page h1 {
     font-size: 1.75rem;
     margin-bottom: 1.5rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .home-page .btn {
+    font-size: 1.1rem;
+    padding: 1rem 0;
   }
 }
 
