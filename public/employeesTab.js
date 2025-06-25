@@ -1,9 +1,5 @@
 function initEmployeesTabs() {
   const tabList = document.getElementById("employeesTabs");
-<<<<<<< ours
-  const links = tabList ? tabList.querySelectorAll(".nav-link") : [];
-=======
->>>>>>> theirs
   const panes = document.querySelectorAll(".employees-pane");
   const STORAGE_KEY = "activeEmployeesPane";
 
@@ -17,16 +13,17 @@ function initEmployeesTabs() {
       p.classList.toggle("active", p.id === id);
     });
     if (id) localStorage.setItem(STORAGE_KEY, id);
+    if (id === "schedulePane") {
+      renderSchedule();
+    }
   }
 
-  if (tabList) {
-    tabList.addEventListener("click", (e) => {
-      const link = e.target.closest(".nav-link");
-      if (!link) return;
+  links.forEach((link) => {
+    link.addEventListener("click", (e) => {
       e.preventDefault();
       activate(link.dataset.pane);
     });
-  }
+  });
 
   const saved = localStorage.getItem(STORAGE_KEY);
   if (saved && document.getElementById(saved)) {
