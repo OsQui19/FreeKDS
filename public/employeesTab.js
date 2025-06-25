@@ -21,7 +21,7 @@ async function initEmployeesTabs() {
   const panes = document.querySelectorAll(".employees-pane");
   const STORAGE_KEY = "activeEmployeesPane";
 
-  function activate(id) {
+  function activate(id, skipHash) {
     if (tabList) {
       tabList.querySelectorAll(".nav-link").forEach((l) => {
         l.classList.toggle("active", l.dataset.pane === id);
@@ -30,7 +30,10 @@ async function initEmployeesTabs() {
     panes.forEach((p) => {
       p.classList.toggle("active", p.id === id);
     });
-    if (id) storage.set(STORAGE_KEY, id);
+    if (id) {
+      storage.set(STORAGE_KEY, id);
+      if (!skipHash) location.hash = id;
+    }
     if (id === "schedulePane") {
       renderSchedule();
     }
@@ -43,11 +46,11 @@ async function initEmployeesTabs() {
     });
   });
 
-  const saved = storage.get(STORAGE_KEY);
-  if (saved && document.getElementById(saved)) {
-    activate(saved);
+  const initial = location.hash.slice(1) || storage.get(STORAGE_KEY);
+  if (initial && document.getElementById(initial)) {
+    activate(initial, true);
   } else if (panes.length) {
-    activate(panes[0].id);
+    activate(panes[0].id, true);
   }
 
   await Promise.all([syncEmployeesFromServer(), syncScheduleFromServer()]);
