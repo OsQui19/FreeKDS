@@ -8,6 +8,7 @@ const settingsCache = require("./controllers/settingsCache");
 const unitConversion = require("./controllers/unitConversion");
 const { scheduleDailyLog } = require("./controllers/dailyUsage");
 const { scheduleDailyBackup } = require("./controllers/dbBackup");
+const { logSecurityEvent } = require("./controllers/securityLog");
 require("dotenv").config();
 const app = express();
 const server = http.createServer(app);
@@ -48,6 +49,7 @@ app.use(
 
 app.use((req, res, next) => {
   if (req.session.user || req.path === "/login") return next();
+  logSecurityEvent(db, "unauthorized", null, req.path, false, req.ip);
   return res.redirect("/login");
 });
 

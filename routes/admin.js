@@ -25,9 +25,18 @@ const {
 } = require("../controllers/analytics");
 const settingsCache = require("../controllers/settingsCache");
 const { convert } = require("../controllers/unitConversion");
+const { logSecurityEvent } = require("../controllers/securityLog");
 
 module.exports = (db, io) => {
   const router = express.Router();
+  router.use((req, res, next) => {
+    if (!req.session.user) return next();
+    if (req.session.user.role !== 'management') {
+      logSecurityEvent(db, 'unauthorized', req.session.user.id, req.originalUrl, false, req.ip);
+      return res.status(403).send('Forbidden');
+    }
+    next();
+  });
   router.get("/admin", async (req, res) => {
     try {
       const {

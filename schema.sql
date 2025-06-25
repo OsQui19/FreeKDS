@@ -267,6 +267,18 @@ CREATE TABLE time_clock (
   FOREIGN KEY (employee_id) REFERENCES employees(id)
 );
 
+CREATE TABLE security_log (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  username VARCHAR(50) DEFAULT NULL,
+  ip_address VARCHAR(45) NOT NULL,
+  event VARCHAR(20) NOT NULL,
+  path VARCHAR(255) DEFAULT NULL,
+  success BOOLEAN,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_security_log_created_at ON security_log(created_at);
+
 <<<<<<< ours
 =======
 -- Insert a default admin account (username: admin, password: admin123)
