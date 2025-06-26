@@ -10,6 +10,7 @@ const unitConversion = require("./controllers/unitConversion");
 const { scheduleDailyLog } = require("./controllers/dailyUsage");
 const { scheduleDailyBackup } = require("./controllers/dbBackup");
 const { logSecurityEvent } = require("./controllers/securityLog");
+const roleHierarchy = require("./controllers/hierarchy");
 require("dotenv").config();
 const app = express();
 const server = http.createServer(app);
@@ -33,6 +34,7 @@ db.getConnection((err, connection) => {
   if (connection) connection.release();
   settingsCache.loadSettings(db);
   unitConversion.loadUnits(db);
+  roleHierarchy.loadHierarchy(db);
   scheduleDailyLog(db);
   scheduleDailyBackup();
 });
@@ -65,6 +67,11 @@ app.use((req, res, next) => {
 });
 app.use((req, res, next) => {
   res.locals.req = req;
+  res.locals.roles = roleHierarchy.getHierarchy();
+  res.locals.hasRoleLevel = (minRole) =>
+    req.session && req.session.user
+      ? roleHierarchy.hasLevel(req.session.user.role, minRole)
+      : false;
   next();
 });
 // Make request accessible in views for flash messages

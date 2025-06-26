@@ -53,7 +53,11 @@ async function initEmployeesTabs() {
     activate(panes[0].id, true);
   }
 
-  await Promise.all([syncEmployeesFromServer(), syncScheduleFromServer()]);
+  await Promise.all([
+    syncEmployeesFromServer(),
+    syncScheduleFromServer(),
+    syncHierarchyFromServer(),
+  ]);
 
   setupOnboardingForm();
   renderEmployeeList();
@@ -61,6 +65,7 @@ async function initEmployeesTabs() {
   setupScheduleViewToggle();
   setupWeekNav();
   setupHourRangeControls();
+  setupAddRoleForm();
   renderHierarchy();
 }
 
@@ -68,6 +73,7 @@ const EMPLOYEE_KEY = "employees";
 const SCHEDULE_KEY = "schedule";
 const HOURS_START_KEY = "scheduleStartHour";
 const HOURS_END_KEY = "scheduleEndHour";
+const HIERARCHY_KEY = "roleHierarchy";
 
 async function syncEmployeesFromServer() {
   try {
@@ -89,6 +95,19 @@ async function syncScheduleFromServer() {
     const data = await res.json();
     if (data.schedule) {
       storage.set(SCHEDULE_KEY, JSON.stringify(data.schedule));
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
+async function syncHierarchyFromServer() {
+  try {
+    const res = await fetch("/api/hierarchy");
+    if (!res.ok) return;
+    const data = await res.json();
+    if (Array.isArray(data.hierarchy)) {
+      storage.set(HIERARCHY_KEY, JSON.stringify(data.hierarchy));
     }
   } catch {
     /* ignore */
@@ -205,6 +224,23 @@ function saveEmployees(arr) {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ employees: arr }),
+  }).catch(() => {});
+}
+
+function loadHierarchy() {
+  try {
+    return JSON.parse(storage.get(HIERARCHY_KEY)) || ["FOH", "BOH", "management"];
+  } catch {
+    return ["FOH", "BOH", "management"];
+  }
+}
+
+function saveHierarchy(arr) {
+  storage.set(HIERARCHY_KEY, JSON.stringify(arr));
+  fetch("/api/hierarchy", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ hierarchy: arr }),
   }).catch(() => {});
 }
 
@@ -605,6 +641,85 @@ function renderHierarchy() {
       return `<li>${m.name}<ul>${subs}</ul></li>`;
     })
     .join("");
+
+  renderRoleList();
+  populateRoleSelect();
+}
+
+function renderRoleList() {
+  const list = document.getElementById("roleList");
+  if (!list) return;
+  const roles = loadHierarchy();
+  list.innerHTML = roles
+    .map(
+      (r, i) =>
+        `<li class="list-group-item d-flex justify-content-between align-items-center" data-index="${i}">${r}<span><button class="btn btn-sm btn-outline-secondary me-1 move-up">&uarr;</button><button class="btn btn-sm btn-outline-secondary me-1 move-down">&darr;</button><button class="btn btn-sm btn-outline-danger delete-role">&times;</button></span></li>`,
+    )
+    .join("");
+  list.querySelectorAll(".move-up").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const li = btn.closest("li");
+      const idx = parseInt(li.dataset.index, 10);
+      if (idx > 0) {
+        const roles = loadHierarchy();
+        [roles[idx - 1], roles[idx]] = [roles[idx], roles[idx - 1]];
+        saveHierarchy(roles);
+        renderRoleList();
+        populateRoleSelect();
+      }
+    });
+  });
+  list.querySelectorAll(".move-down").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const li = btn.closest("li");
+      const idx = parseInt(li.dataset.index, 10);
+      const roles = loadHierarchy();
+      if (idx < roles.length - 1) {
+        [roles[idx + 1], roles[idx]] = [roles[idx], roles[idx + 1]];
+        saveHierarchy(roles);
+        renderRoleList();
+        populateRoleSelect();
+      }
+    });
+  });
+  list.querySelectorAll(".delete-role").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const li = btn.closest("li");
+      const idx = parseInt(li.dataset.index, 10);
+      const roles = loadHierarchy();
+      roles.splice(idx, 1);
+      saveHierarchy(roles);
+      renderRoleList();
+      populateRoleSelect();
+    });
+  });
+}
+
+function populateRoleSelect() {
+  const sel = document.getElementById("roleSelect");
+  if (!sel) return;
+  const roles = loadHierarchy();
+  sel.innerHTML = roles
+    .map((r) => `<option value="${r}">${r}</option>`)
+    .join("");
+}
+
+function setupAddRoleForm() {
+  const form = document.getElementById("addRoleForm");
+  if (!form) return;
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const name = form.elements.role.value.trim();
+    if (!name) return;
+    const roles = loadHierarchy();
+    if (!roles.includes(name)) {
+      roles.push(name);
+      saveHierarchy(roles);
+      renderRoleList();
+      populateRoleSelect();
+    }
+    form.reset();
+  });
 }
 
 if (document.readyState === "loading") {

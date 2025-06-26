@@ -233,8 +233,11 @@ module.exports = (db, io) => {
     }
   });
 
+  const { hasLevel, getHierarchy, saveHierarchy } = require("../controllers/hierarchy");
+
   router.post("/api/employees", async (req, res) => {
-    if (!req.session.user || req.session.user.role !== "management") {
+    const topRole = getHierarchy().slice(-1)[0];
+    if (!req.session.user || !hasLevel(req.session.user.role, topRole)) {
       return res.status(403).send("Forbidden");
     }
     if (!Array.isArray(req.body.employees))
@@ -248,12 +251,17 @@ module.exports = (db, io) => {
           [JSON.stringify(employees)],
         );
 
-      const allowedRoles = ["FOH", "BOH", "management"];
+      const allowedRoles = getHierarchy();
       for (const emp of employees) {
         if (!emp.username) continue;
-        let role = allowedRoles.includes(emp.role) ? emp.role : "FOH";
-        if (role === "management" && req.session.user.role !== "management") {
-          role = "FOH";
+        let role = allowedRoles.includes(emp.role)
+          ? emp.role
+          : allowedRoles[0];
+        if (
+          hasLevel(role, topRole) &&
+          !hasLevel(req.session.user.role, topRole)
+        ) {
+          role = allowedRoles[0];
         }
         if (emp.password) {
           const hash = await bcrypt.hash(emp.password, 10);
@@ -305,6 +313,34 @@ module.exports = (db, io) => {
       res.json({ success: true });
     } catch (err) {
       console.error("Error saving schedule:", err);
+      res.status(500).send("DB Error");
+    }
+  });
+
+  router.get("/api/hierarchy", async (req, res) => {
+    try {
+      const roles = getHierarchy();
+      res.json({ hierarchy: roles });
+    } catch (err) {
+      console.error("Error fetching hierarchy:", err);
+      res.status(500).send("DB Error");
+    }
+  });
+
+  router.post("/api/hierarchy", async (req, res) => {
+    const roles = Array.isArray(req.body.hierarchy) ? req.body.hierarchy : null;
+    if (!roles) return res.status(400).send("Invalid data");
+    const topRole = getHierarchy().slice(-1)[0];
+    if (!req.session.user || !hasLevel(req.session.user.role, topRole)) {
+      return res.status(403).send("Forbidden");
+    }
+    try {
+      await new Promise((resolve, reject) =>
+        saveHierarchy(db, roles, (err) => (err ? reject(err) : resolve())),
+      );
+      res.json({ success: true });
+    } catch (err) {
+      console.error("Error saving hierarchy:", err);
       res.status(500).send("DB Error");
     }
   });

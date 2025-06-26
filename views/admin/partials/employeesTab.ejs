@@ -27,11 +27,7 @@
             <input type="password" class="form-control form-control-sm" name="password" placeholder="Password" autocomplete="new-password" />
           </div>
           <div class="col-sm-4">
-            <select name="role" class="form-select form-select-sm">
-              <option value="FOH" selected>Employee</option>
-              <option value="BOH">Back of House</option>
-              <option value="management">Manager</option>
-            </select>
+            <select name="role" id="roleSelect" class="form-select form-select-sm"></select>
           </div>
         </div>
         <div class="mb-3">
@@ -95,7 +91,13 @@
         </div>
       </div>
       <div class="employees-pane" id="hierarchyPane">
-        <ul id="hierarchyTree" class="list-unstyled"></ul>
+        <ul id="hierarchyTree" class="list-unstyled mb-3"></ul>
+        <h5>Roles</h5>
+        <ul id="roleList" class="list-group mb-2"></ul>
+        <form id="addRoleForm" class="d-flex">
+          <input type="text" name="role" class="form-control form-control-sm me-2" placeholder="New role" />
+          <button type="submit" class="btn btn-sm btn-primary">Add</button>
+        </form>
       </div>
     </div>
 </div>

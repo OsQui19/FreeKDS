@@ -29,9 +29,12 @@ const { logSecurityEvent } = require("../controllers/securityLog");
 
 module.exports = (db, io) => {
   const router = express.Router();
+  const { hasLevel, getHierarchy } = require("../controllers/hierarchy");
+
   router.use((req, res, next) => {
     if (!req.session.user) return next();
-    if (req.session.user.role !== "management") {
+    const topRole = getHierarchy().slice(-1)[0];
+    if (!hasLevel(req.session.user.role, topRole)) {
       logSecurityEvent(
         db,
         "unauthorized",
