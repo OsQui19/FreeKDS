@@ -651,10 +651,21 @@ function renderRoleList() {
   if (!list) return;
   const roles = loadHierarchy();
   list.innerHTML = roles
-    .map(
-      (r, i) =>
-        `<li class="list-group-item d-flex justify-content-between align-items-center" data-index="${i}">${r}<span><button class="btn btn-sm btn-outline-secondary me-1 move-up">&uarr;</button><button class="btn btn-sm btn-outline-secondary me-1 move-down">&darr;</button><button class="btn btn-sm btn-outline-danger delete-role">&times;</button></span></li>`,
-    )
+    .map((r, i) => {
+      const badge =
+        i === roles.length - 1
+          ? '<span class="badge bg-success ms-2">Highest</span>'
+          : "";
+      return `\
+<li class="list-group-item d-flex justify-content-between align-items-center" data-index="${i}">\
+  <span>${r}${badge}</span>\
+  <span>\
+    <button class="btn btn-sm btn-outline-secondary me-1 move-up">&uarr;</button>\
+    <button class="btn btn-sm btn-outline-secondary me-1 move-down">&darr;</button>\
+    <button class="btn btn-sm btn-outline-danger delete-role">&times;</button>\
+  </span>\
+</li>`;
+    })
     .join("");
   list.querySelectorAll(".move-up").forEach((btn) => {
     btn.addEventListener("click", () => {
