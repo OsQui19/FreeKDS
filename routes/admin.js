@@ -29,8 +29,12 @@ const { logSecurityEvent } = require("../controllers/securityLog");
 
 module.exports = (db, io) => {
   const router = express.Router();
-  const { hasLevel, getHierarchy } = require("../controllers/hierarchy");
-  const rolePermissions = require("../controllers/permissions");
+  const {
+    hasLevel,
+    getHierarchy,
+    roleHasAccess,
+    getRolePermissions,
+  } = require("../controllers/accessControl");
 
   router.use((req, res, next) => {
     if (!req.session.user) return next();
@@ -49,7 +53,7 @@ module.exports = (db, io) => {
     const comp = Object.entries(map).find(([p]) => req.path.startsWith(p));
     if (comp) {
       const c = comp[1];
-      if (!rolePermissions.roleHasAccess(role, c)) {
+      if (!roleHasAccess(role, c)) {
         logSecurityEvent(db, "unauthorized", req.session.user.id, req.originalUrl, false, req.ip);
         return res.status(403).send("Forbidden");
       }
@@ -100,9 +104,7 @@ module.exports = (db, io) => {
       const orders = await getPurchaseOrders(db);
 
       const settings = res.locals.settings || {};
-      const allowedModules = rolePermissions.getRolePermissions(
-        req.session.user.role,
-      );
+      const allowedModules = getRolePermissions(req.session.user.role);
       res.render("admin/home", {
         stations: stationRows,
         categories,

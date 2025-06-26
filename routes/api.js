@@ -9,7 +9,7 @@ const {
 const { backupDatabase } = require("../controllers/dbBackup");
 const unitConversion = require("../controllers/unitConversion");
 const bcrypt = require("bcrypt");
-const rolePermissions = require("../controllers/permissions");
+const accessControl = require("../controllers/accessControl");
 
 module.exports = (db, io) => {
   const router = express.Router();
@@ -234,7 +234,7 @@ module.exports = (db, io) => {
     }
   });
 
-  const { hasLevel, getHierarchy, saveHierarchy } = require("../controllers/hierarchy");
+  const { hasLevel, getHierarchy, saveHierarchy } = require("../controllers/accessControl");
 
   router.post("/api/employees", async (req, res) => {
     const topRole = getHierarchy().slice(-1)[0];
@@ -348,7 +348,7 @@ module.exports = (db, io) => {
 
   router.get("/api/permissions", async (req, res) => {
     try {
-      const perms = rolePermissions.getPermissions();
+      const perms = accessControl.getPermissions();
       res.json({ permissions: perms });
     } catch (err) {
       console.error("Error fetching permissions:", err);
@@ -365,7 +365,7 @@ module.exports = (db, io) => {
     }
     try {
       await new Promise((resolve, reject) =>
-        rolePermissions.savePermissions(db, req.body.permissions, (err) =>
+        accessControl.savePermissions(db, req.body.permissions, (err) =>
           err ? reject(err) : resolve(),
         ),
       );

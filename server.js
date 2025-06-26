@@ -10,8 +10,7 @@ const unitConversion = require("./controllers/unitConversion");
 const { scheduleDailyLog } = require("./controllers/dailyUsage");
 const { scheduleDailyBackup } = require("./controllers/dbBackup");
 const { logSecurityEvent } = require("./controllers/securityLog");
-const roleHierarchy = require("./controllers/hierarchy");
-const rolePermissions = require("./controllers/permissions");
+const accessControl = require("./controllers/accessControl");
 require("dotenv").config();
 const app = express();
 const server = http.createServer(app);
@@ -35,8 +34,8 @@ db.getConnection((err, connection) => {
   if (connection) connection.release();
   settingsCache.loadSettings(db);
   unitConversion.loadUnits(db);
-  roleHierarchy.loadHierarchy(db);
-  rolePermissions.loadPermissions(db);
+  accessControl.loadHierarchy(db);
+  accessControl.loadPermissions(db);
   scheduleDailyLog(db);
   scheduleDailyBackup();
 });
@@ -69,15 +68,15 @@ app.use((req, res, next) => {
 });
 app.use((req, res, next) => {
   res.locals.req = req;
-  res.locals.roles = roleHierarchy.getHierarchy();
+  res.locals.roles = accessControl.getHierarchy();
   res.locals.hasRoleLevel = (minRole) =>
     req.session && req.session.user
-      ? roleHierarchy.hasLevel(req.session.user.role, minRole)
+      ? accessControl.hasLevel(req.session.user.role, minRole)
       : false;
-  res.locals.permissions = rolePermissions.getPermissions();
+  res.locals.permissions = accessControl.getPermissions();
   res.locals.hasAccess = (component) =>
     req.session && req.session.user
-      ? rolePermissions.roleHasAccess(req.session.user.role, component)
+      ? accessControl.roleHasAccess(req.session.user.role, component)
       : false;
   next();
 });
