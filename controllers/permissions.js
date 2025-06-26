@@ -1,3 +1,5 @@
+const { getHierarchy, hasLevel } = require("./hierarchy");
+
 let permissions = {};
 
 function loadPermissions(db, cb) {
@@ -37,6 +39,8 @@ function getRolePermissions(role) {
 function roleHasAccess(role, component) {
   if (!component) return false;
   const allowed = getRolePermissions(role);
+  const topRole = getHierarchy().slice(-1)[0];
+  if (hasLevel(role, topRole)) return true;
   return allowed.includes(component);
 }
 
