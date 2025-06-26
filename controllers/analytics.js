@@ -12,7 +12,7 @@ async function fetchSalesTotals(db, start, end) {
                     JOIN menu_items mi ON oi.menu_item_id = mi.id
                     WHERE o.status='completed' AND o.created_at BETWEEN ? AND ?
                     GROUP BY DATE(o.created_at)`;
-  const costSql = `SELECT DATE(l.created_at) AS date, SUM(l.amount * ing.cost) AS cost
+  const costSql = `SELECT DATE(l.created_at) AS date, SUM(l.amount / ing.cost) AS cost
                    FROM inventory_log l
                    JOIN ingredients ing ON l.ingredient_id = ing.id
                    JOIN orders o ON l.order_id = o.id
