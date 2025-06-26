@@ -1,3 +1,4 @@
+require('../utils/logger');
 const mysql = require('mysql2/promise');
 const bcrypt = require('bcrypt');
 require('dotenv').config();

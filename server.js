@@ -1,3 +1,4 @@
+require("./utils/logger");
 const express = require("express");
 const mysql = require("mysql2");
 const path = require("path");
@@ -82,6 +83,11 @@ app.use(apiRoutes);
 app.get('/', (req, res) => {
   if (!req.session.user) return res.redirect('/login');
   res.render('home');
+});
+// Central error handler to report unexpected issues
+app.use((err, req, res, next) => {
+  console.error('Unhandled application error', err);
+  res.status(500).send('Internal Server Error');
 });
 setupSocketHandlers(io, db);
 const PORT = process.env.PORT || 3000;

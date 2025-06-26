@@ -1,3 +1,4 @@
+require('../utils/logger');
 const path = require('path');
 const { restoreDatabase } = require('../controllers/dbBackup');
 
