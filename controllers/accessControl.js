@@ -1,4 +1,16 @@
 const DEFAULT_HIERARCHY = ["FOH", "BOH", "management"];
+const ALL_MODULES = [
+  "stations",
+  "menu",
+  "theme",
+  "inventory",
+  "suppliers",
+  "purchase-orders",
+  "reports",
+  "employees",
+  "locations",
+];
+
 let hierarchy = [...DEFAULT_HIERARCHY];
 let permissions = {};
 
@@ -91,7 +103,8 @@ function ensureDefaults(db) {
           await db
             .promise()
             .query(
-              "INSERT INTO settings (setting_key, setting_value) VALUES ('role_permissions', '{}')",
+              "INSERT INTO settings (setting_key, setting_value) VALUES ('role_permissions', ?)",
+              [JSON.stringify({ management: ALL_MODULES })],
             );
         }
         resolve();
@@ -119,6 +132,10 @@ function getPermissions() {
 }
 
 function getRolePermissions(role) {
+  const topRole = getHierarchy().slice(-1)[0];
+  if (role === topRole && !Array.isArray(permissions[role])) {
+    return ALL_MODULES.slice();
+  }
   return Array.isArray(permissions[role]) ? permissions[role] : [];
 }
 
