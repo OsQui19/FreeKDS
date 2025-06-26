@@ -1,26 +1,20 @@
+<%
+  const moduleInfo = {
+    stations: ["bi-hdd-network", "Stations"],
+    menu: ["bi-list-ul", "Menu"],
+    theme: ["bi-palette", "Theme"],
+    inventory: ["bi-box-seam", "Inventory"],
+    suppliers: ["bi-truck", "Suppliers"],
+    "purchase-orders": ["bi-receipt", "Purchase Orders"],
+    employees: ["bi-people", "Employees"],
+    reports: ["bi-bar-chart", "Reports"],
+  };
+  const mods = Array.isArray(allowedModules) ? allowedModules : [];
+%>
 <div id="sideNav" class="side-nav">
-  <a href="#" class="nav-link open-tab" data-type="stations" title="Stations">
-    <i class="bi bi-hdd-network"></i><span>Stations</span>
-  </a>
-  <a href="#" class="nav-link open-tab" data-type="menu" title="Menu">
-    <i class="bi bi-list-ul"></i><span>Menu</span>
-  </a>
-  <a href="#" class="nav-link open-tab" data-type="theme" title="Theme">
-    <i class="bi bi-palette"></i><span>Theme</span>
-  </a>
-  <a href="#" class="nav-link open-tab" data-type="inventory" title="Inventory">
-    <i class="bi bi-box-seam"></i><span>Inventory</span>
-  </a>
-  <a href="#" class="nav-link open-tab" data-type="suppliers" title="Suppliers">
-    <i class="bi bi-truck"></i><span>Suppliers</span>
-  </a>
-  <a href="#" class="nav-link open-tab" data-type="purchase-orders" title="Purchase Orders">
-    <i class="bi bi-receipt"></i><span>Purchase Orders</span>
-  </a>
-  <a href="#" class="nav-link open-tab" data-type="employees" title="Employees">
-    <i class="bi bi-people"></i><span>Employees</span>
-  </a>
-  <a href="#" class="nav-link open-tab" data-type="reports" title="Reports">
-    <i class="bi bi-bar-chart"></i><span>Reports</span>
-  </a>
+  <% mods.forEach(function(m){ const info = moduleInfo[m]; if(info){ %>
+    <a href="#" class="nav-link open-tab" data-type="<%= m %>" title="<%= info[1] %>">
+      <i class="bi <%= info[0] %>"></i><span><%= info[1] %></span>
+    </a>
+  <% }}); %>
 </div>

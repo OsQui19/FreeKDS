@@ -30,19 +30,31 @@ const { logSecurityEvent } = require("../controllers/securityLog");
 module.exports = (db, io) => {
   const router = express.Router();
   const { hasLevel, getHierarchy } = require("../controllers/hierarchy");
+  const rolePermissions = require("../controllers/permissions");
 
   router.use((req, res, next) => {
     if (!req.session.user) return next();
+    const role = req.session.user.role;
     const topRole = getHierarchy().slice(-1)[0];
-    if (!hasLevel(req.session.user.role, topRole)) {
-      logSecurityEvent(
-        db,
-        "unauthorized",
-        req.session.user.id,
-        req.originalUrl,
-        false,
-        req.ip,
-      );
+    const map = {
+      "/admin/stations": "stations",
+      "/admin/menu": "menu",
+      "/admin/theme": "theme",
+      "/admin/inventory": "inventory",
+      "/admin/suppliers": "suppliers",
+      "/admin/purchase-orders": "purchase-orders",
+      "/admin/reports": "reports",
+      "/admin/locations": "locations",
+    };
+    const comp = Object.entries(map).find(([p]) => req.path.startsWith(p));
+    if (comp) {
+      const c = comp[1];
+      if (!rolePermissions.roleHasAccess(role, c)) {
+        logSecurityEvent(db, "unauthorized", req.session.user.id, req.originalUrl, false, req.ip);
+        return res.status(403).send("Forbidden");
+      }
+    } else if (!hasLevel(role, topRole)) {
+      logSecurityEvent(db, "unauthorized", req.session.user.id, req.originalUrl, false, req.ip);
       return res.status(403).send("Forbidden");
     }
     next();
@@ -88,6 +100,9 @@ module.exports = (db, io) => {
       const orders = await getPurchaseOrders(db);
 
       const settings = res.locals.settings || {};
+      const allowedModules = rolePermissions.getRolePermissions(
+        req.session.user.role,
+      );
       res.render("admin/home", {
         stations: stationRows,
         categories,
@@ -106,6 +121,7 @@ module.exports = (db, io) => {
         locations,
         orders,
         settings,
+        allowedModules,
       });
     } catch (err) {
       console.error("Error fetching admin page data:", err);

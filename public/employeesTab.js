@@ -57,6 +57,7 @@ async function initEmployeesTabs() {
     syncEmployeesFromServer(),
     syncScheduleFromServer(),
     syncHierarchyFromServer(),
+    syncPermissionsFromServer(),
   ]);
 
   setupOnboardingForm();
@@ -67,6 +68,7 @@ async function initEmployeesTabs() {
   setupHourRangeControls();
   setupAddRoleForm();
   renderHierarchy();
+  renderPermissionsTable();
 }
 
 const EMPLOYEE_KEY = "employees";
@@ -74,6 +76,17 @@ const SCHEDULE_KEY = "schedule";
 const HOURS_START_KEY = "scheduleStartHour";
 const HOURS_END_KEY = "scheduleEndHour";
 const HIERARCHY_KEY = "roleHierarchy";
+const PERMISSIONS_KEY = "rolePermissions";
+const ALL_MODULES = [
+  "stations",
+  "menu",
+  "theme",
+  "inventory",
+  "suppliers",
+  "purchase-orders",
+  "employees",
+  "reports",
+];
 
 async function syncEmployeesFromServer() {
   try {
@@ -108,6 +121,19 @@ async function syncHierarchyFromServer() {
     const data = await res.json();
     if (Array.isArray(data.hierarchy)) {
       storage.set(HIERARCHY_KEY, JSON.stringify(data.hierarchy));
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
+async function syncPermissionsFromServer() {
+  try {
+    const res = await fetch("/api/permissions");
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.permissions && typeof data.permissions === "object") {
+      storage.set(PERMISSIONS_KEY, JSON.stringify(data.permissions));
     }
   } catch {
     /* ignore */
@@ -241,6 +267,23 @@ function saveHierarchy(arr) {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ hierarchy: arr }),
+  }).catch(() => {});
+}
+
+function loadPermissions() {
+  try {
+    return JSON.parse(storage.get(PERMISSIONS_KEY)) || {};
+  } catch {
+    return {};
+  }
+}
+
+function savePermissions(obj) {
+  storage.set(PERMISSIONS_KEY, JSON.stringify(obj));
+  fetch("/api/permissions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ permissions: obj }),
   }).catch(() => {});
 }
 
@@ -677,6 +720,7 @@ function renderRoleList() {
         saveHierarchy(roles);
         renderRoleList();
         populateRoleSelect();
+        renderPermissionsTable();
       }
     });
   });
@@ -690,6 +734,7 @@ function renderRoleList() {
         saveHierarchy(roles);
         renderRoleList();
         populateRoleSelect();
+        renderPermissionsTable();
       }
     });
   });
@@ -698,10 +743,14 @@ function renderRoleList() {
       const li = btn.closest("li");
       const idx = parseInt(li.dataset.index, 10);
       const roles = loadHierarchy();
-      roles.splice(idx, 1);
+      const removed = roles.splice(idx, 1)[0];
       saveHierarchy(roles);
+      const perms = loadPermissions();
+      delete perms[removed];
+      savePermissions(perms);
       renderRoleList();
       populateRoleSelect();
+      renderPermissionsTable();
     });
   });
 }
@@ -726,10 +775,50 @@ function setupAddRoleForm() {
     if (!roles.includes(name)) {
       roles.push(name);
       saveHierarchy(roles);
+      const perms = loadPermissions();
+      perms[name] = [];
+      savePermissions(perms);
       renderRoleList();
       populateRoleSelect();
+      renderPermissionsTable();
     }
     form.reset();
+  });
+}
+
+function renderPermissionsTable() {
+  const tbl = document.getElementById("permissionsTable");
+  if (!tbl) return;
+  const roles = loadHierarchy();
+  const perms = loadPermissions();
+  const rows = roles
+    .map((r) => {
+      const allowed = new Set(perms[r] || []);
+      const cells = ALL_MODULES.map(
+        (m) =>
+          `<td><input type="checkbox" data-role="${r}" data-mod="${m}" ${
+            allowed.has(m) ? "checked" : ""
+          }></td>`,
+      ).join("");
+      return `<tr><th>${r}</th>${cells}</tr>`;
+    })
+    .join("");
+  tbl.querySelector("tbody").innerHTML = rows;
+  tbl.querySelectorAll("input[type=checkbox]").forEach((cb) => {
+    cb.addEventListener("change", () => {
+      const role = cb.dataset.role;
+      const mod = cb.dataset.mod;
+      const perms = loadPermissions();
+      const arr = perms[role] || [];
+      if (cb.checked) {
+        if (!arr.includes(mod)) arr.push(mod);
+      } else {
+        const i = arr.indexOf(mod);
+        if (i >= 0) arr.splice(i, 1);
+      }
+      perms[role] = arr;
+      savePermissions(perms);
+    });
   });
 }
 

@@ -1,16 +1,12 @@
 document.addEventListener("DOMContentLoaded", () => {
   const sideNav = document.getElementById("sideNav");
   const container = document.getElementById("windowsContainer");
-  const templates = {
-    stations: document.getElementById("tpl-stations").innerHTML,
-    menu: document.getElementById("tpl-menu").innerHTML,
-    theme: document.getElementById("tpl-theme").innerHTML,
-    inventory: document.getElementById("tpl-inventory").innerHTML,
-    suppliers: document.getElementById("tpl-suppliers").innerHTML,
-    "purchase-orders": document.getElementById("tpl-purchase-orders").innerHTML,
-    reports: document.getElementById("tpl-reports").innerHTML,
-    employees: document.getElementById("tpl-employees").innerHTML,
-  };
+  const allowed = Array.isArray(window.allowedModules) ? window.allowedModules : [];
+  const templates = {};
+  allowed.forEach((m) => {
+    const el = document.getElementById(`tpl-${m}`);
+    if (el) templates[m] = el.innerHTML;
+  });
   function show(type) {
     sideNav.querySelectorAll(".nav-link").forEach((l) => {
       l.classList.toggle("active", l.dataset.type === type);
@@ -20,16 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  [
-    "stations",
-    "menu",
-    "theme",
-    "inventory",
-    "suppliers",
-    "purchase-orders",
-    "reports",
-    "employees",
-  ].forEach((type) => {
+  allowed.forEach((type) => {
     const pane = document.createElement("section");
     pane.className = "admin-window";
     pane.dataset.type = type;
@@ -74,6 +61,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
   const initialTab =
-    new URLSearchParams(location.search).get("tab") || "stations";
+    new URLSearchParams(location.search).get("tab") || allowed[0] || "stations";
   show(initialTab);
 });

@@ -11,6 +11,7 @@ const { scheduleDailyLog } = require("./controllers/dailyUsage");
 const { scheduleDailyBackup } = require("./controllers/dbBackup");
 const { logSecurityEvent } = require("./controllers/securityLog");
 const roleHierarchy = require("./controllers/hierarchy");
+const rolePermissions = require("./controllers/permissions");
 require("dotenv").config();
 const app = express();
 const server = http.createServer(app);
@@ -35,6 +36,7 @@ db.getConnection((err, connection) => {
   settingsCache.loadSettings(db);
   unitConversion.loadUnits(db);
   roleHierarchy.loadHierarchy(db);
+  rolePermissions.loadPermissions(db);
   scheduleDailyLog(db);
   scheduleDailyBackup();
 });
@@ -71,6 +73,11 @@ app.use((req, res, next) => {
   res.locals.hasRoleLevel = (minRole) =>
     req.session && req.session.user
       ? roleHierarchy.hasLevel(req.session.user.role, minRole)
+      : false;
+  res.locals.permissions = rolePermissions.getPermissions();
+  res.locals.hasAccess = (component) =>
+    req.session && req.session.user
+      ? rolePermissions.roleHasAccess(req.session.user.role, component)
       : false;
   next();
 });

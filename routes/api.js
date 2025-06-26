@@ -9,6 +9,7 @@ const {
 const { backupDatabase } = require("../controllers/dbBackup");
 const unitConversion = require("../controllers/unitConversion");
 const bcrypt = require("bcrypt");
+const rolePermissions = require("../controllers/permissions");
 
 module.exports = (db, io) => {
   const router = express.Router();
@@ -341,6 +342,36 @@ module.exports = (db, io) => {
       res.json({ success: true });
     } catch (err) {
       console.error("Error saving hierarchy:", err);
+      res.status(500).send("DB Error");
+    }
+  });
+
+  router.get("/api/permissions", async (req, res) => {
+    try {
+      const perms = rolePermissions.getPermissions();
+      res.json({ permissions: perms });
+    } catch (err) {
+      console.error("Error fetching permissions:", err);
+      res.status(500).send("DB Error");
+    }
+  });
+
+  router.post("/api/permissions", async (req, res) => {
+    if (!req.body.permissions || typeof req.body.permissions !== "object")
+      return res.status(400).send("Invalid data");
+    const topRole = getHierarchy().slice(-1)[0];
+    if (!req.session.user || !hasLevel(req.session.user.role, topRole)) {
+      return res.status(403).send("Forbidden");
+    }
+    try {
+      await new Promise((resolve, reject) =>
+        rolePermissions.savePermissions(db, req.body.permissions, (err) =>
+          err ? reject(err) : resolve(),
+        ),
+      );
+      res.json({ success: true });
+    } catch (err) {
+      console.error("Error saving permissions:", err);
       res.status(500).send("DB Error");
     }
   });
