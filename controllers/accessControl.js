@@ -19,6 +19,10 @@ function normalizeRole(role) {
   return typeof role === 'string' ? role.trim().toLowerCase() : '';
 }
 
+function normalizeModuleName(name) {
+  return typeof name === 'string' ? name.trim().toLowerCase() : '';
+}
+
 function loadHierarchy(db, cb) {
   return new Promise((resolve, reject) => {
     db.query(
@@ -57,7 +61,16 @@ function loadPermissions(db, cb) {
         if (!err && rows.length) {
           try {
             const data = JSON.parse(rows[0].setting_value);
-            if (data && typeof data === 'object') permissions = data;
+            if (data && typeof data === 'object') {
+              const norm = {};
+              Object.entries(data).forEach(([roleKey, mods]) => {
+                if (!Array.isArray(mods)) return;
+                norm[roleKey] = mods
+                  .map((m) => normalizeModuleName(m))
+                  .filter(Boolean);
+              });
+              permissions = norm;
+            }
           } catch {
             /* ignore */
           }
@@ -71,7 +84,14 @@ function loadPermissions(db, cb) {
 }
 
 function savePermissions(db, obj, cb) {
-  permissions = obj && typeof obj === 'object' ? obj : permissions;
+  if (obj && typeof obj === 'object') {
+    const norm = {};
+    Object.entries(obj).forEach(([roleKey, mods]) => {
+      if (!Array.isArray(mods)) return;
+      norm[roleKey] = mods.map((m) => normalizeModuleName(m)).filter(Boolean);
+    });
+    permissions = norm;
+  }
   db.query(
     "INSERT INTO settings (setting_key, setting_value) VALUES ('role_permissions', ?) ON DUPLICATE KEY UPDATE setting_value=VALUES(setting_value)",
     [JSON.stringify(permissions)],
@@ -161,17 +181,20 @@ function getRolePermissions(role) {
     (k) => normalizeRole(k) === norm,
   );
   if (norm === topNorm && (!key || !Array.isArray(permissions[key]))) {
-    return ALL_MODULES.slice();
+    return ALL_MODULES.map((m) => normalizeModuleName(m));
   }
-  return key && Array.isArray(permissions[key]) ? permissions[key] : [];
+  return key && Array.isArray(permissions[key])
+    ? permissions[key].map((m) => normalizeModuleName(m))
+    : [];
 }
 
 function roleHasAccess(role, component) {
-  if (!component) return false;
+  const comp = normalizeModuleName(component);
+  if (!comp) return false;
   const allowed = getRolePermissions(role);
   const topRole = getHierarchy().slice(-1)[0];
   if (hasLevel(role, topRole)) return true;
-  return allowed.includes(component);
+  return allowed.includes(comp);
 }
 
 module.exports = {
