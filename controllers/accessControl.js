@@ -1,6 +1,7 @@
 const DEFAULT_HIERARCHY = ["FOH", "BOH", "management"];
 const ALL_MODULES = [
   "stations",
+  "order",
   "menu",
   "theme",
   "inventory",

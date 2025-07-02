@@ -80,6 +80,7 @@ const HIERARCHY_KEY = "roleHierarchy";
 const PERMISSIONS_KEY = "rolePermissions";
 const ALL_MODULES = [
   "stations",
+  "order",
   "menu",
   "theme",
   "inventory",
