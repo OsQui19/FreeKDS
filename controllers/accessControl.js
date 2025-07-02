@@ -186,4 +186,5 @@ module.exports = {
   getPermissions,
   getRolePermissions,
   roleHasAccess,
+  ALL_MODULES,
 };

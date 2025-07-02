@@ -39,7 +39,7 @@
   <template id="tpl-reports"><%- include('partials/reportsTab') %></template>
   <% } %>
   <% if ((allowedModules || []).includes('employees')) { %>
-  <template id="tpl-employees"><%- include('partials/employeesTab') %></template>
+  <template id="tpl-employees"><%- include('partials/employeesTab', { modules }) %></template>
   <% } %>
 </body>
 </html>

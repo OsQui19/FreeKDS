@@ -58,6 +58,7 @@ async function initEmployeesTabs() {
     syncScheduleFromServer(),
     syncHierarchyFromServer(),
     syncPermissionsFromServer(),
+    syncModulesFromServer(),
   ]);
 
   setupOnboardingForm();
@@ -78,7 +79,7 @@ const HOURS_START_KEY = "scheduleStartHour";
 const HOURS_END_KEY = "scheduleEndHour";
 const HIERARCHY_KEY = "roleHierarchy";
 const PERMISSIONS_KEY = "rolePermissions";
-const ALL_MODULES = [
+let ALL_MODULES = [
   "stations",
   "order",
   "menu",
@@ -86,9 +87,23 @@ const ALL_MODULES = [
   "inventory",
   "suppliers",
   "purchase-orders",
-  "employees",
   "reports",
+  "employees",
+  "locations",
 ];
+
+async function syncModulesFromServer() {
+  try {
+    const res = await fetch("/api/modules");
+    if (!res.ok) return;
+    const data = await res.json();
+    if (Array.isArray(data.modules)) {
+      ALL_MODULES = data.modules;
+    }
+  } catch {
+    /* ignore */
+  }
+}
 
 async function syncEmployeesFromServer() {
   try {

@@ -356,6 +356,10 @@ module.exports = (db, io) => {
     }
   });
 
+  router.get("/api/modules", (req, res) => {
+    res.json({ modules: accessControl.ALL_MODULES });
+  });
+
   router.post("/api/permissions", async (req, res) => {
     if (!req.body.permissions || typeof req.body.permissions !== "object")
       return res.status(400).send("Invalid data");

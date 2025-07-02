@@ -34,6 +34,7 @@ module.exports = (db, io) => {
     getHierarchy,
     roleHasAccess,
     getRolePermissions,
+    ALL_MODULES,
   } = require("../controllers/accessControl");
 
   router.use((req, res, next) => {
@@ -124,6 +125,7 @@ module.exports = (db, io) => {
         orders,
         settings,
         allowedModules,
+        modules: ALL_MODULES,
       });
     } catch (err) {
       console.error("Error fetching admin page data:", err);

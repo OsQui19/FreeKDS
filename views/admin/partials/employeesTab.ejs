@@ -125,19 +125,13 @@
           <thead>
             <tr class="table-light">
               <th rowspan="2">Role</th>
-              <th colspan="2">KDS / Order Screens</th>
-              <th colspan="7">Admin Interface</th>
+              <th colspan="<%= (modules || []).slice(0,2).length %>">KDS / Order Screens</th>
+              <th colspan="<%= (modules || []).slice(2).length %>">Admin Interface</th>
             </tr>
             <tr>
-              <th>Stations</th>
-              <th>Order</th>
-              <th>Menu</th>
-              <th>Theme</th>
-              <th>Inventory</th>
-              <th>Suppliers</th>
-              <th>Purchase Orders</th>
-              <th>Employees</th>
-              <th>Reports</th>
+              <% (modules || []).forEach(function(m){ %>
+                <th><%= m.replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase()) %></th>
+              <% }); %>
             </tr>
           </thead>
           <tbody></tbody>
