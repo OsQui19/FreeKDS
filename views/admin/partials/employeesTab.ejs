@@ -34,8 +34,26 @@
           <label class="form-label">Documents</label>
           <input type="file" class="form-control form-control-sm" name="documents" multiple />
         </div>
-        <button type="submit" class="btn btn-primary btn-sm">Save</button>
+        <input type="hidden" id="employeeIndex" />
+        <button type="submit" class="btn btn-primary btn-sm" id="onboardingSave">Save</button>
+        <button type="button" class="btn btn-secondary btn-sm ms-2 d-none" id="onboardingCancel">Cancel</button>
       </form>
+      <div class="mt-4">
+        <h5>Current Employees</h5>
+        <table class="table table-sm" id="onboardingTable">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Position</th>
+              <th>Start</th>
+              <th>Username</th>
+              <th>Role</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </div>
       <div class="employees-pane" id="schedulePane">
         <div class="row">

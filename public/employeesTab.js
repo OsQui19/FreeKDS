@@ -62,6 +62,7 @@ async function initEmployeesTabs() {
 
   setupOnboardingForm();
   renderEmployeeList();
+  renderOnboardingTable();
   renderSchedule();
   setupScheduleViewToggle();
   setupWeekNav();
@@ -348,26 +349,49 @@ function findRange(day, hour, offset = scheduleWeekOffset) {
 function setupOnboardingForm() {
   const form = document.getElementById("employeeOnboardingForm");
   if (!form) return;
+  const idxField = document.getElementById("employeeIndex");
+  const cancelBtn = document.getElementById("onboardingCancel");
+  const saveBtn = document.getElementById("onboardingSave");
+
+  function resetForm() {
+    form.reset();
+    idxField.value = "";
+    if (cancelBtn) cancelBtn.classList.add("d-none");
+    if (saveBtn) saveBtn.textContent = "Save";
+  }
+
+  if (cancelBtn) {
+    cancelBtn.addEventListener("click", resetForm);
+  }
+
   form.addEventListener("submit", (e) => {
     e.preventDefault();
     const data = new FormData(form);
     const name = (data.get("name") || "").trim();
     if (!name) return;
+    const index = idxField.value ? parseInt(idxField.value, 10) : -1;
+    const employees = loadEmployees();
+    const base =
+      index >= 0 && index < employees.length ? employees[index] : null;
     const employee = {
-      id: Date.now().toString(),
+      id: base ? base.id : Date.now().toString(),
       name,
       position: data.get("position") || "",
       start_date: data.get("start_date") || "",
       username: (data.get("username") || "").trim(),
       password: (data.get("password") || "").trim(),
       role: data.get("role") || "FOH",
-      color: randomColor(),
+      color: base && base.color ? base.color : randomColor(),
     };
-    const employees = loadEmployees();
-    employees.push(employee);
+    if (index >= 0 && index < employees.length) {
+      employees[index] = employee;
+    } else {
+      employees.push(employee);
+    }
     saveEmployees(employees);
-    form.reset();
+    resetForm();
     renderEmployeeList();
+    renderOnboardingTable();
   });
 }
 
@@ -389,6 +413,46 @@ function renderEmployeeList() {
   list.querySelectorAll(".list-group-item").forEach((item) => {
     item.addEventListener("click", () => showScheduleModal(item.dataset.id));
   });
+}
+
+function renderOnboardingTable() {
+  const tbl = document.getElementById("onboardingTable");
+  if (!tbl) return;
+  const tbody = tbl.querySelector("tbody");
+  const employees = loadEmployees();
+  tbody.innerHTML = employees
+    .map(
+      (e, i) =>
+        `<tr data-index="${i}"><td>${e.name}</td><td>${e.position}</td><td>${e.start_date}</td><td>${e.username}</td><td>${e.role}</td><td><button class="btn btn-sm btn-outline-primary edit-emp" data-index="${i}">Edit</button></td></tr>`,
+    )
+    .join("");
+  tbody.querySelectorAll(".edit-emp").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      startEditEmployee(parseInt(btn.dataset.index, 10));
+    });
+  });
+}
+
+function startEditEmployee(idx) {
+  const employees = loadEmployees();
+  const emp = employees[idx];
+  if (!emp) return;
+  const form = document.getElementById("employeeOnboardingForm");
+  if (!form) return;
+  form.elements.name.value = emp.name || "";
+  form.elements.position.value = emp.position || "";
+  form.elements.start_date.value = emp.start_date || "";
+  form.elements.username.value = emp.username || "";
+  if (form.elements.password) form.elements.password.value = "";
+  form.elements.role.value = emp.role || "";
+  document.getElementById("employeeIndex").value = idx;
+  const cancelBtn = document.getElementById("onboardingCancel");
+  if (cancelBtn) cancelBtn.classList.remove("d-none");
+  const saveBtn = document.getElementById("onboardingSave");
+  if (saveBtn) saveBtn.textContent = "Update";
+  if (location.hash.slice(1) !== "onboardingPane") {
+    location.hash = "onboardingPane";
+  }
 }
 
 function buildWeekTable(label) {
