@@ -4,8 +4,27 @@ const {
   getStations,
   getCategories,
 } = require("../controllers/dbHelpers");
+const { roleHasAccess } = require("../controllers/accessControl");
 module.exports = (db) => {
   const router = express.Router();
+
+  router.use((req, res, next) => {
+    if (!req.session.user) return next();
+    const role = req.session.user.role;
+    let comp = null;
+    if (req.path.startsWith("/order")) comp = "order";
+    else if (
+      req.path.startsWith("/stations") ||
+      req.path.startsWith("/station") ||
+      req.path.startsWith("/wiki")
+    ) {
+      comp = "stations";
+    }
+    if (comp && !roleHasAccess(role, comp)) {
+      return res.status(403).send("Forbidden");
+    }
+    next();
+  });
 
   router.get("/stations", async (req, res) => {
     try {

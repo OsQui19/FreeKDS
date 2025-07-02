@@ -34,8 +34,12 @@ db.getConnection((err, connection) => {
   if (connection) connection.release();
   settingsCache.loadSettings(db);
   unitConversion.loadUnits(db);
-  accessControl.loadHierarchy(db);
-  accessControl.loadPermissions(db);
+  accessControl
+    .ensureDefaults(db)
+    .then(() => {
+      accessControl.loadHierarchy(db);
+      accessControl.loadPermissions(db);
+    });
   scheduleDailyLog(db);
   scheduleDailyBackup();
 });
