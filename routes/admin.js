@@ -38,6 +38,7 @@ module.exports = (db, io) => {
   } = require("../controllers/accessControl");
 
   router.use((req, res, next) => {
+    if (!req.path.startsWith("/admin")) return next();
     if (!req.session.user) return next();
     const role = req.session.user.role;
     const topRole = getHierarchy().slice(-1)[0];
@@ -55,6 +56,12 @@ module.exports = (db, io) => {
     if (comp) {
       const c = comp[1];
       if (!roleHasAccess(role, c)) {
+        logSecurityEvent(db, "unauthorized", req.session.user.id, req.originalUrl, false, req.ip);
+        return res.status(403).send("Forbidden");
+      }
+    } else if (req.path === "/admin" || req.path === "/admin/") {
+      const allowed = getRolePermissions(role);
+      if (!allowed.length && !hasLevel(role, topRole)) {
         logSecurityEvent(db, "unauthorized", req.session.user.id, req.originalUrl, false, req.ip);
         return res.status(403).send("Forbidden");
       }
