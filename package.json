@@ -5,8 +5,9 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "seed": "node tests/seed.js"
-    , "create-admin": "node scripts/createAdmin.js"
+    "seed": "node tests/seed.js",
+    "create-admin": "node scripts/createAdmin.js",
+    "check-perms": "node scripts/checkPermissions.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

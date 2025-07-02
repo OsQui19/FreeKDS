@@ -73,8 +73,11 @@ function loadPermissions(db, cb) {
               });
               permissions = norm;
             }
-          } catch {
-            /* ignore */
+          } catch (e) {
+            console.error(
+              'Error parsing role_permissions from settings table:',
+              e.message,
+            );
           }
         }
         if (cb) cb(err, permissions);
