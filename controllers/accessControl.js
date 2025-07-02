@@ -15,6 +15,10 @@ const ALL_MODULES = [
 let hierarchy = [...DEFAULT_HIERARCHY];
 let permissions = {};
 
+function normalizeRole(role) {
+  return typeof role === 'string' ? role.trim().toLowerCase() : '';
+}
+
 function loadHierarchy(db, cb) {
   return new Promise((resolve, reject) => {
     db.query(
@@ -132,7 +136,11 @@ function getHierarchy() {
 }
 
 function getRoleLevel(role) {
-  return hierarchy.indexOf(role);
+  const norm = normalizeRole(role);
+  for (let i = 0; i < hierarchy.length; i += 1) {
+    if (normalizeRole(hierarchy[i]) === norm) return i;
+  }
+  return -1;
 }
 
 function hasLevel(role, minRole) {
@@ -147,10 +155,15 @@ function getPermissions() {
 
 function getRolePermissions(role) {
   const topRole = getHierarchy().slice(-1)[0];
-  if (role === topRole && !Array.isArray(permissions[role])) {
+  const norm = normalizeRole(role);
+  const topNorm = normalizeRole(topRole);
+  const key = Object.keys(permissions).find(
+    (k) => normalizeRole(k) === norm,
+  );
+  if (norm === topNorm && (!key || !Array.isArray(permissions[key]))) {
     return ALL_MODULES.slice();
   }
-  return Array.isArray(permissions[role]) ? permissions[role] : [];
+  return key && Array.isArray(permissions[key]) ? permissions[key] : [];
 }
 
 function roleHasAccess(role, component) {
