@@ -1,6 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const { logSecurityEvent } = require('../controllers/securityLog');
+const { normalizeRole } = require('../controllers/accessControl');
 
 module.exports = (db) => {
   const router = express.Router();
@@ -29,7 +30,8 @@ module.exports = (db) => {
         await logSecurityEvent(db, 'login', username, '/login', false, req.ip);
         return res.redirect('/login');
       }
-      req.session.user = { id: emp.id, role: emp.role };
+      const role = normalizeRole(emp.role) || emp.role;
+      req.session.user = { id: emp.id, role };
       await logSecurityEvent(db, 'login', username, '/login', true, req.ip);
       res.redirect('/');
     } catch (err) {

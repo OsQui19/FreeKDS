@@ -45,7 +45,9 @@ function loadHierarchy(db, cb) {
 }
 
 function saveHierarchy(db, arr, cb) {
-  hierarchy = Array.isArray(arr) && arr.length ? arr : hierarchy;
+  if (Array.isArray(arr) && arr.length) {
+    hierarchy = arr.map((r) => (typeof r === 'string' ? r.trim() : r));
+  }
   db.query(
     "INSERT INTO settings (setting_key, setting_value) VALUES ('role_hierarchy', ?) ON DUPLICATE KEY UPDATE setting_value=VALUES(setting_value)",
     [JSON.stringify(hierarchy)],
@@ -88,7 +90,8 @@ function savePermissions(db, obj, cb) {
     const norm = {};
     Object.entries(obj).forEach(([roleKey, mods]) => {
       if (!Array.isArray(mods)) return;
-      norm[roleKey] = mods.map((m) => normalizeModuleName(m)).filter(Boolean);
+      const key = typeof roleKey === 'string' ? roleKey.trim() : roleKey;
+      norm[key] = mods.map((m) => normalizeModuleName(m)).filter(Boolean);
     });
     permissions = norm;
   }
@@ -203,6 +206,8 @@ module.exports = {
   loadPermissions,
   savePermissions,
   ensureDefaults,
+  normalizeRole,
+  normalizeModuleName,
   getHierarchy,
   getRoleLevel,
   hasLevel,

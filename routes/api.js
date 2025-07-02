@@ -253,11 +253,14 @@ module.exports = (db, io) => {
         );
 
       const allowedRoles = getHierarchy();
+      const roleMap = {};
+      allowedRoles.forEach((r) => {
+        roleMap[accessControl.normalizeRole(r)] = r;
+      });
       for (const emp of employees) {
         if (!emp.username) continue;
-        let role = allowedRoles.includes(emp.role)
-          ? emp.role
-          : allowedRoles[0];
+        const norm = accessControl.normalizeRole(emp.role);
+        let role = roleMap[norm] || allowedRoles[0];
         if (
           hasLevel(role, topRole) &&
           !hasLevel(req.session.user.role, topRole)
