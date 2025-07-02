@@ -101,11 +101,16 @@ function ensureDefaults(db) {
           }
         }
         if (!map.role_permissions) {
+          const defaults = {
+            management: ALL_MODULES,
+            BOH: ["stations"],
+            FOH: ["order"],
+          };
           await db
             .promise()
             .query(
               "INSERT INTO settings (setting_key, setting_value) VALUES ('role_permissions', ?)",
-              [JSON.stringify({ management: ALL_MODULES })],
+              [JSON.stringify(defaults)],
             );
         }
         resolve();
