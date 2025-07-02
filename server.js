@@ -32,16 +32,34 @@ db.getConnection((err, connection) => {
     process.exit(1);
   }
   if (connection) connection.release();
-  settingsCache.loadSettings(db);
-  unitConversion.loadUnits(db);
-  accessControl
-    .ensureDefaults(db)
-    .then(() => {
-      accessControl.loadHierarchy(db);
-      accessControl.loadPermissions(db);
-    });
-  scheduleDailyLog(db);
-  scheduleDailyBackup();
+
+  const init = async () => {
+    try {
+      await accessControl.ensureDefaults(db);
+      await Promise.all([
+        new Promise((resolve, reject) =>
+          settingsCache.loadSettings(db, (e) => (e ? reject(e) : resolve())),
+        ),
+        new Promise((resolve, reject) =>
+          unitConversion.loadUnits(db, (e) => (e ? reject(e) : resolve())),
+        ),
+        accessControl.loadHierarchy(db),
+        accessControl.loadPermissions(db),
+      ]);
+      scheduleDailyLog(db);
+      scheduleDailyBackup();
+      setupSocketHandlers(io, db);
+      const PORT = process.env.PORT || 3000;
+      server.listen(PORT, () => {
+        console.log(`Server running on http://localhost:${PORT}`);
+      });
+    } catch (e) {
+      console.error("Startup error:", e);
+      process.exit(1);
+    }
+  };
+
+  init();
 });
 
 // Middleware to parse request body
@@ -106,8 +124,4 @@ app.use((err, req, res, next) => {
   console.error('Unhandled application error', err);
   res.status(500).send('Internal Server Error');
 });
-setupSocketHandlers(io, db);
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+// setupSocketHandlers and server.listen are invoked after initialization

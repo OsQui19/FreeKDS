@@ -16,20 +16,24 @@ let hierarchy = [...DEFAULT_HIERARCHY];
 let permissions = {};
 
 function loadHierarchy(db, cb) {
-  db.query(
-    "SELECT setting_value FROM settings WHERE setting_key='role_hierarchy' LIMIT 1",
-    (err, rows) => {
-      if (!err && rows.length) {
-        try {
-          const data = JSON.parse(rows[0].setting_value);
-          if (Array.isArray(data) && data.length) hierarchy = data;
-        } catch {
-          /* ignore */
+  return new Promise((resolve, reject) => {
+    db.query(
+      "SELECT setting_value FROM settings WHERE setting_key='role_hierarchy' LIMIT 1",
+      (err, rows) => {
+        if (!err && rows.length) {
+          try {
+            const data = JSON.parse(rows[0].setting_value);
+            if (Array.isArray(data) && data.length) hierarchy = data;
+          } catch {
+            /* ignore */
+          }
         }
-      }
-      if (cb) cb(err, hierarchy);
-    },
-  );
+        if (cb) cb(err, hierarchy);
+        if (err) reject(err);
+        else resolve(hierarchy);
+      },
+    );
+  });
 }
 
 function saveHierarchy(db, arr, cb) {
@@ -42,20 +46,24 @@ function saveHierarchy(db, arr, cb) {
 }
 
 function loadPermissions(db, cb) {
-  db.query(
-    "SELECT setting_value FROM settings WHERE setting_key='role_permissions' LIMIT 1",
-    (err, rows) => {
-      if (!err && rows.length) {
-        try {
-          const data = JSON.parse(rows[0].setting_value);
-          if (data && typeof data === 'object') permissions = data;
-        } catch {
-          /* ignore */
+  return new Promise((resolve, reject) => {
+    db.query(
+      "SELECT setting_value FROM settings WHERE setting_key='role_permissions' LIMIT 1",
+      (err, rows) => {
+        if (!err && rows.length) {
+          try {
+            const data = JSON.parse(rows[0].setting_value);
+            if (data && typeof data === 'object') permissions = data;
+          } catch {
+            /* ignore */
+          }
         }
-      }
-      if (cb) cb(err, permissions);
-    },
-  );
+        if (cb) cb(err, permissions);
+        if (err) reject(err);
+        else resolve(permissions);
+      },
+    );
+  });
 }
 
 function savePermissions(db, obj, cb) {
