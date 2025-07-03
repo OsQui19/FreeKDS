@@ -39,7 +39,7 @@ Start the server with one of the following commands:
 npm start      # or ./start.sh
 ```
 The app will run on `http://localhost:$PORT`.
-If HTTPS isn't available, set `COOKIE_SECURE=false` in your environment before starting.
+`COOKIE_SECURE` defaults to `false`, so HTTPS isn't required for local development.
 
 ## 4. Notes
 - The application uses the variables from `.env` to connect to MySQL.

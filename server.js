@@ -70,6 +70,8 @@ db.getConnection((err, connection) => {
 // Middleware to parse request body
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+// Default COOKIE_SECURE to false so local HTTP logins work out of the box
+const secureCookie = String(process.env.COOKIE_SECURE || 'false').toLowerCase() === 'true';
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "keyboard cat",
@@ -77,7 +79,7 @@ app.use(
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: process.env.COOKIE_SECURE === 'true',
+      secure: secureCookie,
       sameSite: "lax",
     },
   }),
