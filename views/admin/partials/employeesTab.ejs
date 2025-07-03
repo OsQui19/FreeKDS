@@ -4,6 +4,8 @@
     <li class="nav-item"><a href="#onboardingPane" class="nav-link active" data-pane="onboardingPane">Onboarding</a></li>
     <li class="nav-item"><a href="#schedulePane" class="nav-link" data-pane="schedulePane">Scheduling</a></li>
     <li class="nav-item"><a href="#hierarchyPane" class="nav-link" data-pane="hierarchyPane">Hierarchy</a></li>
+    <li class="nav-item"><a href="#timePane" class="nav-link" data-pane="timePane">Time</a></li>
+    <li class="nav-item"><a href="#payrollPane" class="nav-link" data-pane="payrollPane">Payroll</a></li>
   </ul>
   <div class="tab-content">
     <div class="employees-pane active" id="onboardingPane">
@@ -20,13 +22,16 @@
           </div>
         </div>
         <div class="row g-2 mb-3">
-          <div class="col-sm-4">
+          <div class="col-sm-3">
             <input type="text" class="form-control form-control-sm" name="username" placeholder="Username" />
           </div>
-          <div class="col-sm-4">
+          <div class="col-sm-3">
             <input type="password" class="form-control form-control-sm" name="password" placeholder="Password" autocomplete="new-password" />
           </div>
-          <div class="col-sm-4">
+          <div class="col-sm-3">
+            <input type="password" class="form-control form-control-sm" name="pin" placeholder="PIN (4-6 digits)" autocomplete="new-password" pattern="\d{4,6}" />
+          </div>
+          <div class="col-sm-3">
             <select name="role" id="roleSelect" class="form-select form-select-sm"></select>
           </div>
         </div>
@@ -136,6 +141,17 @@
           </thead>
           <tbody></tbody>
         </table>
+      </div>
+      <div class="employees-pane" id="timePane">
+        <table class="table table-sm" id="timeTable">
+          <thead>
+            <tr><th>Employee</th><th>Clock In</th><th>Clock Out</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="employees-pane" id="payrollPane">
+        <p>Payroll calculations will appear here.</p>
       </div>
     </div>
 </div>

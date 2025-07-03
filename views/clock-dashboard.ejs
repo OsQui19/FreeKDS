@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Clock</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/login.css">
+  <%- include('partials/theme-vars') %>
+</head>
+<body class="login-page">
+  <div class="login-container text-center">
+    <div class="login-card card shadow-sm p-4">
+      <h1 class="mb-4">Welcome <%= employee.name %></h1>
+      <form method="post" action="/clock/in" class="mb-2">
+        <button type="submit" class="btn btn-primary w-100">Clock In</button>
+      </form>
+      <form method="post" action="/clock/out">
+        <button type="submit" class="btn btn-secondary w-100">Clock Out</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

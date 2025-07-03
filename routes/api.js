@@ -267,18 +267,35 @@ module.exports = (db, io) => {
         ) {
           role = allowedRoles[0];
         }
+        const cols = ['username'];
+        const vals = [emp.username];
+        const updates = [];
         if (emp.password) {
+          cols.push('password_hash');
           const hash = await bcrypt.hash(emp.password, 10);
+          vals.push(hash);
+          updates.push('password_hash=VALUES(password_hash)');
+        }
+        if (emp.pin) {
+          cols.push('pin_hash');
+          const pinHash = await bcrypt.hash(emp.pin, 10);
+          vals.push(pinHash);
+          updates.push('pin_hash=VALUES(pin_hash)');
+        }
+        cols.push('role');
+        vals.push(role);
+        if (updates.length) {
+          updates.push('role=VALUES(role)');
           await db
             .promise()
             .query(
-              "INSERT INTO employees (username, password_hash, role) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE password_hash=VALUES(password_hash), role=VALUES(role)",
-              [emp.username, hash, role],
+              `INSERT INTO employees (${cols.join(', ')}) VALUES (${cols.map(() => '?').join(', ')}) ON DUPLICATE KEY UPDATE ${updates.join(', ')}`,
+              vals,
             );
         } else {
           await db
             .promise()
-            .query("UPDATE employees SET role=? WHERE username=?", [role, emp.username]);
+            .query('UPDATE employees SET role=? WHERE username=?', [role, emp.username]);
         }
       }
 
@@ -361,6 +378,20 @@ module.exports = (db, io) => {
 
   router.get("/api/modules", (req, res) => {
     res.json({ modules: accessControl.ALL_MODULES });
+  });
+
+  router.get("/api/time-clock", async (req, res) => {
+    try {
+      const [rows] = await db
+        .promise()
+        .query(
+          `SELECT tc.*, e.username AS name FROM time_clock tc JOIN employees e ON tc.employee_id=e.id ORDER BY tc.id DESC LIMIT 100`
+        );
+      res.json({ records: rows });
+    } catch (err) {
+      console.error("Error fetching time clock:", err);
+      res.status(500).send("DB Error");
+    }
   });
 
   router.post("/api/permissions", async (req, res) => {

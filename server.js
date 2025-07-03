@@ -75,7 +75,14 @@ app.use(
 
 // Allow login page and its stylesheets before authentication
 app.use((req, res, next) => {
-  const publicPaths = ["/login", "/login.css", "/style.css"];
+  const publicPaths = [
+    "/login",
+    "/login.css",
+    "/style.css",
+    "/clock",
+    "/clock.js",
+    "/clock/dashboard",
+  ];
   if (req.session.user || publicPaths.includes(req.path)) return next();
   logSecurityEvent(db, "unauthorized", null, req.path, false, req.ip);
   return res.redirect("/login");

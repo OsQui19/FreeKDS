@@ -59,6 +59,7 @@ async function initEmployeesTabs() {
     syncHierarchyFromServer(),
     syncPermissionsFromServer(),
     syncModulesFromServer(),
+    syncTimeFromServer(),
   ]);
 
   setupOnboardingForm();
@@ -71,6 +72,7 @@ async function initEmployeesTabs() {
   setupAddRoleForm();
   renderHierarchy();
   renderPermissionsTable();
+  renderTimeTable();
 }
 
 const EMPLOYEE_KEY = "employees";
@@ -79,6 +81,7 @@ const HOURS_START_KEY = "scheduleStartHour";
 const HOURS_END_KEY = "scheduleEndHour";
 const HIERARCHY_KEY = "roleHierarchy";
 const PERMISSIONS_KEY = "rolePermissions";
+const TIME_KEY = "timeClock";
 let ALL_MODULES = [
   "stations",
   "order",
@@ -155,6 +158,37 @@ async function syncPermissionsFromServer() {
   } catch {
     /* ignore */
   }
+}
+
+async function syncTimeFromServer() {
+  try {
+    const res = await fetch("/api/time-clock");
+    if (!res.ok) return;
+    const data = await res.json();
+    if (Array.isArray(data.records)) {
+      storage.set(TIME_KEY, JSON.stringify(data.records));
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
+function loadTime() {
+  try {
+    return JSON.parse(storage.get(TIME_KEY)) || [];
+  } catch {
+    return [];
+  }
+}
+
+function renderTimeTable() {
+  const tbl = document.getElementById("timeTable");
+  if (!tbl) return;
+  const tbody = tbl.querySelector("tbody");
+  const recs = loadTime();
+  tbody.innerHTML = recs
+    .map((r) => `<tr><td>${r.name}</td><td>${r.clock_in}</td><td>${r.clock_out || ''}</td></tr>`)
+    .join("");
 }
 let hoursStart = parseInt(storage.get(HOURS_START_KEY), 10);
 let hoursEnd = parseInt(storage.get(HOURS_END_KEY), 10);
@@ -396,6 +430,7 @@ function setupOnboardingForm() {
       start_date: data.get("start_date") || "",
       username: (data.get("username") || "").trim(),
       password: (data.get("password") || "").trim(),
+      pin: (data.get("pin") || "").trim(),
       role: data.get("role") || "FOH",
       color: base && base.color ? base.color : randomColor(),
     };
