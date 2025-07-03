@@ -19,9 +19,14 @@ const server = http.createServer(app);
 const io = new Server(server);
 const cspDirectives = helmet.contentSecurityPolicy.getDefaultDirectives();
 cspDirectives["script-src"].push("'unsafe-inline'");
+// Default COOKIE_SECURE to false so local HTTP logins work out of the box
+const secureCookie =
+  String(process.env.COOKIE_SECURE || "false").toLowerCase() === "true";
 app.use(
   helmet({
     contentSecurityPolicy: { directives: cspDirectives },
+    // Disable HSTS when not using HTTPS to avoid unwanted redirects
+    hsts: secureCookie,
   }),
 );
 const limiter = rateLimit({
@@ -81,8 +86,6 @@ db.getConnection((err, connection) => {
 // Middleware to parse request body
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-// Default COOKIE_SECURE to false so local HTTP logins work out of the box
-const secureCookie = String(process.env.COOKIE_SECURE || 'false').toLowerCase() === 'true';
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "keyboard cat",
