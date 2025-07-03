@@ -3,6 +3,13 @@ const bcrypt = require('bcrypt');
 const { logSecurityEvent } = require('../controllers/securityLog');
 const { normalizeRole } = require('../controllers/accessControl');
 
+function dashboardForRole(role) {
+  const r = normalizeRole(role);
+  if (r === 'boh') return '/stations';
+  if (r === 'foh') return '/order';
+  return '/admin';
+}
+
 module.exports = (db, io) => {
   const router = express.Router();
 
@@ -36,8 +43,22 @@ module.exports = (db, io) => {
       }
       const role = normalizeRole(emp.role) || emp.role;
       req.session.user = { id: emp.id, role };
+      req.session.clockUser = { id: emp.id, name: emp.username, role };
       await logSecurityEvent(db, 'login', username, '/login', true, req.ip);
-      res.redirect('/');
+      let clockedIn = false;
+      try {
+        const [cRows] = await db
+          .promise()
+          .query(
+            'SELECT id FROM time_clock WHERE employee_id=? AND clock_out IS NULL ORDER BY id DESC LIMIT 1',
+            [emp.id],
+          );
+        if (cRows.length) clockedIn = true;
+      } catch (err2) {
+        console.error('Clock status error', err2);
+      }
+      if (clockedIn) return res.redirect(dashboardForRole(role));
+      return res.redirect('/clock/dashboard');
     } catch (err) {
       console.error('Login error', err);
       await logSecurityEvent(db, 'login', username, '/login', false, req.ip);
@@ -65,7 +86,20 @@ module.exports = (db, io) => {
       req.session.clockUser = { id: employee.id, name: employee.username, role };
       req.session.user = { id: employee.id, role };
       req.session.pinOnly = true;
-      res.redirect('/clock/dashboard');
+      let clockedIn = false;
+      try {
+        const [cRows] = await db
+          .promise()
+          .query(
+            'SELECT id FROM time_clock WHERE employee_id=? AND clock_out IS NULL ORDER BY id DESC LIMIT 1',
+            [employee.id],
+          );
+        if (cRows.length) clockedIn = true;
+      } catch (err2) {
+        console.error('Clock status error', err2);
+      }
+      if (clockedIn) return res.redirect(dashboardForRole(role));
+      return res.redirect('/clock/dashboard');
     } catch (err) {
       console.error('Clock login error', err);
       res.redirect('/clock');
@@ -116,7 +150,7 @@ module.exports = (db, io) => {
     } catch (err) {
       console.error('Clock in error', err);
     }
-    res.redirect('/clock/dashboard');
+    res.redirect(dashboardForRole(req.session.clockUser.role));
   });
 
   router.post('/clock/out', async (req, res) => {

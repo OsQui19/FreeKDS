@@ -696,3 +696,20 @@ body.admin-screen {
 #scheduleGrid.month-view .schedule-table caption {
   font-size: 0.8rem;
 }
+
+/* Global navigation buttons */
+.nav-buttons {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  z-index: 1000;
+  display: flex;
+  gap: 10px;
+}
+.nav-buttons form {
+  margin: 0;
+}
+.nav-buttons .btn {
+  padding: 6px 12px;
+  font-size: 0.9rem;
+}

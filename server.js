@@ -108,6 +108,7 @@ app.use((req, res, next) => {
     req.session && req.session.user
       ? accessControl.roleHasAccess(req.session.user.role, component)
       : false;
+  res.locals.user = req.session && req.session.user ? req.session.user : null;
   next();
 });
 // Make request accessible in views for flash messages
@@ -124,7 +125,7 @@ app.use(adminRoutes);
 app.use(stationRoutes);
 app.use(apiRoutes);
 app.get('/', (req, res) => {
-  if (!req.session.user) return res.redirect('/login');
+  if (!req.session.user) return res.redirect('/clock');
   res.render('home');
 });
 // Central error handler to report unexpected issues
