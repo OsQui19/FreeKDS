@@ -22,6 +22,8 @@ cspDirectives["script-src"].push("'unsafe-inline'");
 // Default COOKIE_SECURE to false so local HTTP logins work out of the box
 const secureCookie =
   String(process.env.COOKIE_SECURE || "false").toLowerCase() === "true";
+// Remove upgrade-insecure-requests when not using HTTPS
+if (!secureCookie) delete cspDirectives["upgrade-insecure-requests"];
 app.use(
   helmet({
     contentSecurityPolicy: { directives: cspDirectives },
