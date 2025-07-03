@@ -79,6 +79,7 @@ app.use((req, res, next) => {
     "/login",
     "/login.css",
     "/style.css",
+    "/clock.css",
     "/clock",
     "/clock.js",
     "/clock/dashboard",
