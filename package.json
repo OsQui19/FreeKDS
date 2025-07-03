@@ -7,14 +7,17 @@
     "start": "node server.js",
     "seed": "node tests/seed.js",
     "create-admin": "node scripts/createAdmin.js",
-    "check-perms": "node scripts/checkPermissions.js"
+    "check-perms": "node scripts/checkPermissions.js",
+    "backup": "node scripts/backup.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
     "dotenv": "^16.3.1",
     "ejs": "^3.1.9",
     "express": "^4.19.2",
+    "express-rate-limit": "^7.5.1",
     "express-session": "^1.18.1",
+    "helmet": "^8.1.0",
     "mysql2": "^3.14.1",
     "socket.io": "^4.7.4"
   },

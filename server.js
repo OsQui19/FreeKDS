@@ -5,6 +5,8 @@ const path = require("path");
 const http = require("http");
 const { Server } = require("socket.io");
 const session = require("express-session");
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
 const settingsCache = require("./controllers/settingsCache");
 const unitConversion = require("./controllers/unitConversion");
 const { scheduleDailyLog } = require("./controllers/dailyUsage");
@@ -15,6 +17,9 @@ require("dotenv").config();
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
+app.use(helmet());
+const limiter = rateLimit({ windowMs: 60 * 1000, max: 100 });
+app.use(limiter);
 
 // Database connection using environment variables
 const db = mysql.createPool({
@@ -70,6 +75,11 @@ app.use(
     secret: process.env.SESSION_SECRET || "keyboard cat",
     resave: false,
     saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+    },
   }),
 );
 
