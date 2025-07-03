@@ -1,7 +1,11 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const { logSecurityEvent } = require('../controllers/securityLog');
-const { normalizeRole } = require('../controllers/accessControl');
+const {
+  normalizeRole,
+  hasLevel,
+  getHierarchy,
+} = require('../controllers/accessControl');
 
 function dashboardForRole(role) {
   const r = normalizeRole(role);
@@ -46,6 +50,7 @@ module.exports = (db, io) => {
       req.session.clockUser = { id: emp.id, name: emp.username, role };
       req.session.pinOnly = false;
       await logSecurityEvent(db, 'login', username, '/login', true, req.ip);
+      const topRole = getHierarchy().slice(-1)[0];
       let clockedIn = false;
       try {
         const [cRows] = await db
@@ -58,7 +63,8 @@ module.exports = (db, io) => {
       } catch (err2) {
         console.error('Clock status error', err2);
       }
-      if (clockedIn) return res.redirect(dashboardForRole(role));
+      if (hasLevel(role, topRole) || clockedIn)
+        return res.redirect(dashboardForRole(role));
       return res.redirect('/clock/dashboard');
     } catch (err) {
       console.error('Login error', err);
