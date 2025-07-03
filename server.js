@@ -24,7 +24,12 @@ app.use(
     contentSecurityPolicy: { directives: cspDirectives },
   }),
 );
-const limiter = rateLimit({ windowMs: 60 * 1000, max: 100 });
+const limiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 100,
+  // socket.io polling can easily exceed the limit, so skip those requests
+  skip: (req) => req.path.startsWith('/socket.io'),
+});
 app.use(limiter);
 
 // Database connection using environment variables
