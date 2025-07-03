@@ -27,8 +27,8 @@ if (!secureCookie) delete cspDirectives["upgrade-insecure-requests"];
 app.use(
   helmet({
     contentSecurityPolicy: { directives: cspDirectives },
-    // Disable HSTS when not using HTTPS to avoid unwanted redirects
-    hsts: secureCookie,
+    // Disable HSTS entirely on HTTP to avoid Safari forcing HTTPS
+    hsts: secureCookie ? undefined : false,
   }),
 );
 const limiter = rateLimit({
