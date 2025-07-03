@@ -1,17 +1,19 @@
-/* keypad layout for clock screen */
 .keypad {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 0.5rem;
-  max-width: 320px;
-  margin: 0 auto;
 }
+
 .keypad button {
-  padding: 0.75rem 0;
   font-size: 1.25rem;
-  border-radius: 8px;
+  padding: 0.75rem;
 }
-.keypad button.clear-btn {
-  grid-column: span 2;
+
+.keypad .zero-btn {
+  grid-column: 1 / span 2;
+}
+
+.keypad .clear-btn {
+  grid-column: 3;
 }
 
