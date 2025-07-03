@@ -13,12 +13,15 @@
   <div class="login-container text-center">
     <div class="login-card card shadow-sm p-4">
       <h1 class="mb-4">Welcome <%= employee.name %></h1>
-      <form method="post" action="/clock/in" class="mb-2">
-        <button type="submit" class="btn btn-primary w-100">Clock In</button>
-      </form>
+      <% if (clockedIn) { %>
       <form method="post" action="/clock/out">
         <button type="submit" class="btn btn-secondary w-100">Clock Out</button>
       </form>
+      <% } else { %>
+      <form method="post" action="/clock/in">
+        <button type="submit" class="btn btn-primary w-100">Clock In</button>
+      </form>
+      <% } %>
     </div>
   </div>
 </body>

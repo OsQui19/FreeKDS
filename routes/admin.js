@@ -39,6 +39,10 @@ module.exports = (db, io) => {
 
   router.use((req, res, next) => {
     if (!req.path.startsWith("/admin")) return next();
+    if (req.session.pinOnly) {
+      logSecurityEvent(db, "unauthorized", req.session.user && req.session.user.id, req.originalUrl, false, req.ip);
+      return res.status(403).send("Forbidden");
+    }
     if (!req.session.user) return next();
     const role = req.session.user.role;
     const topRole = getHierarchy().slice(-1)[0];

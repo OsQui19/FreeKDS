@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt');
 const { logSecurityEvent } = require('../controllers/securityLog');
 const { normalizeRole } = require('../controllers/accessControl');
 
-module.exports = (db) => {
+module.exports = (db, io) => {
   const router = express.Router();
 
   router.get('/login', (req, res) => {
@@ -49,12 +49,10 @@ module.exports = (db) => {
     const { pin } = req.body;
     if (!pin) return res.redirect('/clock');
     try {
-      const [rows] = await db
-        .promise()
-        .query('SELECT * FROM employees');
+      const [rows] = await db.promise().query('SELECT * FROM employees');
       let employee = null;
       for (const r of rows) {
-        if (r.pin_hash && await bcrypt.compare(pin, r.pin_hash)) {
+        if (r.pin_hash && (await bcrypt.compare(pin, r.pin_hash))) {
           employee = r;
           break;
         }
@@ -63,7 +61,10 @@ module.exports = (db) => {
         await logSecurityEvent(db, 'clock', null, '/clock', false, req.ip);
         return res.redirect('/clock');
       }
-      req.session.clockUser = { id: employee.id, name: employee.username };
+      const role = normalizeRole(employee.role) || employee.role;
+      req.session.clockUser = { id: employee.id, name: employee.username, role };
+      req.session.user = { id: employee.id, role };
+      req.session.pinOnly = true;
       res.redirect('/clock/dashboard');
     } catch (err) {
       console.error('Clock login error', err);
@@ -71,33 +72,86 @@ module.exports = (db) => {
     }
   });
 
-  router.get('/clock/dashboard', (req, res) => {
+  router.get('/clock/dashboard', async (req, res) => {
     if (!req.session.clockUser) return res.redirect('/clock');
-    res.render('clock-dashboard', { employee: req.session.clockUser });
+    let clockedIn = false;
+    try {
+      const [rows] = await db
+        .promise()
+        .query(
+          'SELECT id FROM time_clock WHERE employee_id=? AND clock_out IS NULL ORDER BY id DESC LIMIT 1',
+          [req.session.clockUser.id],
+        );
+      if (rows.length) clockedIn = true;
+    } catch (err) {
+      console.error('Clock status check error', err);
+    }
+    res.render('clock-dashboard', {
+      employee: req.session.clockUser,
+      clockedIn,
+    });
   });
 
   router.post('/clock/in', async (req, res) => {
     if (!req.session.clockUser) return res.redirect('/clock');
     try {
-      await db
+      const [rows] = await db
         .promise()
-        .query('INSERT INTO time_clock (employee_id, clock_in) VALUES (?, NOW())', [req.session.clockUser.id]);
+        .query(
+          'SELECT id FROM time_clock WHERE employee_id=? AND clock_out IS NULL ORDER BY id DESC LIMIT 1',
+          [req.session.clockUser.id],
+        );
+      if (!rows.length) {
+        const [result] = await db
+          .promise()
+          .query('INSERT INTO time_clock (employee_id, clock_in) VALUES (?, NOW())', [req.session.clockUser.id]);
+        const [recRows] = await db
+          .promise()
+          .query(
+            'SELECT tc.*, e.username AS name FROM time_clock tc JOIN employees e ON tc.employee_id=e.id WHERE tc.id=?',
+            [result.insertId],
+          );
+        if (recRows.length) io.emit('timeUpdated', recRows[0]);
+      }
     } catch (err) {
       console.error('Clock in error', err);
     }
-    res.redirect('/clock');
+    res.redirect('/clock/dashboard');
   });
 
   router.post('/clock/out', async (req, res) => {
     if (!req.session.clockUser) return res.redirect('/clock');
     try {
-      await db
+      const [rows] = await db
         .promise()
-        .query('UPDATE time_clock SET clock_out=NOW() WHERE employee_id=? AND clock_out IS NULL ORDER BY id DESC LIMIT 1', [req.session.clockUser.id]);
+        .query(
+          'SELECT id FROM time_clock WHERE employee_id=? AND clock_out IS NULL ORDER BY id DESC LIMIT 1',
+          [req.session.clockUser.id],
+        );
+      if (rows.length) {
+        const recId = rows[0].id;
+        await db
+          .promise()
+          .query(
+            'UPDATE time_clock SET clock_out=NOW() WHERE id=?',
+            [recId],
+          );
+        const [recRows] = await db
+          .promise()
+          .query(
+            'SELECT tc.*, e.username AS name FROM time_clock tc JOIN employees e ON tc.employee_id=e.id WHERE tc.id=?',
+            [recId],
+          );
+        if (recRows.length) io.emit('timeUpdated', recRows[0]);
+      }
     } catch (err) {
       console.error('Clock out error', err);
     }
     req.session.clockUser = null;
+    if (req.session.pinOnly) {
+      req.session.user = null;
+      req.session.pinOnly = null;
+    }
     res.redirect('/clock');
   });
 

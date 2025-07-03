@@ -73,6 +73,19 @@ async function initEmployeesTabs() {
   renderHierarchy();
   renderPermissionsTable();
   renderTimeTable();
+
+  if (window.io) {
+    const socket = io();
+    socket.on("timeUpdated", (rec) => {
+      if (!rec || !rec.id) return;
+      const data = loadTime();
+      const idx = data.findIndex((r) => r.id === rec.id);
+      if (idx >= 0) data[idx] = rec;
+      else data.unshift(rec);
+      storage.set(TIME_KEY, JSON.stringify(data.slice(0, 100)));
+      renderTimeTable();
+    });
+  }
 }
 
 const EMPLOYEE_KEY = "employees";
