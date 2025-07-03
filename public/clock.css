@@ -1,3 +1,4 @@
+
 .keypad {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -9,11 +10,8 @@
   padding: 0.75rem;
 }
 
-.keypad .zero-btn {
-  grid-column: 1 / span 2;
+.keypad .placeholder {
+  visibility: hidden;
 }
 
-.keypad .clear-btn {
-  grid-column: 3;
-}
 
