@@ -17,7 +17,13 @@ require("dotenv").config();
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
-app.use(helmet());
+const cspDirectives = helmet.contentSecurityPolicy.getDefaultDirectives();
+cspDirectives["script-src"].push("'unsafe-inline'");
+app.use(
+  helmet({
+    contentSecurityPolicy: { directives: cspDirectives },
+  }),
+);
 const limiter = rateLimit({ windowMs: 60 * 1000, max: 100 });
 app.use(limiter);
 
