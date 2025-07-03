@@ -16,7 +16,10 @@ let hierarchy = [...DEFAULT_HIERARCHY];
 let permissions = {};
 
 function normalizeRole(role) {
-  return typeof role === 'string' ? role.trim().toLowerCase() : '';
+  if (typeof role !== 'string') return '';
+  const norm = role.trim().toLowerCase();
+  if (['admin', 'administrator', 'manager'].includes(norm)) return 'management';
+  return norm;
 }
 
 function normalizeModuleName(name) {

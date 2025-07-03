@@ -1,4 +1,15 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap");
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/vendor/inter-fonts/Inter-Regular.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  src: url('/vendor/inter-fonts/Inter-SemiBold.ttf') format('truetype');
+}
 
 body {
   font-family: var(--font-family, "Inter", sans-serif);

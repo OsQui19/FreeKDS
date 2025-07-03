@@ -1,5 +1,22 @@
 /* style.css - Common styles for KDS station screens */
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap");
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/vendor/inter-fonts/Inter-Regular.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  src: url('/vendor/inter-fonts/Inter-SemiBold.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  src: url('/vendor/inter-fonts/Inter-Bold.ttf') format('truetype');
+}
 :root {
   --bg-color: #f8f8f8;
   --primary-color: #007aff;
