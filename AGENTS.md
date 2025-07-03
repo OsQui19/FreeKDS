@@ -8,13 +8,15 @@ This file explains how to set up and run the project for Codex or anyone else cl
    ```bash
    npm install
    ```
-3. Create a `.env` file. A sample is provided in the repo. Update it with your database credentials:
+3. Create a `.env` file. A sample is provided in the repo. Update it with your database credentials and session settings:
    ```
    DB_HOST=127.0.0.1
    DB_USER=freekds
    DB_PASS=yourpassword
    DB_NAME=kds_db
    PORT=3000
+   SESSION_SECRET=changeme
+   COOKIE_SECURE=false
    ```
 
 ## 2. Database setup
@@ -37,6 +39,7 @@ Start the server with one of the following commands:
 npm start      # or ./start.sh
 ```
 The app will run on `http://localhost:$PORT`.
+If HTTPS isn't available, set `COOKIE_SECURE=false` in your environment before starting.
 
 ## 4. Notes
 - The application uses the variables from `.env` to connect to MySQL.
