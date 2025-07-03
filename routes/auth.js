@@ -44,6 +44,7 @@ module.exports = (db, io) => {
       const role = normalizeRole(emp.role) || emp.role;
       req.session.user = { id: emp.id, role };
       req.session.clockUser = { id: emp.id, name: emp.username, role };
+      req.session.pinOnly = false;
       await logSecurityEvent(db, 'login', username, '/login', true, req.ip);
       let clockedIn = false;
       try {
