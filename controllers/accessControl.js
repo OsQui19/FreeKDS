@@ -161,6 +161,7 @@ function ensureDefaults(db) {
 }
 
 function getHierarchy() {
+  if (!hierarchy.length) return ['management'];
   return hierarchy.slice();
 }
 
@@ -183,7 +184,8 @@ function getPermissions() {
 }
 
 function getRolePermissions(role) {
-  const topRole = getHierarchy().slice(-1)[0];
+  let topRole = getHierarchy().slice(-1)[0];
+  if (!topRole) topRole = 'management';
   const norm = normalizeRole(role);
   const topNorm = normalizeRole(topRole);
   const key = Object.keys(permissions).find(
