@@ -20,15 +20,20 @@ const io = new Server(server);
 const cspDirectives = helmet.contentSecurityPolicy.getDefaultDirectives();
 cspDirectives["script-src"].push("'unsafe-inline'");
 // Default COOKIE_SECURE to false so local HTTP logins work out of the box
-const secureCookie =
-  String(process.env.COOKIE_SECURE || "false").toLowerCase() === "true";
+// All HTTPS-reliant features are disabled by default for easier local install.
+// To re-enable secure cookies and related headers, set this to `true` and
+// remove the commented environment variable logic below.
+const secureCookie = false;
+// const secureCookie =
+//   String(process.env.COOKIE_SECURE || "false").toLowerCase() === "true";
 // Remove upgrade-insecure-requests when not using HTTPS
-if (!secureCookie) delete cspDirectives["upgrade-insecure-requests"];
+// Always remove upgrade-insecure-requests so browsers don't force HTTPS.
+delete cspDirectives["upgrade-insecure-requests"];
 app.use(
   helmet({
     contentSecurityPolicy: { directives: cspDirectives },
-    // Disable HSTS entirely on HTTP to avoid Safari forcing HTTPS
-    hsts: secureCookie ? undefined : false,
+    // Disable HSTS entirely so there is no implicit HTTPS requirement
+    hsts: false,
   }),
 );
 const limiter = rateLimit({
