@@ -20,7 +20,6 @@
   </style>
 </head>
 <body class="station-screen <%= station.type %>">
-  <%- include('partials/header') %>
   <header class="top-bar">
     <h1 class="station-title"><span class="brand-name"><%= settings.brand_name || '' %></span> – <%= station.name %></h1>
     <div class="top-bar-links">
@@ -32,6 +31,7 @@
       </select>
       <a href="/wiki/<%= station.id %>" class="btn-small">Recipes Wiki</a>
       <a href="/admin" class="btn-small">⚙️</a>
+      <%- include('partials/nav-buttons') %>
     </div>
   </header>
 

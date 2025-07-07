@@ -41,6 +41,14 @@ body {
   align-items: center;
   margin-top: 8px;
 }
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.menu-header .nav-buttons {
+  position: static;
+}
 
 #categoryNav {
   display: flex;

@@ -11,16 +11,18 @@
   <%- include('partials/theme-vars') %>
 </head>
 <body class="menu-layout-<%= settings.menu_layout === 'list' ? 'list' : 'grid' %>">
-  <%- include('partials/header') %>
 <header class="menu-header">
   <h1 class="menu-title">Menu</h1>
-  <div class="mt-1 order-type-select">
-    <label for="orderType" class="fw-bold me-2">Order Type:</label>
-    <select id="orderType" class="form-select d-inline-block w-auto">
-      <option value="DINE-IN">DINE-IN</option>
-      <option value="TO-GO">TO-GO</option>
-      <option value="CATERING">CATERING</option>
-    </select>
+  <div class="header-controls">
+    <div class="mt-1 order-type-select">
+      <label for="orderType" class="fw-bold me-2">Order Type:</label>
+      <select id="orderType" class="form-select d-inline-block w-auto">
+        <option value="DINE-IN">DINE-IN</option>
+        <option value="TO-GO">TO-GO</option>
+        <option value="CATERING">CATERING</option>
+      </select>
+    </div>
+    <%- include('partials/nav-buttons') %>
   </div>
   <nav id="categoryNav">
     <% categories.forEach(cat => { %>

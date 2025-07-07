@@ -27,8 +27,13 @@
   </style>
 </head>
 <body>
-  <%- include('partials/header') %>
-  <h1><%= station.name %> Station – Recipe Wiki</h1>
+  <header class="top-bar">
+    <h1 class="station-title"><%= station.name %> – Recipe Wiki</h1>
+    <div class="top-bar-links">
+      <a href="/station/<%= station.id %>" class="btn-small">Back to KDS</a>
+      <%- include('partials/nav-buttons') %>
+    </div>
+  </header>
   <p>All recipes for items prepared at this station:</p>
   <% items.forEach(item => { %>
     <div class="recipe-entry">

@@ -70,6 +70,11 @@ body.station-screen {
   border: 1px solid #ccc;
   border-radius: 4px;
 }
+.top-bar-links {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 .btn {
   display: inline-block;
   background: var(--primary-color);
@@ -729,6 +734,7 @@ body.admin-screen {
 .nav-buttons .btn {
   padding: 6px 12px;
   font-size: 0.9rem;
+  touch-action: manipulation;
 }
 
 /* Header wrapper for nav buttons */
@@ -744,6 +750,8 @@ body.admin-screen {
 }
 
 /* Use regular positioning when nav buttons are inside a header */
-.main-header .nav-buttons {
+.main-header .nav-buttons,
+.top-bar .nav-buttons,
+.menu-header .nav-buttons {
   position: static;
 }
