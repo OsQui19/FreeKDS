@@ -5,6 +5,7 @@ const path = require("path");
 const http = require("http");
 const { Server } = require("socket.io");
 const session = require("express-session");
+const MySQLStore = require("express-mysql-session")(session);
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const settingsCache = require("./controllers/settingsCache");
@@ -53,6 +54,7 @@ const db = mysql.createPool({
   connectionLimit: 10,
   queueLimit: 0,
 });
+const sessionStore = new MySQLStore({}, db);
 db.getConnection((err, connection) => {
   if (err) {
     console.error("Database connection error:", err);
@@ -97,6 +99,7 @@ app.use(
     secret: config.sessionSecret,
     resave: false,
     saveUninitialized: false,
+    store: sessionStore,
     cookie: {
       httpOnly: true,
       secure: secureCookie,
