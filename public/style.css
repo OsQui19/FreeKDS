@@ -730,3 +730,20 @@ body.admin-screen {
   padding: 6px 12px;
   font-size: 0.9rem;
 }
+
+/* Header wrapper for nav buttons */
+.main-header {
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  padding: var(--spacing-md) var(--spacing-lg);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Use regular positioning when nav buttons are inside a header */
+.main-header .nav-buttons {
+  position: static;
+}
