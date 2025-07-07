@@ -1,13 +1,13 @@
 require("../utils/logger");
 const mysql = require("mysql2/promise");
-require("dotenv").config();
+const config = require("../config");
 
 async function main() {
   const db = await mysql.createConnection({
-    host: process.env.DB_HOST || "127.0.0.1",
-    user: process.env.DB_USER || "freekds",
-    password: process.env.DB_PASS || "",
-    database: process.env.DB_NAME || "kds_db",
+    host: config.db.host,
+    user: config.db.user,
+    password: config.db.password,
+    database: config.db.name,
   });
 
   await db.query("SET FOREIGN_KEY_CHECKS=0");

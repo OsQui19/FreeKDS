@@ -13,19 +13,16 @@ const { scheduleDailyLog } = require("./controllers/dailyUsage");
 const { scheduleDailyBackup } = require("./controllers/dbBackup");
 const { logSecurityEvent } = require("./controllers/securityLog");
 const accessControl = require("./controllers/accessControl");
-require("dotenv").config();
+const config = require("./config");
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 const cspDirectives = helmet.contentSecurityPolicy.getDefaultDirectives();
 cspDirectives["script-src"].push("'unsafe-inline'");
-// Default COOKIE_SECURE to false so local HTTP logins work out of the box
+// Default COOKIE_SECURE to false so local HTTP logins work out of the box.
 // All HTTPS-reliant features are disabled by default for easier local install.
-// To re-enable secure cookies and related headers, set this to `true` and
-// remove the commented environment variable logic below.
-const secureCookie = false;
-// const secureCookie =
-//   String(process.env.COOKIE_SECURE || "false").toLowerCase() === "true";
+// To re-enable secure cookies and related headers, edit `config.js`.
+const secureCookie = config.secureCookie;
 // Remove upgrade-insecure-requests when not using HTTPS
 // Always remove upgrade-insecure-requests so browsers don't force HTTPS.
 delete cspDirectives["upgrade-insecure-requests"];
@@ -44,12 +41,12 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// Database connection using environment variables
+// Database connection using local configuration
 const db = mysql.createPool({
-  host: process.env.DB_HOST || "127.0.0.1",
-  user: process.env.DB_USER || "freekds",
-  password: process.env.DB_PASS || "",
-  database: process.env.DB_NAME || "kds_db",
+  host: config.db.host,
+  user: config.db.user,
+  password: config.db.password,
+  database: config.db.name,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
@@ -77,7 +74,7 @@ db.getConnection((err, connection) => {
       scheduleDailyLog(db);
       scheduleDailyBackup();
       setupSocketHandlers(io, db);
-      const PORT = process.env.PORT || 3000;
+      const PORT = config.port;
       server.listen(PORT, () => {
         console.log(`Server running on http://localhost:${PORT}`);
       });
@@ -95,7 +92,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "keyboard cat",
+    secret: config.sessionSecret,
     resave: false,
     saveUninitialized: false,
     cookie: {

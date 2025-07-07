@@ -2,17 +2,17 @@ require('../utils/logger');
 const mysql = require('mysql2');
 const bcrypt = require('bcrypt');
 const { ensureDefaults } = require('../controllers/accessControl');
-require('dotenv').config();
+const config = require('../config');
 
 async function main() {
   const username = process.argv[2] || 'admin';
   const password = process.argv[3] || 'admin123';
   const role = 'management';
   const conn = mysql.createConnection({
-    host: process.env.DB_HOST || '127.0.0.1',
-    user: process.env.DB_USER || 'freekds',
-    password: process.env.DB_PASS || '',
-    database: process.env.DB_NAME || 'kds_db',
+    host: config.db.host,
+    user: config.db.user,
+    password: config.db.password,
+    database: config.db.name,
   });
   const db = conn.promise();
 
