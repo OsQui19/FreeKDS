@@ -752,6 +752,17 @@ body.admin-screen {
 /* Use regular positioning when nav buttons are inside a header */
 .main-header .nav-buttons,
 .top-bar .nav-buttons,
-.menu-header .nav-buttons {
+.menu-header .nav-buttons,
+.navbar .nav-buttons {
   position: static;
+}
+
+/* Make nav buttons blend with dark navbars */
+.navbar-dark .nav-buttons .btn {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.8);
+  background: transparent;
+}
+.navbar-dark .nav-buttons .btn:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
