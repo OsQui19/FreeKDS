@@ -104,7 +104,14 @@ app.use(
     },
   }),
 );
-
+// Redirect any HTTPS requests back to HTTP to avoid Safari forcing HTTPS
+// when HSTS is cached or another redirect occurred previously.
+app.use((req, res, next) => {
+  if (req.secure || req.headers["x-forwarded-proto"] === "https") {
+    return res.redirect("http://" + req.headers.host + req.originalUrl);
+  }
+  next();
+});
 // Allow login page and its stylesheets before authentication
 app.use((req, res, next) => {
   const publicPaths = [
