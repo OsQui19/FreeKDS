@@ -29,8 +29,10 @@ delete cspDirectives["upgrade-insecure-requests"];
 app.use(
   helmet({
     contentSecurityPolicy: { directives: cspDirectives },
-    // Disable HSTS entirely so there is no implicit HTTPS requirement
-    hsts: false,
+    // Explicitly send HSTS header with max-age=0 to clear any previous rules
+    // Browsers caching an old Strict-Transport-Security policy can otherwise
+    // force HTTPS and break local testing.
+    hsts: { maxAge: 0 },
   }),
 );
 const limiter = rateLimit({
