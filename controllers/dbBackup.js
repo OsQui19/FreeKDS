@@ -1,9 +1,9 @@
 const { exec } = require('child_process');
 const path = require('path');
 const fs = require('fs');
-require('dotenv').config();
+const config = require('../config');
 
-const BACKUP_DIR = process.env.BACKUP_DIR || path.join(__dirname, '..', 'backups');
+const BACKUP_DIR = config.backupDir;
 
 function ensureDir() {
   if (!fs.existsSync(BACKUP_DIR)) {
@@ -16,9 +16,9 @@ function backupDatabase(cb) {
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
   const filePath = path.join(
     BACKUP_DIR,
-    `${process.env.DB_NAME || 'kds_db'}_${timestamp}.sql`
+    `${config.db.name}_${timestamp}.sql`
   );
-  const cmd = `mysqldump -h ${process.env.DB_HOST || '127.0.0.1'} -u ${process.env.DB_USER || 'freekds'} -p${process.env.DB_PASS || ''} --add-drop-table ${process.env.DB_NAME || 'kds_db'} > "${filePath}"`;
+  const cmd = `mysqldump -h ${config.db.host} -u ${config.db.user} -p${config.db.password} --add-drop-table ${config.db.name} > "${filePath}"`;
   exec(cmd, (err) => {
     if (err) {
       console.error('Error during DB backup:', err);
@@ -41,7 +41,7 @@ function scheduleDailyBackup() {
 }
 
 function restoreDatabase(file, cb) {
-  const cmd = `mysql -h ${process.env.DB_HOST || '127.0.0.1'} -u ${process.env.DB_USER || 'freekds'} -p${process.env.DB_PASS || ''} ${process.env.DB_NAME || 'kds_db'} < "${file}"`;
+  const cmd = `mysql -h ${config.db.host} -u ${config.db.user} -p${config.db.password} ${config.db.name} < "${file}"`;
   exec(cmd, (err) => {
     if (err) {
       console.error('Error restoring DB:', err);
