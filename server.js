@@ -118,12 +118,19 @@ app.use((req, res, next) => {
     "/login",
     "/login.css",
     "/style.css",
+    "/base.css",
     "/clock.css",
     "/clock",
     "/clock.js",
     "/clock/dashboard",
+    "/favicon.ico",
   ];
-  if (req.session.user || publicPaths.includes(req.path)) return next();
+  if (
+    req.session.user ||
+    publicPaths.includes(req.path) ||
+    req.path.startsWith("/vendor/")
+  )
+    return next();
   logSecurityEvent(db, "unauthorized", null, req.path, false, req.ip);
   return res.redirect("/login");
 });
