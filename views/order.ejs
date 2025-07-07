@@ -35,7 +35,7 @@
       <div class="item-grid">
       <% cat.items.forEach(item => { %>
         <div class="item-card">
-          <img src="<%= item.image_url || 'https://via.placeholder.com/150' %>" alt="<%= item.name %>">
+          <img src="<%= item.image_url || '/no-image-150.png' %>" alt="<%= item.name %>">
           <span class="item-name"><%= item.name %></span>
           <span class="item-price">$<%= Number(item.price).toFixed(2) %></span>
           <button class="btn" data-id="<%= item.id %>">Add</button>

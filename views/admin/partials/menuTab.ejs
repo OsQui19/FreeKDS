@@ -37,7 +37,7 @@
               <div class="item-view">
                 <span class="drag-handle">☰</span>
                 <span class="item-id">ID: <%= item.id %></span>
-                <img src="<%= item.image_url ? item.image_url : 'https://via.placeholder.com/60?text=No+Img' %>" alt="Item Image" class="item-thumb">
+                <img src="<%= item.image_url ? item.image_url : '/no-image-60.png' %>" alt="Item Image" class="item-thumb">
                 <div class="item-name"><%= item.name %></div>
                 <div class="item-price">$<%= Number(item.price).toFixed(2) %></div>
                 <div class="item-station">Station: <%= item.station_name %></div>
