@@ -53,14 +53,23 @@ async function initEmployeesTabs() {
     activate(panes[0].id, true);
   }
 
-  await Promise.all([
+  Promise.all([
     syncEmployeesFromServer(),
     syncScheduleFromServer(),
     syncHierarchyFromServer(),
     syncPermissionsFromServer(),
     syncModulesFromServer(),
     syncTimeFromServer(),
-  ]);
+  ])
+    .then(() => {
+      renderEmployeeList();
+      renderOnboardingTable();
+      renderSchedule();
+      renderHierarchy();
+      renderPermissionsTable();
+      renderTimeTable();
+    })
+    .catch(() => {});
 
   setupOnboardingForm();
   renderEmployeeList();
