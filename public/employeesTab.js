@@ -36,14 +36,14 @@ async function initEmployeesTabs() {
   if (!window.FullCalendar) {
     await Promise.all(
       [
-        '/vendor/fullcalendar/core.min.js',
-        '/vendor/fullcalendar/daygrid.min.js',
-        '/vendor/fullcalendar/timegrid.min.js',
-        '/vendor/fullcalendar/interaction.min.js',
+        "/vendor/fullcalendar/core.min.js",
+        "/vendor/fullcalendar/daygrid.min.js",
+        "/vendor/fullcalendar/timegrid.min.js",
+        "/vendor/fullcalendar/interaction.min.js",
       ].map(
         (src) =>
           new Promise((resolve) => {
-            const s = document.createElement('script');
+            const s = document.createElement("script");
             s.src = src;
             s.onload = resolve;
             s.onerror = resolve;
@@ -51,6 +51,9 @@ async function initEmployeesTabs() {
           }),
       ),
     );
+    if (!window.FullCalendar) {
+      console.error("FullCalendar failed to load");
+    }
   }
   const tabList = document.getElementById("employeesTabs");
   const links = tabList ? tabList.querySelectorAll(".nav-link") : [];
@@ -71,7 +74,7 @@ async function initEmployeesTabs() {
       if (!skipHash) location.hash = id;
     }
     if (id === "schedulePane") {
-      renderSchedule();
+      tryRenderSchedule();
     }
   }
 
@@ -106,7 +109,7 @@ async function initEmployeesTabs() {
 
   renderEmployeeList();
   renderOnboardingTable();
-  renderSchedule();
+  tryRenderSchedule();
   renderHierarchy();
   renderPermissionsTable();
   renderTimeTable();
@@ -225,7 +228,10 @@ function renderTimeTable() {
   const tbody = tbl.querySelector("tbody");
   const recs = loadTime();
   tbody.innerHTML = recs
-    .map((r) => `<tr><td>${r.name}</td><td>${r.clock_in}</td><td>${r.clock_out || ''}</td></tr>`)
+    .map(
+      (r) =>
+        `<tr><td>${r.name}</td><td>${r.clock_in}</td><td>${r.clock_out || ""}</td></tr>`,
+    )
     .join("");
 }
 let hoursStart = parseInt(storage.get(HOURS_START_KEY), 10);
@@ -233,7 +239,10 @@ let hoursEnd = parseInt(storage.get(HOURS_END_KEY), 10);
 if (isNaN(hoursStart)) hoursStart = 9;
 if (isNaN(hoursEnd)) hoursEnd = 18;
 function getHours() {
-  return Array.from({ length: hoursEnd - hoursStart + 1 }, (_, i) => hoursStart + i);
+  return Array.from(
+    { length: hoursEnd - hoursStart + 1 },
+    (_, i) => hoursStart + i,
+  );
 }
 
 function formatHour(h) {
@@ -331,7 +340,7 @@ function loadEmployees() {
     arr.forEach((e) => {
       if (!e.color) e.color = randomColor();
       if (!e.name) {
-        e.name = `${e.first_name || ''} ${e.last_name || ''}`.trim();
+        e.name = `${e.first_name || ""} ${e.last_name || ""}`.trim();
       }
     });
     return arr;
@@ -351,7 +360,9 @@ function saveEmployees(arr) {
 
 function loadHierarchy() {
   try {
-    return JSON.parse(storage.get(HIERARCHY_KEY)) || ["FOH", "BOH", "management"];
+    return (
+      JSON.parse(storage.get(HIERARCHY_KEY)) || ["FOH", "BOH", "management"]
+    );
   } catch {
     return ["FOH", "BOH", "management"];
   }
@@ -524,10 +535,19 @@ function onEventChange() {
 function initCalendar() {
   const grid = document.getElementById("scheduleGrid");
   if (!grid) return;
+  if (!window.FullCalendar) {
+    grid.innerHTML =
+      '<div class="alert alert-danger">Calendar library not loaded</div>';
+    return;
+  }
   const base = startOfWeek(new Date());
   base.setDate(base.getDate() + scheduleWeekOffset * 7);
   calendar = new FullCalendar.Calendar(grid, {
-    plugins: [FullCalendar.DayGrid, FullCalendar.TimeGrid, FullCalendar.Interaction],
+    plugins: [
+      FullCalendar.DayGrid,
+      FullCalendar.TimeGrid,
+      FullCalendar.Interaction,
+    ],
     headerToolbar: false,
     firstDay: 1,
     initialView: scheduleView === "week" ? "timeGridWeek" : "dayGridMonth",
@@ -696,7 +716,7 @@ function renderOnboardingTable() {
   tbody.innerHTML = employees
     .map(
       (e, i) =>
-        `<tr data-index="${i}"><td>${e.first_name || ''}</td><td>${e.last_name || ''}</td><td>${e.position}</td><td>${e.start_date}</td><td>${e.email || ''}</td><td>${e.phone || ''}</td><td>${e.wage_rate || ''}</td><td>${e.username}</td><td>${e.role}</td><td><button class="btn btn-sm btn-outline-primary edit-emp" data-index="${i}">Edit</button></td></tr>`,
+        `<tr data-index="${i}"><td>${e.first_name || ""}</td><td>${e.last_name || ""}</td><td>${e.position}</td><td>${e.start_date}</td><td>${e.email || ""}</td><td>${e.phone || ""}</td><td>${e.wage_rate || ""}</td><td>${e.username}</td><td>${e.role}</td><td><button class="btn btn-sm btn-outline-primary edit-emp" data-index="${i}">Edit</button></td></tr>`,
     )
     .join("");
   tbody.querySelectorAll(".edit-emp").forEach((btn) => {
@@ -713,15 +733,18 @@ function startEditEmployee(idx) {
   const form = document.getElementById("employeeOnboardingForm");
   if (!form) return;
   if (form.elements.first_name)
-    form.elements.first_name.value = emp.first_name || emp.name.split(' ')[0] || "";
+    form.elements.first_name.value =
+      emp.first_name || emp.name.split(" ")[0] || "";
   if (form.elements.last_name)
-    form.elements.last_name.value = emp.last_name || emp.name.split(' ').slice(1).join(' ') || "";
+    form.elements.last_name.value =
+      emp.last_name || emp.name.split(" ").slice(1).join(" ") || "";
   if (form.elements.name) form.elements.name.value = emp.name || "";
   form.elements.position.value = emp.position || "";
   form.elements.start_date.value = emp.start_date || "";
   if (form.elements.email) form.elements.email.value = emp.email || "";
   if (form.elements.phone) form.elements.phone.value = emp.phone || "";
-  if (form.elements.wage_rate) form.elements.wage_rate.value = emp.wage_rate || "";
+  if (form.elements.wage_rate)
+    form.elements.wage_rate.value = emp.wage_rate || "";
   form.elements.username.value = emp.username || "";
   if (form.elements.password) form.elements.password.value = "";
   form.elements.role.value = emp.role || "";
@@ -748,6 +771,13 @@ function renderSchedule() {
   initCalendar();
 }
 
+function tryRenderSchedule() {
+  try {
+    renderSchedule();
+  } catch (err) {
+    console.error("Schedule render failed", err);
+  }
+}
 
 function setupScheduleViewToggle() {
   const btn = document.getElementById("toggleScheduleView");
@@ -755,7 +785,7 @@ function setupScheduleViewToggle() {
   btn.addEventListener("click", () => {
     scheduleView = scheduleView === "week" ? "month" : "week";
     storage.set(SCHEDULE_VIEW_KEY, scheduleView);
-    renderSchedule();
+    tryRenderSchedule();
     updateScheduleToggleBtn();
   });
   updateScheduleToggleBtn();
@@ -774,7 +804,7 @@ function setupWeekNav() {
   function changeWeek(delta) {
     scheduleWeekOffset += delta;
     storage.set(SCHEDULE_WEEK_OFFSET_KEY, scheduleWeekOffset);
-    renderSchedule();
+    tryRenderSchedule();
     updateWeekLabel();
   }
   if (prev) prev.addEventListener("click", () => changeWeek(-1));
@@ -804,8 +834,9 @@ function setupHourRangeControls() {
   const startSel = document.getElementById("scheduleStartHour");
   const endSel = document.getElementById("scheduleEndHour");
   if (!startSel || !endSel) return;
-  const opts = Array.from({ length: 24 }, (_, i) =>
-    `<option value="${i}">${formatHour(i)}</option>`,
+  const opts = Array.from(
+    { length: 24 },
+    (_, i) => `<option value="${i}">${formatHour(i)}</option>`,
   ).join("");
   startSel.innerHTML = opts;
   endSel.innerHTML = opts;
@@ -819,7 +850,7 @@ function setupHourRangeControls() {
     hoursEnd = end;
     storage.set(HOURS_START_KEY, hoursStart);
     storage.set(HOURS_END_KEY, hoursEnd);
-    renderSchedule();
+    tryRenderSchedule();
   }
   startSel.addEventListener("change", apply);
   endSel.addEventListener("change", apply);
@@ -883,14 +914,14 @@ function showScheduleModal(empId, opts = {}) {
       schedule[day].push({ id, start, end });
     }
     saveSchedule(schedule);
-    renderSchedule();
+    tryRenderSchedule();
     close();
   }
   function onDelete() {
     const schedule = loadSchedule();
     schedule[opts.day].splice(opts.index, 1);
     saveSchedule(schedule);
-    renderSchedule();
+    tryRenderSchedule();
     close();
   }
   form.addEventListener("submit", onSubmit);
