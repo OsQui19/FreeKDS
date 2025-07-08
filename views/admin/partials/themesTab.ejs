@@ -102,16 +102,27 @@
     </form>
     </div>
     <div class="col-12 col-md-7">
-      <iframe id="menuPreview" class="w-100 mb-3" src="/order" title="Menu preview"></iframe>
-      <% if (stations && stations.length) { %>
-      <iframe id="stationPreview" class="w-100" src="/station/<%= stations[0].id %>" title="Station preview"></iframe>
-      <% } %>
+      <ul class="nav nav-tabs mb-2" id="previewTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="tab-menu-preview" data-bs-toggle="tab" data-bs-target="#pane-menu-preview" type="button" role="tab" aria-controls="pane-menu-preview" aria-selected="true">Menu</button>
+        </li>
+        <% if (stations && stations.length) { %>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="tab-station-preview" data-bs-toggle="tab" data-bs-target="#pane-station-preview" type="button" role="tab" aria-controls="pane-station-preview" aria-selected="false">Station</button>
+        </li>
+        <% } %>
+      </ul>
+      <div class="tab-content" id="previewTabContent">
+        <div class="tab-pane fade show active" id="pane-menu-preview" role="tabpanel" aria-labelledby="tab-menu-preview">
+          <iframe id="menuPreview" class="w-100" src="/order" title="Menu preview"></iframe>
+        </div>
+        <% if (stations && stations.length) { %>
+        <div class="tab-pane fade" id="pane-station-preview" role="tabpanel" aria-labelledby="tab-station-preview">
+          <iframe id="stationPreview" class="w-100" src="/station/<%= stations[0].id %>" title="Station preview"></iframe>
+        </div>
+        <% } %>
+      </div>
       <div class="mt-2 text-end">
-        <select id="previewMode" class="form-select form-select-sm d-inline-block w-auto me-2">
-          <option value="both">Both</option>
-          <option value="menu">Menu Only</option>
-          <option value="station">Station Only</option>
-        </select>
         <button type="button" id="togglePreview" class="btn btn-secondary btn-sm me-2">Hide Preview</button>
         <button type="button" id="resetPreview" class="btn btn-secondary btn-sm">Reset to Defaults</button>
       </div>
