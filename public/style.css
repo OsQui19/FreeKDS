@@ -707,21 +707,11 @@ body.admin-screen {
   }
 }
 
-#scheduleGrid.month-view {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.5rem;
+#scheduleGrid {
+  width: 100%;
 }
-
-#scheduleGrid.month-view .schedule-table td {
-  min-width: 54px;
-  height: 30px;
-  font-size: 0.65rem;
-}
-
-#scheduleGrid.month-view .schedule-table th,
-#scheduleGrid.month-view .schedule-table caption {
-  font-size: 0.8rem;
+#scheduleGrid .fc {
+  max-width: 100%;
 }
 
 /* Global navigation buttons */

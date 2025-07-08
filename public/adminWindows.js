@@ -14,6 +14,9 @@ document.addEventListener("DOMContentLoaded", () => {
     container.querySelectorAll(".admin-window").forEach((p) => {
       p.classList.toggle("active", p.dataset.type === type);
     });
+    const url = new URL(window.location);
+    url.searchParams.set("tab", type);
+    history.replaceState(null, "", url);
   }
 
   allowed.forEach((type) => {

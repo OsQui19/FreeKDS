@@ -760,8 +760,10 @@ function renderSchedule() {
     calendar.destroy();
   }
   grid.innerHTML = "";
-  grid.classList.toggle("month-view", scheduleView === "month");
   initCalendar();
+  if (calendar) {
+    calendar.updateSize();
+  }
 }
 
 function tryRenderSchedule() {
@@ -1099,5 +1101,11 @@ document.addEventListener("keydown", (e) => {
     }
   } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "v") {
     if (copiedEvent) pasteNext = true;
+  }
+});
+
+window.addEventListener("resize", () => {
+  if (calendar) {
+    calendar.updateSize();
   }
 });
