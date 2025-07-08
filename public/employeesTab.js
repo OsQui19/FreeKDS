@@ -38,6 +38,7 @@ async function initEmployeesTabs() {
       "/vendor/fullcalendar/core.min.js",
       "/vendor/fullcalendar/daygrid.min.js",
       "/vendor/fullcalendar/timegrid.min.js",
+      "/vendor/fullcalendar/resource-timegrid.min.js",
       "/vendor/fullcalendar/interaction.min.js",
     ];
     for (const src of scripts) {
@@ -499,6 +500,7 @@ function buildCalendarEvents() {
           : timeLabel,
         start,
         end,
+        resourceId: r.id,
         backgroundColor: emp.color,
         extendedProps: { employeeId: r.id, color: emp.color },
       });
@@ -568,10 +570,11 @@ function initCalendar() {
   }
   const base = startOfWeek(new Date());
   base.setDate(base.getDate() + scheduleWeekOffset * 7);
+  const employees = loadEmployees();
   calendar = new FullCalendar.Calendar(grid, {
     headerToolbar: false,
     firstDay: 1,
-    initialView: scheduleView === "week" ? "timeGridWeek" : "dayGridMonth",
+    initialView: scheduleView === "week" ? "resourceTimeGridWeek" : "dayGridMonth",
     initialDate: base,
     allDaySlot: false,
     slotDuration: "01:00:00",
@@ -587,6 +590,7 @@ function initCalendar() {
     eventTimeFormat: { hour: "numeric", minute: "2-digit", meridiem: true },
     slotMinTime: `${hoursStart}:00:00`,
     slotMaxTime: `${hoursEnd}:00:00`,
+    resources: employees.map((e) => ({ id: e.id, title: e.name })),
     events: buildCalendarEvents(),
     eventAdd: onEventChange,
     eventChange: onEventChange,
@@ -600,6 +604,7 @@ function initCalendar() {
           title: copiedEvent.title,
           start: info.start,
           end: info.end,
+          resourceId: copiedEvent.employeeId,
           backgroundColor: copiedEvent.color,
           extendedProps: {
             employeeId: copiedEvent.employeeId,
@@ -610,7 +615,7 @@ function initCalendar() {
         calendar.unselect();
         onEventChange();
       } else {
-        showScheduleModal(null, {
+        showScheduleModal(info.resource ? info.resource.id : null, {
           day: dayIndex(info.start),
           range: { start: info.start.getHours(), end: info.end.getHours() },
         });
@@ -624,6 +629,7 @@ function initCalendar() {
           title: copiedEvent.title,
           start,
           end,
+          resourceId: copiedEvent.employeeId,
           backgroundColor: copiedEvent.color,
           extendedProps: {
             employeeId: copiedEvent.employeeId,
@@ -633,7 +639,7 @@ function initCalendar() {
         pasteNext = false;
         onEventChange();
       } else if (info.jsEvent.detail >= 2) {
-        showScheduleModal(null, {
+        showScheduleModal(info.resource ? info.resource.id : null, {
           day: dayIndex(info.date),
           range: {
             start: info.date.getHours(),
@@ -681,6 +687,7 @@ function initCalendar() {
         return {
           title: `${emp.name} (${emp.position})`,
           duration: { hours: 1 },
+          resourceId: id,
           backgroundColor: emp.color,
           extendedProps: { employeeId: id, color: emp.color },
         };
