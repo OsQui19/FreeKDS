@@ -221,40 +221,24 @@ module.exports = (db, io) => {
 
   router.get("/api/employees", async (req, res) => {
     try {
-      const [rows] = await db
+      const [empRows] = await db
         .promise()
         .query(
-          "SELECT setting_value FROM settings WHERE setting_key='employees' LIMIT 1",
+          "SELECT id, first_name, last_name, position, start_date, email, phone, wage_rate, username, role FROM employees"
         );
-      let employees = [];
-      if (rows.length && rows[0].setting_value) {
-        try {
-          const parsed = JSON.parse(rows[0].setting_value);
-          if (Array.isArray(parsed)) employees = parsed;
-        } catch (e) {
-          console.error("Error parsing employees JSON:", e);
-        }
-      }
-      if (!employees.length) {
-      const [empRows] = await db
-          .promise()
-          .query(
-            "SELECT id, first_name, last_name, position, start_date, email, phone, wage_rate, username, role FROM employees"
-          );
-        employees = empRows.map((r) => ({
-          id: r.id,
-          first_name: r.first_name || "",
-          last_name: r.last_name || "",
-          name: `${r.first_name || ''} ${r.last_name || ''}`.trim() || r.username,
-          position: r.position || "",
-          start_date: r.start_date ? r.start_date.toISOString().split('T')[0] : "",
-          email: r.email || "",
-          phone: r.phone || "",
-          wage_rate: r.wage_rate != null ? String(r.wage_rate) : "",
-          username: r.username,
-          role: r.role,
-        }));
-      }
+      const employees = empRows.map((r) => ({
+        id: r.id,
+        first_name: r.first_name || "",
+        last_name: r.last_name || "",
+        name: `${r.first_name || ''} ${r.last_name || ''}`.trim() || r.username,
+        position: r.position || "",
+        start_date: r.start_date ? r.start_date.toISOString().split('T')[0] : "",
+        email: r.email || "",
+        phone: r.phone || "",
+        wage_rate: r.wage_rate != null ? String(r.wage_rate) : "",
+        username: r.username,
+        role: r.role,
+      }));
       res.json({ employees });
     } catch (err) {
       console.error("Error fetching employees:", err);
@@ -273,12 +257,6 @@ module.exports = (db, io) => {
       return res.status(400).send("Invalid data");
     try {
       const employees = req.body.employees;
-      await db
-        .promise()
-        .query(
-          "INSERT INTO settings (setting_key, setting_value) VALUES ('employees', ?) ON DUPLICATE KEY UPDATE setting_value=VALUES(setting_value)",
-          [JSON.stringify(employees)],
-        );
 
       const allowedRoles = getHierarchy();
       const roleMap = {};

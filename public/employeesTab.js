@@ -371,11 +371,11 @@ function loadEmployees() {
 
 function saveEmployees(arr) {
   storage.set(EMPLOYEE_KEY, JSON.stringify(arr));
-  fetch("/api/employees", {
+  return fetch("/api/employees", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ employees: arr }),
-  }).catch(() => {});
+  });
 }
 
 function loadHierarchy() {
@@ -742,10 +742,13 @@ function setupOnboardingForm() {
     } else {
       employees.push(employee);
     }
-    saveEmployees(employees);
-    resetForm();
-    renderEmployeeList();
-    renderOnboardingTable();
+    saveEmployees(employees)
+      .then(() => syncEmployeesFromServer().catch(() => {}))
+      .finally(() => {
+        resetForm();
+        renderEmployeeList();
+        renderOnboardingTable();
+      });
   });
 }
 
