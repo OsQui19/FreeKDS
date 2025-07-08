@@ -163,7 +163,21 @@ async function syncEmployeesFromServer() {
   if (!res.ok) throw new Error("employees");
   const data = await res.json();
   if (Array.isArray(data.employees)) {
-    storage.set(EMPLOYEE_KEY, JSON.stringify(data.employees));
+    let existing = [];
+    try {
+      existing = JSON.parse(storage.get(EMPLOYEE_KEY)) || [];
+    } catch {
+      existing = [];
+    }
+    const colorMap = {};
+    existing.forEach((e) => {
+      if (e.id) colorMap[e.id] = e.color;
+    });
+    const merged = data.employees.map((e) => ({
+      ...e,
+      color: colorMap[e.id] || e.color || randomColor(),
+    }));
+    storage.set(EMPLOYEE_KEY, JSON.stringify(merged));
   } else {
     throw new Error("employees");
   }
@@ -337,12 +351,18 @@ function randomColor() {
 function loadEmployees() {
   try {
     const arr = JSON.parse(storage.get(EMPLOYEE_KEY)) || [];
+    let changed = false;
     arr.forEach((e) => {
-      if (!e.color) e.color = randomColor();
+      if (!e.color) {
+        e.color = randomColor();
+        changed = true;
+      }
       if (!e.name) {
         e.name = `${e.first_name || ""} ${e.last_name || ""}`.trim();
+        changed = true;
       }
     });
+    if (changed) storage.set(EMPLOYEE_KEY, JSON.stringify(arr));
     return arr;
   } catch {
     return [];
