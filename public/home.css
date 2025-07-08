@@ -1,9 +1,13 @@
 :root {
-  --font-family: 'Inter', sans-serif;
-  --color-primary: #4F46E5;
-  --color-accent: #A78BFA;
-  --color-bg-start: #F9FAFB;
-  --color-bg-end: #EEF2FF;
+  --font-family: "Inter", sans-serif;
+  --color-primary: #4f46e5;
+  --color-accent: #a78bfa;
+  --color-bg-start: #eef2ff;
+  --color-bg-end: #e0e7ff;
+  --card-bg: rgba(255, 255, 255, 0.75);
+  --card-radius: 16px;
+  --card-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  --card-border: rgba(0, 0, 0, 0.1);
   --btn-radius: 12px;
   --btn-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   --transition-fast: 0.2s ease-in-out;
@@ -15,12 +19,15 @@ body.home-page {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--color-bg-start), var(--color-bg-end));
+  padding: 1rem;
+  background: var(--bg-color);
+  background-image: linear-gradient(135deg, var(--color-bg-start), var(--color-bg-end)), var(--bg-image);
+  background-size: cover;
+  background-position: center;
   font-family: var(--font-family);
-  padding: 2rem;
 }
 
-.home-page .container {
+.home-page .login-container {
   max-width: 960px;
   width: 100%;
 }
