@@ -20,6 +20,11 @@ const server = http.createServer(app);
 const io = new Server(server);
 const cspDirectives = helmet.contentSecurityPolicy.getDefaultDirectives();
 cspDirectives["script-src"].push("'unsafe-inline'");
+if (Array.isArray(cspDirectives["script-src-attr"])) {
+  cspDirectives["script-src-attr"].push("'unsafe-inline'");
+} else {
+  cspDirectives["script-src-attr"] = ["'unsafe-inline'"]; 
+}
 // Default COOKIE_SECURE to false so local HTTP logins work out of the box.
 // All HTTPS-reliant features are disabled by default for easier local install.
 // To re-enable secure cookies and related headers, edit `config.js`.
