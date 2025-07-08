@@ -7,6 +7,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const toggleBtn = document.getElementById("togglePreview");
   if (frames.length === 0 || !form) return;
 
+  const highlightDuration = 1500;
+  const highlight = (targets) => {
+    const arr = Array.isArray(targets) ? targets : [targets];
+    frames.forEach((f) => f.classList.remove("preview-highlight"));
+    arr.filter(Boolean).forEach((f) => {
+      f.classList.add("preview-highlight");
+      setTimeout(() => f.classList.remove("preview-highlight"), highlightDuration);
+    });
+  };
+
   const storageKey = "themePreviewSettings";
 
   const saveToStorage = () => {
@@ -74,6 +84,14 @@ document.addEventListener("DOMContentLoaded", () => {
   form.addEventListener("input", () => {
     saveToStorage();
     update();
+  });
+  form.addEventListener("focusin", (e) => {
+    const target = e.target;
+    if (!target || !target.name) return;
+    const pref = target.dataset.preview;
+    if (pref === "menu") highlight(menuFrame);
+    else if (pref === "station") highlight(stationFrame);
+    else highlight(frames);
   });
   frames.forEach((f) => f.addEventListener("load", update));
 

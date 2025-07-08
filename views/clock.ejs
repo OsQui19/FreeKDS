@@ -11,10 +11,11 @@
   <link rel="stylesheet" href="/clock.css">
   <%- include('partials/theme-vars') %>
 </head>
-<body class="login-page">
-  <div class="login-container">
+<body class="login-page d-flex align-items-center justify-content-center min-vh-100">
+  <div class="login-container text-center">
     <div class="login-card card shadow-sm p-4">
-      <h1 class="mb-4">Enter PIN</h1>
+      <h1 class="brand-name mb-1"><%= settings.brand_name || 'Clock In' %></h1>
+      <p class="text-muted mb-4">Enter PIN</p>
       <form method="post" action="/clock" id="pinForm">
         <input type="password" id="pinInput" name="pin" class="form-control mb-3" inputmode="numeric" pattern="\d{4,6}" required autofocus autocomplete="one-time-code">
         <div id="keypad" class="keypad"></div>

@@ -766,3 +766,10 @@ body.admin-screen {
 .navbar-dark .nav-buttons .btn:hover {
   background: rgba(255, 255, 255, 0.2);
 }
+
+/* Highlight frames when editing theme */
+.preview-highlight {
+  outline: 3px solid var(--primary-color, #007aff);
+  outline-offset: -3px;
+}
+

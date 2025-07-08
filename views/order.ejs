@@ -12,7 +12,10 @@
 </head>
 <body class="menu-layout-<%= settings.menu_layout === 'list' ? 'list' : 'grid' %>">
 <header class="menu-header">
-  <h1 class="menu-title">Menu</h1>
+  <div class="d-flex flex-column">
+    <span class="brand-name fw-bold"><%= settings.brand_name || '' %></span>
+    <h1 class="menu-title m-0">Menu</h1>
+  </div>
   <div class="header-controls">
     <div class="mt-1 order-type-select">
       <label for="orderType" class="fw-bold me-2">Order Type:</label>
