@@ -227,6 +227,10 @@ const SCHEDULE_WEEK_OFFSET_KEY = "scheduleWeekOffset";
 let scheduleView = storage.get(SCHEDULE_VIEW_KEY) || "week";
 let scheduleWeekOffset =
   parseInt(storage.get(SCHEDULE_WEEK_OFFSET_KEY), 10) || 0;
+let calendar;
+let copiedEvent = null;
+let selectedEvent = null;
+let pasteNext = false;
 
 function updateScheduleToggleBtn() {
   const btn = document.getElementById("toggleScheduleView");
@@ -418,6 +422,176 @@ function findRange(day, hour, offset = scheduleWeekOffset) {
   return null;
 }
 
+function dayIndex(date) {
+  return (date.getDay() + 6) % 7; // monday = 0
+}
+
+function buildCalendarEvents() {
+  const schedule = loadSchedule();
+  const employees = loadEmployees();
+  const base = startOfWeek(new Date());
+  base.setDate(base.getDate() + scheduleWeekOffset * 7);
+  const events = [];
+  Object.keys(schedule).forEach((day) => {
+    const ranges = schedule[day] || [];
+    ranges.forEach((r) => {
+      const start = new Date(base);
+      start.setDate(start.getDate() + parseInt(day, 10));
+      start.setHours(r.start, 0, 0, 0);
+      const end = new Date(base);
+      end.setDate(end.getDate() + parseInt(day, 10));
+      end.setHours(r.end, 0, 0, 0);
+      const emp = employees.find((e) => e.id === r.id) || {};
+      events.push({
+        title: emp.name ? `${emp.name} (${emp.position})` : "",
+        start,
+        end,
+        backgroundColor: emp.color,
+        extendedProps: { employeeId: r.id, color: emp.color },
+      });
+    });
+  });
+  return events;
+}
+
+function scheduleFromCalendar() {
+  const base = startOfWeek(new Date());
+  base.setDate(base.getDate() + scheduleWeekOffset * 7);
+  const out = {};
+  calendar.getEvents().forEach((ev) => {
+    const d = dayIndex(ev.start);
+    if (!out[d]) out[d] = [];
+    out[d].push({
+      id: ev.extendedProps.employeeId,
+      start: ev.start.getHours(),
+      end: ev.end.getHours(),
+    });
+  });
+  return out;
+}
+
+function detectConflicts() {
+  if (!calendar) return;
+  const events = calendar.getEvents();
+  const grouped = {};
+  events.forEach((e) => {
+    const id = e.extendedProps.employeeId;
+    if (!grouped[id]) grouped[id] = [];
+    grouped[id].push(e);
+  });
+  const conflicts = new Set();
+  Object.values(grouped).forEach((arr) => {
+    arr.sort((a, b) => a.start - b.start);
+    for (let i = 1; i < arr.length; i++) {
+      if (arr[i].start < arr[i - 1].end) {
+        conflicts.add(arr[i]);
+        conflicts.add(arr[i - 1]);
+      }
+    }
+  });
+  events.forEach((e) => {
+    if (conflicts.has(e)) e.setProp("classNames", ["conflict"]);
+    else e.setProp("classNames", []);
+    e.setProp("backgroundColor", e.extendedProps.color || "");
+  });
+}
+
+function onEventChange() {
+  const sched = scheduleFromCalendar();
+  saveSchedule(sched);
+  detectConflicts();
+}
+
+function initCalendar() {
+  const grid = document.getElementById("scheduleGrid");
+  if (!grid) return;
+  const base = startOfWeek(new Date());
+  base.setDate(base.getDate() + scheduleWeekOffset * 7);
+  calendar = new FullCalendar.Calendar(grid, {
+    plugins: [FullCalendar.DayGrid, FullCalendar.TimeGrid, FullCalendar.Interaction],
+    headerToolbar: false,
+    firstDay: 1,
+    initialView: scheduleView === "week" ? "timeGridWeek" : "dayGridMonth",
+    initialDate: base,
+    allDaySlot: false,
+    slotDuration: "01:00:00",
+    snapDuration: "01:00:00",
+    editable: true,
+    selectable: true,
+    droppable: true,
+    slotMinTime: `${hoursStart}:00:00`,
+    slotMaxTime: `${hoursEnd}:00:00`,
+    events: buildCalendarEvents(),
+    eventAdd: onEventChange,
+    eventChange: onEventChange,
+    eventRemove: onEventChange,
+    eventReceive: onEventChange,
+    dateClick(info) {
+      if (pasteNext && copiedEvent) {
+        const start = info.date;
+        const end = new Date(start.getTime() + copiedEvent.duration);
+        calendar.addEvent({
+          title: copiedEvent.title,
+          start,
+          end,
+          backgroundColor: copiedEvent.color,
+          extendedProps: {
+            employeeId: copiedEvent.employeeId,
+            color: copiedEvent.color,
+          },
+        });
+        pasteNext = false;
+        onEventChange();
+      } else {
+        showScheduleModal(null, {
+          day: dayIndex(info.date),
+          range: { start: info.date.getHours(), end: info.date.getHours() + 1 },
+        });
+      }
+    },
+    eventClick(info) {
+      selectedEvent = info.event;
+      if (info.jsEvent.ctrlKey || info.jsEvent.metaKey) {
+        copiedEvent = {
+          employeeId: info.event.extendedProps.employeeId,
+          duration: info.event.end - info.event.start,
+          title: info.event.title,
+          color: info.event.extendedProps.color,
+        };
+      } else {
+        showScheduleModal(info.event.extendedProps.employeeId, {
+          day: dayIndex(info.event.start),
+          range: {
+            start: info.event.start.getHours(),
+            end: info.event.end.getHours(),
+          },
+        });
+      }
+    },
+  });
+
+  const list = document.getElementById("employeeList");
+  if (list && FullCalendar.Draggable) {
+    new FullCalendar.Draggable(list, {
+      itemSelector: ".list-group-item",
+      eventData(el) {
+        const id = el.dataset.id;
+        const employees = loadEmployees();
+        const emp = employees.find((e) => e.id === id) || {};
+        return {
+          title: `${emp.name} (${emp.position})`,
+          duration: { hours: 1 },
+          backgroundColor: emp.color,
+          extendedProps: { employeeId: id, color: emp.color },
+        };
+      },
+    });
+  }
+
+  calendar.render();
+  detectConflicts();
+}
+
 function setupOnboardingForm() {
   const form = document.getElementById("employeeOnboardingForm");
   if (!form) return;
@@ -542,128 +716,19 @@ function startEditEmployee(idx) {
   }
 }
 
-function buildWeekTable(label) {
-  const table = document.createElement("table");
-  table.className = "table table-bordered schedule-table";
-  const thead = document.createElement("thead");
-  thead.innerHTML =
-    "<tr><th>Time</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th><th>Sun</th></tr>";
-  const tbody = document.createElement("tbody");
-  getHours().forEach((h) => {
-    const tr = document.createElement("tr");
-    const th = document.createElement("th");
-    th.textContent = formatHour(h);
-    tr.appendChild(th);
-    for (let d = 0; d < 7; d++) {
-      const td = document.createElement("td");
-      td.dataset.day = d;
-      td.dataset.hour = h;
-      tr.appendChild(td);
-    }
-    tbody.appendChild(tr);
-  });
-  table.appendChild(thead);
-  table.appendChild(tbody);
-  if (label) {
-    const cap = document.createElement("caption");
-    cap.textContent = label;
-    cap.className = "fw-bold";
-    table.prepend(cap);
-  }
-  return table;
-}
-
-function fillWeekTable(table, schedule, employees) {
-  table.querySelectorAll("td").forEach((td) => {
-    td.textContent = "";
-    td.style.backgroundColor = "";
-  });
-  Object.keys(schedule).forEach((day) => {
-    const ranges = schedule[day];
-    if (!Array.isArray(ranges)) return;
-    ranges.forEach((r) => {
-      const emp = employees.find((e) => e.id === r.id);
-      for (let h = r.start; h < r.end; h++) {
-        const cell = table.querySelector(
-          `td[data-day="${day}"][data-hour="${h}"]`,
-        );
-        if (!cell) continue;
-        if (h === r.start) {
-          cell.textContent = emp ? `${emp.name} (${emp.position})` : "";
-        }
-        if (emp && emp.color) cell.style.backgroundColor = emp.color;
-      }
-    });
-  });
-}
+// Weekly schedule is now rendered using FullCalendar instead of manual tables
 
 function renderSchedule() {
   const grid = document.getElementById("scheduleGrid");
   if (!grid) return;
+  if (calendar) {
+    calendar.destroy();
+  }
   grid.innerHTML = "";
   grid.classList.toggle("month-view", scheduleView === "month");
-  const employees = loadEmployees();
-  const base = startOfWeek(new Date());
-  if (scheduleView === "week") {
-    const schedule = loadSchedule();
-    const label = weekLabel(base, scheduleWeekOffset);
-    const table = buildWeekTable(label);
-    grid.appendChild(table);
-    fillWeekTable(table, schedule, employees);
-  } else {
-    for (let w = 0; w < 4; w++) {
-      const label = weekLabel(base, w);
-      const table = buildWeekTable(label);
-      table.dataset.weekIndex = w;
-      table.addEventListener("click", () => {
-        scheduleWeekOffset = w;
-        storage.set(SCHEDULE_WEEK_OFFSET_KEY, scheduleWeekOffset);
-        scheduleView = "week";
-        storage.set(SCHEDULE_VIEW_KEY, scheduleView);
-        renderSchedule();
-        updateScheduleToggleBtn();
-      });
-      grid.appendChild(table);
-      const weekSchedule = loadScheduleForOffset(w);
-      fillWeekTable(table, weekSchedule, employees);
-    }
-  }
-  enableScheduleDnD();
-  enableScheduleEditing();
+  initCalendar();
 }
 
-function enableScheduleDnD() {
-  const cells = document.querySelectorAll(".schedule-table td");
-  cells.forEach((cell) => {
-    cell.addEventListener("dragover", (e) => e.preventDefault());
-    cell.addEventListener("drop", (e) => {
-      e.preventDefault();
-      const id = e.dataTransfer.getData("text/plain");
-      if (!id) return;
-      const day = parseInt(cell.dataset.day, 10);
-      const start = parseInt(cell.dataset.hour, 10);
-      showScheduleModal(id, { day, range: { start, end: start + 1 } });
-    });
-  });
-}
-
-function enableScheduleEditing() {
-  const cells = document.querySelectorAll(".schedule-table td");
-  cells.forEach((cell) => {
-    cell.addEventListener("click", () => {
-      const day = parseInt(cell.dataset.day, 10);
-      const hour = parseInt(cell.dataset.hour, 10);
-      const info = findRange(day, hour);
-      if (info) {
-        showScheduleModal(info.range.id, {
-          day,
-          index: info.index,
-          range: info.range,
-        });
-      }
-    });
-  });
-}
 
 function setupScheduleViewToggle() {
   const btn = document.getElementById("toggleScheduleView");
@@ -978,3 +1043,18 @@ if (document.readyState === "loading") {
 } else {
   initEmployeesTabs();
 }
+
+document.addEventListener("keydown", (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "c") {
+    if (selectedEvent) {
+      copiedEvent = {
+        employeeId: selectedEvent.extendedProps.employeeId,
+        duration: selectedEvent.end - selectedEvent.start,
+        title: selectedEvent.title,
+        color: selectedEvent.extendedProps.color,
+      };
+    }
+  } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "v") {
+    if (copiedEvent) pasteNext = true;
+  }
+});
