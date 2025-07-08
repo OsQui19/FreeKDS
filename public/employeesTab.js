@@ -15,6 +15,23 @@ const storage = {
   },
 };
 
+function retrySync(fn, attempts = 3, delay = 1000) {
+  return new Promise((resolve, reject) => {
+    const attempt = async (n) => {
+      try {
+        await fn();
+        resolve();
+      } catch (err) {
+        if (n <= 1) {
+          return reject(err);
+        }
+        setTimeout(() => attempt(n - 1), delay);
+      }
+    };
+    attempt(attempts);
+  });
+}
+
 async function initEmployeesTabs() {
   const tabList = document.getElementById("employeesTabs");
   const links = tabList ? tabList.querySelectorAll(".nav-link") : [];
@@ -54,12 +71,12 @@ async function initEmployeesTabs() {
   }
 
   Promise.all([
-    syncEmployeesFromServer(),
-    syncScheduleFromServer(),
-    syncHierarchyFromServer(),
-    syncPermissionsFromServer(),
-    syncModulesFromServer(),
-    syncTimeFromServer(),
+    retrySync(syncEmployeesFromServer, 5),
+    retrySync(syncScheduleFromServer, 5),
+    retrySync(syncHierarchyFromServer, 5),
+    retrySync(syncPermissionsFromServer, 5),
+    retrySync(syncModulesFromServer, 5),
+    retrySync(syncTimeFromServer, 5),
   ])
     .then(() => {
       renderEmployeeList();
@@ -118,80 +135,68 @@ let ALL_MODULES = [
 ];
 
 async function syncModulesFromServer() {
-  try {
-    const res = await fetch("/api/modules");
-    if (!res.ok) return;
-    const data = await res.json();
-    if (Array.isArray(data.modules)) {
-      ALL_MODULES = data.modules;
-    }
-  } catch {
-    /* ignore */
+  const res = await fetch("/api/modules");
+  if (!res.ok) throw new Error("modules");
+  const data = await res.json();
+  if (Array.isArray(data.modules)) {
+    ALL_MODULES = data.modules;
+  } else {
+    throw new Error("modules");
   }
 }
 
 async function syncEmployeesFromServer() {
-  try {
-    const res = await fetch("/api/employees");
-    if (!res.ok) return;
-    const data = await res.json();
-    if (Array.isArray(data.employees)) {
-      storage.set(EMPLOYEE_KEY, JSON.stringify(data.employees));
-    }
-  } catch {
-    /* ignore */
+  const res = await fetch("/api/employees");
+  if (!res.ok) throw new Error("employees");
+  const data = await res.json();
+  if (Array.isArray(data.employees)) {
+    storage.set(EMPLOYEE_KEY, JSON.stringify(data.employees));
+  } else {
+    throw new Error("employees");
   }
 }
 
 async function syncScheduleFromServer() {
-  try {
-    const res = await fetch("/api/schedule");
-    if (!res.ok) return;
-    const data = await res.json();
-    if (data.schedule) {
-      storage.set(SCHEDULE_KEY, JSON.stringify(data.schedule));
-    }
-  } catch {
-    /* ignore */
+  const res = await fetch("/api/schedule");
+  if (!res.ok) throw new Error("schedule");
+  const data = await res.json();
+  if (data.schedule) {
+    storage.set(SCHEDULE_KEY, JSON.stringify(data.schedule));
+  } else {
+    throw new Error("schedule");
   }
 }
 
 async function syncHierarchyFromServer() {
-  try {
-    const res = await fetch("/api/hierarchy");
-    if (!res.ok) return;
-    const data = await res.json();
-    if (Array.isArray(data.hierarchy)) {
-      storage.set(HIERARCHY_KEY, JSON.stringify(data.hierarchy));
-    }
-  } catch {
-    /* ignore */
+  const res = await fetch("/api/hierarchy");
+  if (!res.ok) throw new Error("hierarchy");
+  const data = await res.json();
+  if (Array.isArray(data.hierarchy)) {
+    storage.set(HIERARCHY_KEY, JSON.stringify(data.hierarchy));
+  } else {
+    throw new Error("hierarchy");
   }
 }
 
 async function syncPermissionsFromServer() {
-  try {
-    const res = await fetch("/api/permissions");
-    if (!res.ok) return;
-    const data = await res.json();
-    if (data.permissions && typeof data.permissions === "object") {
-      storage.set(PERMISSIONS_KEY, JSON.stringify(data.permissions));
-    }
-  } catch {
-    /* ignore */
+  const res = await fetch("/api/permissions");
+  if (!res.ok) throw new Error("permissions");
+  const data = await res.json();
+  if (data.permissions && typeof data.permissions === "object") {
+    storage.set(PERMISSIONS_KEY, JSON.stringify(data.permissions));
+  } else {
+    throw new Error("permissions");
   }
 }
 
 async function syncTimeFromServer() {
-  try {
-    const res = await fetch("/api/time-clock");
-    if (!res.ok) return;
-    const data = await res.json();
-    if (Array.isArray(data.records)) {
-      storage.set(TIME_KEY, JSON.stringify(data.records));
-    }
-  } catch {
-    /* ignore */
+  const res = await fetch("/api/time-clock");
+  if (!res.ok) throw new Error("time");
+  const data = await res.json();
+  if (Array.isArray(data.records)) {
+    storage.set(TIME_KEY, JSON.stringify(data.records));
+  } else {
+    throw new Error("time");
   }
 }
 
