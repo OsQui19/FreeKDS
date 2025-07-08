@@ -107,6 +107,11 @@
       <iframe id="stationPreview" class="w-100" src="/station/<%= stations[0].id %>" title="Station preview"></iframe>
       <% } %>
       <div class="mt-2 text-end">
+        <select id="previewMode" class="form-select form-select-sm d-inline-block w-auto me-2">
+          <option value="both">Both</option>
+          <option value="menu">Menu Only</option>
+          <option value="station">Station Only</option>
+        </select>
         <button type="button" id="togglePreview" class="btn btn-secondary btn-sm me-2">Hide Preview</button>
         <button type="button" id="resetPreview" class="btn btn-secondary btn-sm">Reset to Defaults</button>
       </div>

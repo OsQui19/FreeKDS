@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const form = document.querySelector("#themeForm form");
   const resetBtn = document.getElementById("resetPreview");
   const toggleBtn = document.getElementById("togglePreview");
+  const modeSelect = document.getElementById("previewMode");
   if (frames.length === 0 || !form) return;
 
   const highlightDuration = 1500;
@@ -40,6 +41,20 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
   loadFromStorage();
+
+  const applyPreviewMode = () => {
+    if (!modeSelect) return;
+    const mode = modeSelect.value;
+    if (mode === "menu") {
+      if (menuFrame) menuFrame.classList.remove("d-none");
+      if (stationFrame) stationFrame.classList.add("d-none");
+    } else if (mode === "station") {
+      if (menuFrame) menuFrame.classList.add("d-none");
+      if (stationFrame) stationFrame.classList.remove("d-none");
+    } else {
+      frames.forEach((f) => f.classList.remove("d-none"));
+    }
+  };
 
   const update = () => {
     frames.forEach((frame) => {
@@ -95,6 +110,10 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   frames.forEach((f) => f.addEventListener("load", update));
 
+  if (modeSelect) {
+    modeSelect.addEventListener("change", applyPreviewMode);
+  }
+
   if (resetBtn) {
     resetBtn.addEventListener("click", () => {
       localStorage.removeItem(storageKey);
@@ -104,9 +123,14 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   if (toggleBtn) {
     toggleBtn.addEventListener("click", () => {
-      frames.forEach((f) => f.classList.toggle("d-none"));
-      const hidden = menuFrame && menuFrame.classList.contains("d-none");
+      const hidden = !frames.some((f) => f.classList.contains("d-none"));
+      if (hidden) {
+        frames.forEach((f) => f.classList.add("d-none"));
+      } else {
+        applyPreviewMode();
+      }
       toggleBtn.textContent = hidden ? "Show Preview" : "Hide Preview";
     });
   }
+  applyPreviewMode();
 });
