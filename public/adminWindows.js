@@ -27,13 +27,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // execute any scripts from the loaded template
     pane.querySelectorAll("script").forEach((oldScript) => {
-      const newScript = document.createElement("script");
       if (oldScript.src) {
-        newScript.src = oldScript.src;
-      } else {
-        newScript.textContent = oldScript.textContent;
+        const exists = document.querySelector(
+          `head script[src="${oldScript.getAttribute("src")}"]`,
+        );
+        if (exists) return oldScript.remove();
       }
-      document.head.appendChild(newScript);
+      const clone = oldScript.cloneNode(true);
+      document.head.appendChild(clone);
       oldScript.remove();
     });
   });
