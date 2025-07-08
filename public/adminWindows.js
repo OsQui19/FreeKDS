@@ -33,7 +33,11 @@ document.addEventListener("DOMContentLoaded", () => {
         );
         if (exists) return oldScript.remove();
       }
-      const clone = oldScript.cloneNode(true);
+      const clone = document.createElement("script");
+      for (const attr of oldScript.attributes) {
+        if (attr.name !== "defer") clone.setAttribute(attr.name, attr.value);
+      }
+      clone.textContent = oldScript.textContent;
       document.head.appendChild(clone);
       oldScript.remove();
     });
