@@ -10,28 +10,26 @@
   <link rel="stylesheet" href="/home.css">
   <%- include('partials/theme-vars') %>
 </head>
-<body class="home-page d-flex align-items-center justify-content-center">
-  <%- include('partials/header') %>
-  <div class="container text-center">
-    <h1 class="mb-4">Choose Station</h1>
-    <div class="row options">
-      <% stations.forEach(function(st) { %>
-        <div class="col-12 col-md-4 mb-3">
-          <a href="/station/<%= st.id %>" class="btn btn-primary btn-lg w-100 py-4">
+<body class="login-page home-page d-flex align-items-center justify-content-center">
+  <main class="login-container text-center">
+    <div class="login-card card shadow-sm p-4">
+      <h1 class="mb-4">Choose Station</h1>
+      <div class="options">
+        <% stations.forEach(function(st) { %>
+          <a href="/station/<%= st.id %>" class="btn btn-primary dash-btn">
             <%= st.name %>
             <% if (st.type) { %>
               <small class="d-block text-uppercase"><%= st.type %></small>
             <% } %>
           </a>
-        </div>
-      <% }); %>
-      <% if (hasRoleLevel(roles[roles.length - 1])) { %>
-        <div class="col-12 col-md-4 mb-3">
-          <a href="/admin?tab=stations" class="btn btn-secondary btn-lg w-100 py-4">Manage Stations</a>
-        </div>
-      <% } %>
+        <% }); %>
+        <% if (hasRoleLevel(roles[roles.length - 1])) { %>
+          <a href="/admin?tab=stations" class="btn btn-secondary dash-btn">Manage Stations</a>
+        <% } %>
+      </div>
+      <%- include('partials/nav-buttons') %>
     </div>
-  </div>
+  </main>
   <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

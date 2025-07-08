@@ -33,6 +33,12 @@ body.home-page {
   width: 100%;
 }
 
+/* Allow wider card on the home screen so buttons can center properly */
+.home-page .login-card {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
 .home-page h1 {
   font-size: 2rem;
   margin-bottom: 2rem;
@@ -50,8 +56,10 @@ body.home-page {
 
 .home-page .dash-btn {
   display: block;
-  flex: 1 1 200px;
+  flex: 0 0 220px;
   max-width: 240px;
+  margin-left: auto;
+  margin-right: auto;
   padding: 1.5rem 0;
   font-size: 1.5rem;
   border-radius: var(--btn-radius);
