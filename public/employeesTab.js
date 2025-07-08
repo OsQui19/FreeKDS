@@ -34,23 +34,21 @@ function retrySync(fn, attempts = 3, delay = 1000) {
 
 async function initEmployeesTabs() {
   if (!window.FullCalendar) {
-    await Promise.all(
-      [
-        "/vendor/fullcalendar/core.min.js",
-        "/vendor/fullcalendar/daygrid.min.js",
-        "/vendor/fullcalendar/timegrid.min.js",
-        "/vendor/fullcalendar/interaction.min.js",
-      ].map(
-        (src) =>
-          new Promise((resolve) => {
-            const s = document.createElement("script");
-            s.src = src;
-            s.onload = resolve;
-            s.onerror = resolve;
-            document.head.appendChild(s);
-          }),
-      ),
-    );
+    const scripts = [
+      "/vendor/fullcalendar/core.min.js",
+      "/vendor/fullcalendar/daygrid.min.js",
+      "/vendor/fullcalendar/timegrid.min.js",
+      "/vendor/fullcalendar/interaction.min.js",
+    ];
+    for (const src of scripts) {
+      await new Promise((resolve) => {
+        const s = document.createElement("script");
+        s.src = src;
+        s.onload = resolve;
+        s.onerror = resolve;
+        document.head.appendChild(s);
+      });
+    }
     if (!window.FullCalendar) {
       console.error("FullCalendar failed to load");
     }
