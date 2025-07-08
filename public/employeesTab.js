@@ -103,6 +103,7 @@ async function initEmployeesTabs() {
   setupScheduleViewToggle();
   setupWeekNav();
   setupHourRangeControls();
+  setupUndoButton();
   setupAddRoleForm();
 
   renderEmployeeList();
@@ -257,6 +258,7 @@ let calendar;
 let copiedEvent = null;
 let selectedEvent = null;
 let pasteNext = false;
+let undoScheduleData = null;
 
 function updateScheduleToggleBtn() {
   const btn = document.getElementById("toggleScheduleView");
@@ -470,8 +472,11 @@ function buildCalendarEvents() {
       end.setDate(end.getDate() + parseInt(day, 10));
       end.setHours(r.end, 0, 0, 0);
       const emp = employees.find((e) => e.id === r.id) || {};
+      const timeLabel = `${formatHour(r.start)}-${formatHour(r.end)}`;
       events.push({
-        title: emp.name ? `${emp.name} (${emp.position})` : "",
+        title: emp.name
+          ? `${timeLabel} ${emp.name} (${emp.position})`
+          : timeLabel,
         start,
         end,
         backgroundColor: emp.color,
@@ -525,9 +530,12 @@ function detectConflicts() {
 }
 
 function onEventChange() {
+  undoScheduleData = loadSchedule();
   const sched = scheduleFromCalendar();
   saveSchedule(sched);
   detectConflicts();
+  const btn = document.getElementById("undoSchedule");
+  if (btn) btn.disabled = false;
 }
 
 function initCalendar() {
@@ -551,6 +559,8 @@ function initCalendar() {
     editable: true,
     selectable: true,
     droppable: true,
+    displayEventTime: true,
+    eventTimeFormat: { hour: "numeric", minute: "2-digit", meridiem: true },
     slotMinTime: `${hoursStart}:00:00`,
     slotMaxTime: `${hoursEnd}:00:00`,
     events: buildCalendarEvents(),
@@ -574,10 +584,13 @@ function initCalendar() {
         });
         pasteNext = false;
         onEventChange();
-      } else {
+      } else if (info.jsEvent.detail >= 2) {
         showScheduleModal(null, {
           day: dayIndex(info.date),
-          range: { start: info.date.getHours(), end: info.date.getHours() + 1 },
+          range: {
+            start: info.date.getHours(),
+            end: info.date.getHours() + 1,
+          },
           x: info.jsEvent.clientX,
           y: info.jsEvent.clientY,
         });
@@ -592,7 +605,7 @@ function initCalendar() {
           title: info.event.title,
           color: info.event.extendedProps.color,
         };
-      } else {
+      } else if (info.jsEvent.detail >= 2) {
         const d = dayIndex(info.event.start);
         const found = findRange(d, info.event.start.getHours());
         showScheduleModal(info.event.extendedProps.employeeId, {
@@ -860,6 +873,20 @@ function setupHourRangeControls() {
   endSel.addEventListener("change", apply);
 }
 
+function setupUndoButton() {
+  const btn = document.getElementById("undoSchedule");
+  if (!btn) return;
+  btn.addEventListener("click", () => {
+    if (undoScheduleData) {
+      saveSchedule(undoScheduleData);
+      undoScheduleData = null;
+      tryRenderSchedule();
+      btn.disabled = true;
+    }
+  });
+  btn.disabled = true;
+}
+
 function populateTimeSelect(select) {
   select.innerHTML = getHours()
     .map((h) => `<option value="${h}">${formatHour(h)}</option>`)
@@ -926,6 +953,7 @@ function showScheduleModal(empId, opts = {}) {
     if (end <= start) return;
     const id = data.get("employeeId");
     const schedule = loadSchedule();
+    undoScheduleData = JSON.parse(JSON.stringify(schedule));
     if (!schedule[day]) schedule[day] = [];
     if (editing) {
       schedule[opts.day][opts.index] = { id, start, end };
@@ -934,13 +962,18 @@ function showScheduleModal(empId, opts = {}) {
     }
     saveSchedule(schedule);
     tryRenderSchedule();
+    const btn = document.getElementById("undoSchedule");
+    if (btn) btn.disabled = false;
     close();
   }
   function onDelete() {
     const schedule = loadSchedule();
+    undoScheduleData = JSON.parse(JSON.stringify(schedule));
     schedule[opts.day].splice(opts.index, 1);
     saveSchedule(schedule);
     tryRenderSchedule();
+    const btn = document.getElementById("undoSchedule");
+    if (btn) btn.disabled = false;
     close();
   }
   form.addEventListener("submit", onSubmit);
