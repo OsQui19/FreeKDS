@@ -70,32 +70,24 @@ async function initEmployeesTabs() {
     activate(panes[0].id, true);
   }
 
-  Promise.all([
+  await Promise.allSettled([
     retrySync(syncEmployeesFromServer, 5),
     retrySync(syncScheduleFromServer, 5),
     retrySync(syncHierarchyFromServer, 5),
     retrySync(syncPermissionsFromServer, 5),
     retrySync(syncModulesFromServer, 5),
     retrySync(syncTimeFromServer, 5),
-  ])
-    .then(() => {
-      renderEmployeeList();
-      renderOnboardingTable();
-      renderSchedule();
-      renderHierarchy();
-      renderPermissionsTable();
-      renderTimeTable();
-    })
-    .catch(() => {});
+  ]);
 
   setupOnboardingForm();
-  renderEmployeeList();
-  renderOnboardingTable();
-  renderSchedule();
   setupScheduleViewToggle();
   setupWeekNav();
   setupHourRangeControls();
   setupAddRoleForm();
+
+  renderEmployeeList();
+  renderOnboardingTable();
+  renderSchedule();
   renderHierarchy();
   renderPermissionsTable();
   renderTimeTable();
