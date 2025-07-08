@@ -578,7 +578,11 @@ function initCalendar() {
     snapDuration: "01:00:00",
     editable: true,
     selectable: true,
+    selectMirror: true,
     droppable: true,
+    eventStartEditable: true,
+    eventDurationEditable: true,
+    eventResizableFromStart: true,
     displayEventTime: true,
     eventTimeFormat: { hour: "numeric", minute: "2-digit", meridiem: true },
     slotMinTime: `${hoursStart}:00:00`,
@@ -588,6 +592,30 @@ function initCalendar() {
     eventChange: onEventChange,
     eventRemove: onEventChange,
     eventReceive: onEventChange,
+    eventDrop: onEventChange,
+    eventResize: onEventChange,
+    select(info) {
+      if (pasteNext && copiedEvent) {
+        calendar.addEvent({
+          title: copiedEvent.title,
+          start: info.start,
+          end: info.end,
+          backgroundColor: copiedEvent.color,
+          extendedProps: {
+            employeeId: copiedEvent.employeeId,
+            color: copiedEvent.color,
+          },
+        });
+        pasteNext = false;
+        calendar.unselect();
+        onEventChange();
+      } else {
+        showScheduleModal(null, {
+          day: dayIndex(info.start),
+          range: { start: info.start.getHours(), end: info.end.getHours() },
+        });
+      }
+    },
     dateClick(info) {
       if (pasteNext && copiedEvent) {
         const start = info.date;
