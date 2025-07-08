@@ -40,25 +40,42 @@ body.home-page {
 }
 
 .home-page .options {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
   gap: 1.5rem;
+  margin-bottom: 1.5rem;
 }
 
-.home-page .btn {
+.home-page .dash-btn {
   display: block;
-  padding: 1.25rem 0;
-  font-size: 1.25rem;
+  flex: 1 1 200px;
+  max-width: 240px;
+  padding: 1.5rem 0;
+  font-size: 1.5rem;
   border-radius: var(--btn-radius);
   box-shadow: var(--btn-shadow);
   background-color: var(--color-primary);
   color: #fff;
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 }
-.home-page .btn:hover {
+.home-page .dash-btn:hover {
   transform: translateY(-3px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
   background-color: var(--color-accent);
+}
+
+.home-page .nav-buttons {
+  position: static;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.home-page .nav-buttons .btn {
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
 }
 
 @media (max-width: 768px) {
