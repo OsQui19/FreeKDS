@@ -1,8 +1,12 @@
 // JS for admin menu management
+// Guard against double loading which can happen if this script is included
+// more than once by mistake.
+if (!window.__ADMIN_MENU_SCRIPT_LOADED__) {
+  window.__ADMIN_MENU_SCRIPT_LOADED__ = true;
 
-const UNIT_OPTIONS = (window.units || [])
-  .map((u) => `<option value="${u.id}">${u.abbreviation}</option>`)
-  .join("");
+  const UNIT_OPTIONS = (window.units || [])
+    .map((u) => `<option value="${u.id}">${u.abbreviation}</option>`)
+    .join("");
 
 function serialize(form) {
   return new URLSearchParams(new FormData(form));
@@ -566,8 +570,13 @@ function initAdminMenu() {
 
 window.initAdminMenu = initAdminMenu;
 
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initAdminMenu);
-} else {
-  initAdminMenu();
+if (!window.__ADMIN_MENU_INITED__) {
+  window.__ADMIN_MENU_INITED__ = true;
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initAdminMenu);
+  } else {
+    initAdminMenu();
+  }
 }
+
+} // end guard
