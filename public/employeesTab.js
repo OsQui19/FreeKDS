@@ -541,11 +541,6 @@ function initCalendar() {
   const base = startOfWeek(new Date());
   base.setDate(base.getDate() + scheduleWeekOffset * 7);
   calendar = new FullCalendar.Calendar(grid, {
-    plugins: [
-      FullCalendar.DayGrid,
-      FullCalendar.TimeGrid,
-      FullCalendar.Interaction,
-    ],
     headerToolbar: false,
     firstDay: 1,
     initialView: scheduleView === "week" ? "timeGridWeek" : "dayGridMonth",
