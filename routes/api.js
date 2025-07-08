@@ -226,7 +226,28 @@ module.exports = (db, io) => {
         .query(
           "SELECT setting_value FROM settings WHERE setting_key='employees' LIMIT 1",
         );
-      const employees = rows.length ? JSON.parse(rows[0].setting_value) : [];
+      let employees = [];
+      if (rows.length && rows[0].setting_value) {
+        try {
+          const parsed = JSON.parse(rows[0].setting_value);
+          if (Array.isArray(parsed)) employees = parsed;
+        } catch (e) {
+          console.error("Error parsing employees JSON:", e);
+        }
+      }
+      if (!employees.length) {
+        const [empRows] = await db
+          .promise()
+          .query("SELECT id, username, role FROM employees");
+        employees = empRows.map((r) => ({
+          id: r.id,
+          name: r.username,
+          position: "",
+          start_date: "",
+          username: r.username,
+          role: r.role,
+        }));
+      }
       res.json({ employees });
     } catch (err) {
       console.error("Error fetching employees:", err);
