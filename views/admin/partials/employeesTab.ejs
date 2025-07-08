@@ -79,24 +79,20 @@
       </div>
     </div>
       <div class="employees-pane" id="schedulePane">
-        <div class="row">
-          <div class="col-md-3">
-            <ul id="employeeList" class="list-group employee-list"></ul>
+        <div class="row g-3">
+          <div class="col-lg-3">
+            <ul id="employeeList" class="list-group employee-list mb-3 mb-lg-0"></ul>
           </div>
-          <div class="col-md-9">
-            <div class="d-flex justify-content-end mb-2">
-              <button id="toggleScheduleView" class="btn btn-sm btn-outline-primary">Monthly View</button>
-            </div>
-            <div class="d-flex justify-content-between align-items-center mb-2">
+          <div class="col-lg-9">
+            <div id="scheduleControls" class="controls">
               <button id="prevWeek" class="btn btn-sm btn-outline-secondary" type="button">&laquo;</button>
               <span id="currentWeekLabel"></span>
               <button id="nextWeek" class="btn btn-sm btn-outline-secondary" type="button">&raquo;</button>
-            </div>
-            <div class="d-flex align-items-center mb-2">
-              <label class="me-1">Start</label>
+              <label class="ms-auto me-1">Start</label>
               <select id="scheduleStartHour" class="form-select form-select-sm w-auto me-2"></select>
               <label class="me-1">End</label>
               <select id="scheduleEndHour" class="form-select form-select-sm w-auto"></select>
+              <button id="toggleScheduleView" class="btn btn-sm btn-outline-primary ms-auto">Monthly View</button>
             </div>
             <div id="scheduleGrid" class="table-responsive"></div>
           </div>

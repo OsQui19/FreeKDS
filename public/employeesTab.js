@@ -578,6 +578,8 @@ function initCalendar() {
         showScheduleModal(null, {
           day: dayIndex(info.date),
           range: { start: info.date.getHours(), end: info.date.getHours() + 1 },
+          x: info.jsEvent.clientX,
+          y: info.jsEvent.clientY,
         });
       }
     },
@@ -591,12 +593,17 @@ function initCalendar() {
           color: info.event.extendedProps.color,
         };
       } else {
+        const d = dayIndex(info.event.start);
+        const found = findRange(d, info.event.start.getHours());
         showScheduleModal(info.event.extendedProps.employeeId, {
-          day: dayIndex(info.event.start),
+          day: d,
           range: {
             start: info.event.start.getHours(),
             end: info.event.end.getHours(),
           },
+          index: found ? found.index : undefined,
+          x: info.jsEvent.clientX,
+          y: info.jsEvent.clientY,
         });
       }
     },
@@ -697,7 +704,9 @@ function renderEmployeeList() {
     });
   });
   list.querySelectorAll(".list-group-item").forEach((item) => {
-    item.addEventListener("click", () => showScheduleModal(item.dataset.id));
+    item.addEventListener("click", (e) =>
+      showScheduleModal(item.dataset.id, { x: e.clientX, y: e.clientY })
+    );
   });
 }
 
@@ -864,7 +873,7 @@ function showScheduleModal(empId, opts = {}) {
   if (!modal || !form) return;
   populateTimeSelect(form.elements.start);
   populateTimeSelect(form.elements.end);
-  const { day, range, index } = opts;
+  const { day, range, index, x, y } = opts;
   const editing = typeof index === "number";
   form.elements.employeeId.value = empId;
   if (editing) {
@@ -880,12 +889,27 @@ function showScheduleModal(empId, opts = {}) {
       form.elements.end.value = range.end;
     }
   }
+  const content = modal.querySelector(".modal-content");
+  if (content && x != null && y != null) {
+    modal.style.alignItems = "flex-start";
+    modal.style.justifyContent = "flex-start";
+    content.style.position = "absolute";
+    content.style.left = `${x}px`;
+    content.style.top = `${y}px`;
+  }
   modal.classList.remove("d-none");
   modal.classList.add("d-block");
   let deleteBtn;
   function close() {
     modal.classList.add("d-none");
     modal.classList.remove("d-block");
+    if (content) {
+      content.style.left = "";
+      content.style.top = "";
+      content.style.position = "";
+    }
+    modal.style.alignItems = "";
+    modal.style.justifyContent = "";
     form.removeEventListener("submit", onSubmit);
     closeBtn.removeEventListener("click", close);
     if (deleteBtn) {

@@ -714,6 +714,22 @@ body.admin-screen {
   max-width: 100%;
 }
 
+#scheduleControls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+#scheduleModal.modal {
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+#scheduleModal .modal-content {
+  position: absolute;
+}
+
 /* Global navigation buttons */
 .nav-buttons {
   position: fixed;
