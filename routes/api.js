@@ -236,14 +236,21 @@ module.exports = (db, io) => {
         }
       }
       if (!employees.length) {
-        const [empRows] = await db
+      const [empRows] = await db
           .promise()
-          .query("SELECT id, username, role FROM employees");
+          .query(
+            "SELECT id, first_name, last_name, position, start_date, email, phone, wage_rate, username, role FROM employees"
+          );
         employees = empRows.map((r) => ({
           id: r.id,
-          name: r.username,
-          position: "",
-          start_date: "",
+          first_name: r.first_name || "",
+          last_name: r.last_name || "",
+          name: `${r.first_name || ''} ${r.last_name || ''}`.trim() || r.username,
+          position: r.position || "",
+          start_date: r.start_date ? r.start_date.toISOString().split('T')[0] : "",
+          email: r.email || "",
+          phone: r.phone || "",
+          wage_rate: r.wage_rate != null ? String(r.wage_rate) : "",
           username: r.username,
           role: r.role,
         }));
@@ -288,9 +295,28 @@ module.exports = (db, io) => {
         ) {
           role = allowedRoles[0];
         }
-        const cols = ['username'];
-        const vals = [emp.username];
-        const updates = [];
+        const cols = ['username', 'role', 'first_name', 'last_name', 'position', 'start_date', 'email', 'phone', 'wage_rate'];
+        const vals = [
+          emp.username,
+          role,
+          emp.first_name || null,
+          emp.last_name || null,
+          emp.position || null,
+          emp.start_date || null,
+          emp.email || null,
+          emp.phone || null,
+          emp.wage_rate || null,
+        ];
+        const updates = [
+          'role=VALUES(role)',
+          'first_name=VALUES(first_name)',
+          'last_name=VALUES(last_name)',
+          'position=VALUES(position)',
+          'start_date=VALUES(start_date)',
+          'email=VALUES(email)',
+          'phone=VALUES(phone)',
+          'wage_rate=VALUES(wage_rate)',
+        ];
         if (emp.password) {
           cols.push('password_hash');
           const hash = await bcrypt.hash(emp.password, 10);
@@ -303,21 +329,12 @@ module.exports = (db, io) => {
           vals.push(pinHash);
           updates.push('pin_hash=VALUES(pin_hash)');
         }
-        cols.push('role');
-        vals.push(role);
-        if (updates.length) {
-          updates.push('role=VALUES(role)');
-          await db
-            .promise()
-            .query(
-              `INSERT INTO employees (${cols.join(', ')}) VALUES (${cols.map(() => '?').join(', ')}) ON DUPLICATE KEY UPDATE ${updates.join(', ')}`,
-              vals,
-            );
-        } else {
-          await db
-            .promise()
-            .query('UPDATE employees SET role=? WHERE username=?', [role, emp.username]);
-        }
+        await db
+          .promise()
+          .query(
+            `INSERT INTO employees (${cols.join(', ')}) VALUES (${cols.map(() => '?').join(', ')}) ON DUPLICATE KEY UPDATE ${updates.join(', ')}`,
+            vals,
+          );
       }
 
       res.json({ success: true });

@@ -307,6 +307,9 @@ function loadEmployees() {
     const arr = JSON.parse(storage.get(EMPLOYEE_KEY)) || [];
     arr.forEach((e) => {
       if (!e.color) e.color = randomColor();
+      if (!e.name) {
+        e.name = `${e.first_name || ''} ${e.last_name || ''}`.trim();
+      }
     });
     return arr;
   } catch {
@@ -436,7 +439,9 @@ function setupOnboardingForm() {
   form.addEventListener("submit", (e) => {
     e.preventDefault();
     const data = new FormData(form);
-    const name = (data.get("name") || "").trim();
+    const firstName = (data.get("first_name") || "").trim();
+    const lastName = (data.get("last_name") || "").trim();
+    const name = `${firstName} ${lastName}`.trim();
     if (!name) return;
     const index = idxField.value ? parseInt(idxField.value, 10) : -1;
     const employees = loadEmployees();
@@ -445,8 +450,13 @@ function setupOnboardingForm() {
     const employee = {
       id: base ? base.id : Date.now().toString(),
       name,
+      first_name: firstName,
+      last_name: lastName,
       position: data.get("position") || "",
       start_date: data.get("start_date") || "",
+      email: (data.get("email") || "").trim(),
+      phone: (data.get("phone") || "").trim(),
+      wage_rate: (data.get("wage_rate") || "").trim(),
       username: (data.get("username") || "").trim(),
       password: (data.get("password") || "").trim(),
       pin: (data.get("pin") || "").trim(),
@@ -493,7 +503,7 @@ function renderOnboardingTable() {
   tbody.innerHTML = employees
     .map(
       (e, i) =>
-        `<tr data-index="${i}"><td>${e.name}</td><td>${e.position}</td><td>${e.start_date}</td><td>${e.username}</td><td>${e.role}</td><td><button class="btn btn-sm btn-outline-primary edit-emp" data-index="${i}">Edit</button></td></tr>`,
+        `<tr data-index="${i}"><td>${e.first_name || ''}</td><td>${e.last_name || ''}</td><td>${e.position}</td><td>${e.start_date}</td><td>${e.email || ''}</td><td>${e.phone || ''}</td><td>${e.wage_rate || ''}</td><td>${e.username}</td><td>${e.role}</td><td><button class="btn btn-sm btn-outline-primary edit-emp" data-index="${i}">Edit</button></td></tr>`,
     )
     .join("");
   tbody.querySelectorAll(".edit-emp").forEach((btn) => {
@@ -509,9 +519,16 @@ function startEditEmployee(idx) {
   if (!emp) return;
   const form = document.getElementById("employeeOnboardingForm");
   if (!form) return;
-  form.elements.name.value = emp.name || "";
+  if (form.elements.first_name)
+    form.elements.first_name.value = emp.first_name || emp.name.split(' ')[0] || "";
+  if (form.elements.last_name)
+    form.elements.last_name.value = emp.last_name || emp.name.split(' ').slice(1).join(' ') || "";
+  if (form.elements.name) form.elements.name.value = emp.name || "";
   form.elements.position.value = emp.position || "";
   form.elements.start_date.value = emp.start_date || "";
+  if (form.elements.email) form.elements.email.value = emp.email || "";
+  if (form.elements.phone) form.elements.phone.value = emp.phone || "";
+  if (form.elements.wage_rate) form.elements.wage_rate.value = emp.wage_rate || "";
   form.elements.username.value = emp.username || "";
   if (form.elements.password) form.elements.password.value = "";
   form.elements.role.value = emp.role || "";
