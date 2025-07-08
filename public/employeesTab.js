@@ -914,13 +914,12 @@ function populateTimeSelect(select) {
 }
 
 function showScheduleModal(empId, opts = {}) {
-  const modal = document.getElementById("scheduleModal");
+  const modal = document.getElementById("scheduleDrawer");
   const form = document.getElementById("scheduleForm");
-  const closeBtn = document.getElementById("scheduleModalClose");
   if (!modal || !form) return;
   populateTimeSelect(form.elements.start);
   populateTimeSelect(form.elements.end);
-  const { day, range, index, x, y } = opts;
+  const { day, range, index } = opts;
   const editing = typeof index === "number";
   form.elements.employeeId.value = empId;
   if (editing) {
@@ -936,33 +935,18 @@ function showScheduleModal(empId, opts = {}) {
       form.elements.end.value = range.end;
     }
   }
-  const content = modal.querySelector(".modal-content");
-  if (content && x != null && y != null) {
-    modal.style.alignItems = "flex-start";
-    modal.style.justifyContent = "flex-start";
-    content.style.position = "absolute";
-    content.style.left = `${x}px`;
-    content.style.top = `${y}px`;
-  }
-  modal.classList.remove("d-none");
-  modal.classList.add("d-block");
+  const offcanvas = bootstrap.Offcanvas.getOrCreateInstance(modal);
   let deleteBtn;
-  function close() {
-    modal.classList.add("d-none");
-    modal.classList.remove("d-block");
-    if (content) {
-      content.style.left = "";
-      content.style.top = "";
-      content.style.position = "";
-    }
-    modal.style.alignItems = "";
-    modal.style.justifyContent = "";
+  function cleanup() {
     form.removeEventListener("submit", onSubmit);
-    closeBtn.removeEventListener("click", close);
+    modal.removeEventListener("hidden.bs.offcanvas", cleanup);
     if (deleteBtn) {
       deleteBtn.removeEventListener("click", onDelete);
       deleteBtn.remove();
     }
+  }
+  function close() {
+    offcanvas.hide();
   }
   function onSubmit(e) {
     e.preventDefault();
@@ -997,7 +981,7 @@ function showScheduleModal(empId, opts = {}) {
     close();
   }
   form.addEventListener("submit", onSubmit);
-  closeBtn.addEventListener("click", close);
+  modal.addEventListener("hidden.bs.offcanvas", cleanup);
   if (editing) {
     deleteBtn = document.createElement("button");
     deleteBtn.type = "button";
@@ -1006,6 +990,7 @@ function showScheduleModal(empId, opts = {}) {
     form.prepend(deleteBtn);
     deleteBtn.addEventListener("click", onDelete);
   }
+  offcanvas.show();
 }
 
 function renderHierarchy() {

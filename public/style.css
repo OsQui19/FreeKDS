@@ -714,6 +714,10 @@ body.admin-screen {
   max-width: 100%;
 }
 
+#scheduleDrawer {
+  --bs-offcanvas-width: 320px;
+}
+
 #scheduleControls {
   display: flex;
   flex-wrap: wrap;

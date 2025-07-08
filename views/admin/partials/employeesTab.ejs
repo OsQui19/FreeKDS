@@ -98,9 +98,21 @@
             <div id="scheduleGrid" class="table-responsive"></div>
           </div>
         </div>
-        <div id="scheduleModal" class="modal d-none">
-          <div class="modal-content modal-small">
-            <button id="scheduleModalClose" class="btn-secondary">Close</button>
+        <div
+          id="scheduleDrawer"
+          class="offcanvas offcanvas-end"
+          tabindex="-1"
+        >
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title">Edit Shift</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="offcanvas"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="offcanvas-body">
             <form id="scheduleForm">
               <input type="hidden" name="employeeId" />
               <div class="mb-2">
