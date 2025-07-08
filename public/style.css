@@ -372,12 +372,6 @@ body.admin-screen {
   margin-left: 6px;
   cursor: pointer;
 }
-.tab-content .tab-pane {
-  display: none;
-}
-.tab-content .tab-pane:first-child {
-  display: block;
-}
 /* Admin windows layout */
 #sideNav {
   position: fixed;
