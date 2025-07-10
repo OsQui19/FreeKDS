@@ -379,8 +379,10 @@ module.exports = (db, io) => {
   router.post("/api/schedule", async (req, res) => {
     if (!Array.isArray(req.body.schedule))
       return res.status(400).send("Invalid data");
+
+    let conn;
     try {
-      const conn = await db.promise().getConnection();
+      conn = await db.promise().getConnection();
       await conn.beginTransaction();
       await conn.query("TRUNCATE TABLE employee_schedule");
       if (req.body.schedule.length) {
@@ -396,11 +398,13 @@ module.exports = (db, io) => {
         );
       }
       await conn.commit();
-      conn.release();
       res.json({ success: true });
     } catch (err) {
+      if (conn) await conn.rollback();
       console.error("Error saving schedule:", err);
       res.status(500).send("DB Error");
+    } finally {
+      if (conn) conn.release();
     }
   });
 
