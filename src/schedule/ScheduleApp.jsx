@@ -20,12 +20,14 @@ export default function ScheduleApp() {
   const [events, setEvents] = useState([]);
   const [view, setView] = useState(Views.WEEK);
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [undoStack, setUndoStack] = useState([]);
   const [copied, setCopied] = useState(null);
   const externalEmp = useRef(null);
 
   const loadData = useCallback(async () => {
+    setLoading(true);
     try {
       const [empRes, schRes] = await Promise.all([
         fetch('/api/employees'),
@@ -46,6 +48,8 @@ export default function ScheduleApp() {
     } catch (err) {
       console.error(err);
       setError('Failed to load schedule');
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -145,33 +149,45 @@ export default function ScheduleApp() {
       )}
       <div className="d-flex">
         <ul className="list-group me-3" style={{ width: '200px' }}>
-          {employees.map((e) => (
-            <li
-              key={e.id}
-              className="list-group-item"
-              draggable
-              onDragStart={() => (externalEmp.current = e.id)}
-            >
-              {e.name}
+          {loading && employees.length === 0 ? (
+            <li className="list-group-item text-center">
+              <div className="spinner-border spinner-border-sm" role="status" />
             </li>
-          ))}
+          ) : (
+            employees.map((e) => (
+              <li
+                key={e.id}
+                className="list-group-item"
+                draggable
+                onDragStart={() => (externalEmp.current = e.id)}
+              >
+                {e.name}
+              </li>
+            ))
+          )}
         </ul>
         <div style={{ flex: 1 }}>
-          <DnDCalendar
-            localizer={localizer}
-            events={events}
-            defaultView={view}
-            views={[Views.WEEK, Views.MONTH]}
-            onView={setView}
-            onEventDrop={handleDrop}
-            onEventResize={handleResize}
-            resizable
-            onDropFromOutside={onDropFromOutside}
-            selectable
-            onSelectEvent={copyEvent}
-            onSelectSlot={pasteEvent}
-            style={{ height: 600 }}
-          />
+          {loading ? (
+            <div className="d-flex justify-content-center align-items-center" style={{ height: 600 }}>
+              <div className="spinner-border" role="status" />
+            </div>
+          ) : (
+            <DnDCalendar
+              localizer={localizer}
+              events={events}
+              defaultView={view}
+              views={[Views.WEEK, Views.MONTH]}
+              onView={setView}
+              onEventDrop={handleDrop}
+              onEventResize={handleResize}
+              resizable
+              onDropFromOutside={onDropFromOutside}
+              selectable
+              onSelectEvent={copyEvent}
+              onSelectSlot={pasteEvent}
+              style={{ height: 600 }}
+            />
+          )}
         </div>
       </div>
       <div className="mt-2">
@@ -187,6 +203,9 @@ export default function ScheduleApp() {
           onClick={() => save(events)}
           disabled={saving}
         >
+          {saving && (
+            <span className="spinner-border spinner-border-sm me-1" role="status" />
+          )}
           Save
         </button>
       </div>
