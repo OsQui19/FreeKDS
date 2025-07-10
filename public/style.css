@@ -710,6 +710,7 @@ body.admin-screen {
 #scheduleGrid {
   width: 100%;
   overflow-x: auto;
+  min-height: 400px;
 }
 #scheduleGrid .fc {
   max-width: 100%;

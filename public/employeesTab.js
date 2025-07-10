@@ -176,10 +176,20 @@ async function syncEmployeesFromServer() {
     existing.forEach((e) => {
       if (e.id) colorMap[e.id] = e.color;
     });
-    const merged = data.employees.map((e) => ({
-      ...e,
-      color: colorMap[e.id] || e.color || randomColor(),
-    }));
+    const seen = new Set();
+    const merged = data.employees
+      .map((e) => ({
+        ...e,
+        color: colorMap[e.id] || e.color || randomColor(),
+      }))
+      .filter((e) => {
+        if (seen.has(e.id)) return false;
+        seen.add(e.id);
+        return true;
+      })
+      .sort((a, b) =>
+        (a.last_name || a.name).localeCompare(b.last_name || b.name),
+      );
     storage.set(EMPLOYEE_KEY, JSON.stringify(merged));
   } else {
     throw new Error("employees");
