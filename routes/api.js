@@ -324,13 +324,52 @@ module.exports = (db, io) => {
 
   router.get("/api/schedule", async (req, res) => {
     try {
-      const [rows] = await db
+      let [rows] = await db
         .promise()
         .query(
-          "SELECT setting_value FROM settings WHERE setting_key='schedule' LIMIT 1",
+          "SELECT id, employee_id, start_time, end_time, week_key FROM employee_schedule",
         );
-      const schedule = rows.length ? JSON.parse(rows[0].setting_value) : {};
-      res.json({ schedule });
+      if (rows.length === 0) {
+        const [oldRows] = await db
+          .promise()
+          .query(
+            "SELECT setting_value FROM settings WHERE setting_key='schedule' LIMIT 1",
+          );
+        if (oldRows.length) {
+          const legacy = JSON.parse(oldRows[0].setting_value || '{}');
+          const inserts = [];
+          for (const [week, days] of Object.entries(legacy)) {
+            for (const [day, arr] of Object.entries(days || {})) {
+              (arr || []).forEach((r) => {
+                const base = new Date(week);
+                base.setDate(base.getDate() + parseInt(day, 10));
+                const s = new Date(base);
+                s.setHours(r.start, 0, 0, 0);
+                const e = new Date(base);
+                e.setHours(r.end, 0, 0, 0);
+                inserts.push([r.id, s, e, week]);
+              });
+            }
+          }
+          if (inserts.length) {
+            await db
+              .promise()
+              .query(
+                "INSERT INTO employee_schedule (employee_id, start_time, end_time, week_key) VALUES ?",
+                [inserts],
+              );
+          }
+          await db
+            .promise()
+            .query("DELETE FROM settings WHERE setting_key='schedule'");
+          [rows] = await db
+            .promise()
+            .query(
+              "SELECT id, employee_id, start_time, end_time, week_key FROM employee_schedule",
+            );
+        }
+      }
+      res.json({ schedule: rows });
     } catch (err) {
       console.error("Error fetching schedule:", err);
       res.status(500).send("DB Error");
@@ -338,15 +377,26 @@ module.exports = (db, io) => {
   });
 
   router.post("/api/schedule", async (req, res) => {
-    if (!req.body.schedule || typeof req.body.schedule !== "object")
+    if (!Array.isArray(req.body.schedule))
       return res.status(400).send("Invalid data");
     try {
-      await db
-        .promise()
-        .query(
-          "INSERT INTO settings (setting_key, setting_value) VALUES ('schedule', ?) ON DUPLICATE KEY UPDATE setting_value=VALUES(setting_value)",
-          [JSON.stringify(req.body.schedule)],
+      const conn = await db.promise().getConnection();
+      await conn.beginTransaction();
+      await conn.query("TRUNCATE TABLE employee_schedule");
+      if (req.body.schedule.length) {
+        const values = req.body.schedule.map((s) => [
+          s.employee_id,
+          new Date(s.start_time),
+          new Date(s.end_time),
+          s.week_key,
+        ]);
+        await conn.query(
+          "INSERT INTO employee_schedule (employee_id, start_time, end_time, week_key) VALUES ?",
+          [values],
         );
+      }
+      await conn.commit();
+      conn.release();
       res.json({ success: true });
     } catch (err) {
       console.error("Error saving schedule:", err);

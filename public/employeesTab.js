@@ -33,29 +33,6 @@ function retrySync(fn, attempts = 3, delay = 1000) {
 }
 
 async function initEmployeesTabs() {
-  if (!window.FullCalendar) {
-    const scripts = [
-      "/vendor/fullcalendar/core.min.js",
-      "/vendor/fullcalendar/daygrid.min.js",
-      "/vendor/fullcalendar/timegrid.min.js",
-      "/vendor/fullcalendar/resource.min.js",
-      "/vendor/fullcalendar/resource-daygrid.min.js",
-      "/vendor/fullcalendar/resource-timegrid.min.js",
-      "/vendor/fullcalendar/interaction.min.js",
-    ];
-    for (const src of scripts) {
-      await new Promise((resolve) => {
-        const s = document.createElement("script");
-        s.src = src;
-        s.onload = resolve;
-        s.onerror = resolve;
-        document.head.appendChild(s);
-      });
-    }
-    if (!window.FullCalendar) {
-      console.error("FullCalendar failed to load");
-    }
-  }
   const tabList = document.getElementById("employeesTabs");
   const links = tabList ? tabList.querySelectorAll(".nav-link") : [];
   const panes = document.querySelectorAll(".employees-pane");
@@ -75,7 +52,7 @@ async function initEmployeesTabs() {
       if (!skipHash) location.hash = id;
     }
     if (id === "schedulePane") {
-      tryRenderSchedule();
+      // Schedule handled by React component
     }
   }
 
@@ -95,7 +72,6 @@ async function initEmployeesTabs() {
 
   await Promise.allSettled([
     retrySync(syncEmployeesFromServer, 5),
-    retrySync(syncScheduleFromServer, 5),
     retrySync(syncHierarchyFromServer, 5),
     retrySync(syncPermissionsFromServer, 5),
     retrySync(syncModulesFromServer, 5),
@@ -103,24 +79,14 @@ async function initEmployeesTabs() {
   ]);
 
   setupOnboardingForm();
-  setupScheduleViewToggle();
-  setupWeekNav();
-  setupHourRangeControls();
-  setupUndoButton();
   setupAddRoleForm();
 
   renderEmployeeList();
   renderOnboardingTable();
-  // Schedule will be rendered when the tab becomes active
   renderHierarchy();
   renderPermissionsTable();
   renderTimeTable();
 
-  // Initial render if schedule tab is already active
-  const schedPane = document.getElementById("schedulePane");
-  if (schedPane && schedPane.classList.contains("active")) {
-    tryRenderSchedule();
-  }
 
   if (window.io) {
     const socket = io();
@@ -1210,23 +1176,4 @@ if (document.readyState === "loading") {
   initEmployeesTabs();
 }
 
-document.addEventListener("keydown", (e) => {
-  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "c") {
-    if (selectedEvent) {
-      copiedEvent = {
-        employeeId: selectedEvent.extendedProps.employeeId,
-        duration: selectedEvent.end - selectedEvent.start,
-        title: selectedEvent.title,
-        color: selectedEvent.extendedProps.color,
-      };
-    }
-  } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "v") {
-    if (copiedEvent) pasteNext = true;
-  }
-});
 
-window.addEventListener("resize", () => {
-  if (calendar) {
-    calendar.updateSize();
-  }
-});

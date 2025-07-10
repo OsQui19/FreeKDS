@@ -276,6 +276,16 @@ CREATE TABLE time_clock (
   FOREIGN KEY (employee_id) REFERENCES employees(id)
 );
 
+CREATE TABLE employee_schedule (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  employee_id INT NOT NULL,
+  start_time DATETIME NOT NULL,
+  end_time DATETIME NOT NULL,
+  week_key VARCHAR(10) NOT NULL,
+  FOREIGN KEY (employee_id) REFERENCES employees(id)
+);
+CREATE INDEX idx_employee_schedule_week ON employee_schedule(week_key);
+
 CREATE TABLE security_log (
   id INT PRIMARY KEY AUTO_INCREMENT,
   username VARCHAR(50) DEFAULT NULL,
