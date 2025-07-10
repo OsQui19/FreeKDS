@@ -790,9 +790,4 @@ body.admin-screen {
   outline-offset: -3px;
 }
 
-/* FullCalendar conflict highlighting */
-.fc-event.conflict {
-  background-color: #ff6b6b !important;
-  border-color: #ff6b6b !important;
-}
 
