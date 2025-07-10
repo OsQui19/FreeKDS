@@ -26,6 +26,30 @@ export default function ScheduleApp() {
   const [copied, setCopied] = useState(null);
   const externalEmp = useRef(null);
 
+  const getEventStyle = useCallback(
+    (event) => {
+      const emp = employees.find((e) => e.id === event.employee_id);
+      const color = emp?.color || "#0d6efd";
+      return { style: { backgroundColor: color, borderColor: color } };
+    },
+    [employees],
+  );
+
+  const hasOverlap = (evts) => {
+    const byEmp = {};
+    for (const e of evts) {
+      if (!byEmp[e.employee_id]) byEmp[e.employee_id] = [];
+      byEmp[e.employee_id].push(e);
+    }
+    for (const list of Object.values(byEmp)) {
+      list.sort((a, b) => a.start - b.start);
+      for (let i = 1; i < list.length; i++) {
+        if (list[i].start < list[i - 1].end) return true;
+      }
+    }
+    return false;
+  };
+
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
@@ -61,6 +85,16 @@ export default function ScheduleApp() {
   const save = useCallback(async (evts) => {
     setSaving(true);
     try {
+      if (evts.some((e) => e.end <= e.start)) {
+        setError("Shift end must be after start");
+        setSaving(false);
+        return;
+      }
+      if (hasOverlap(evts)) {
+        setError("Employees have overlapping shifts");
+        setSaving(false);
+        return;
+      }
       const plain = evts.map((e) => ({
         id: e.id,
         employee_id: e.employee_id,
@@ -181,6 +215,7 @@ export default function ScheduleApp() {
               onEventDrop={handleDrop}
               onEventResize={handleResize}
               resizable
+              eventPropGetter={getEventStyle}
               onDropFromOutside={onDropFromOutside}
               selectable
               onSelectEvent={copyEvent}
