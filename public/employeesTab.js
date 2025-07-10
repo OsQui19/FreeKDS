@@ -111,10 +111,16 @@ async function initEmployeesTabs() {
 
   renderEmployeeList();
   renderOnboardingTable();
-  tryRenderSchedule();
+  // Schedule will be rendered when the tab becomes active
   renderHierarchy();
   renderPermissionsTable();
   renderTimeTable();
+
+  // Initial render if schedule tab is already active
+  const schedPane = document.getElementById("schedulePane");
+  if (schedPane && schedPane.classList.contains("active")) {
+    tryRenderSchedule();
+  }
 
   if (window.io) {
     const socket = io();
@@ -859,10 +865,13 @@ function renderSchedule() {
 }
 
 function tryRenderSchedule() {
-  try {
-    renderSchedule();
-  } catch (err) {
-    console.error("Schedule render failed", err);
+  const pane = document.getElementById("schedulePane");
+  if (pane && pane.classList.contains("active")) {
+    try {
+      renderSchedule();
+    } catch (err) {
+      console.error("Schedule render failed", err);
+    }
   }
 }
 
