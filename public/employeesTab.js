@@ -38,6 +38,8 @@ async function initEmployeesTabs() {
       "/vendor/fullcalendar/core.min.js",
       "/vendor/fullcalendar/daygrid.min.js",
       "/vendor/fullcalendar/timegrid.min.js",
+      "/vendor/fullcalendar/resource.min.js",
+      "/vendor/fullcalendar/resource-daygrid.min.js",
       "/vendor/fullcalendar/resource-timegrid.min.js",
       "/vendor/fullcalendar/interaction.min.js",
     ];
