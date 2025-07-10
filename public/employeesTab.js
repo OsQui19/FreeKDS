@@ -15,6 +15,21 @@ const storage = {
   },
 };
 
+let schedulePromise;
+function loadScheduleScript() {
+  if (!schedulePromise) {
+    schedulePromise = new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = "/dist/schedule.js";
+      script.defer = true;
+      script.onload = resolve;
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+  }
+  return schedulePromise;
+}
+
 function retrySync(fn, attempts = 3, delay = 1000) {
   return new Promise((resolve, reject) => {
     const attempt = async (n) => {
@@ -37,6 +52,7 @@ async function initEmployeesTabs() {
   const links = tabList ? tabList.querySelectorAll(".nav-link") : [];
   const panes = document.querySelectorAll(".employees-pane");
   const STORAGE_KEY = "activeEmployeesPane";
+  loadScheduleScript().catch(() => {});
 
   function activate(id, skipHash) {
     if (tabList) {
@@ -52,7 +68,7 @@ async function initEmployeesTabs() {
       if (!skipHash) location.hash = id;
     }
     if (id === "schedulePane") {
-      // Schedule handled by React component
+      loadScheduleScript().catch(() => {});
     }
   }
 

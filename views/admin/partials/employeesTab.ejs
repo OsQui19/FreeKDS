@@ -95,7 +95,13 @@
               <button id="toggleScheduleView" class="btn btn-sm btn-outline-primary ms-auto">Monthly View</button>
               <button id="undoSchedule" class="btn btn-sm btn-outline-secondary">Undo</button>
             </div>
-            <div id="scheduleApp"></div>
+            <div id="scheduleApp">
+              <div class="text-center w-100 p-5" id="scheduleLoading">
+                <div class="spinner-border" role="status">
+                  <span class="visually-hidden">Loading schedule...</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         <div
