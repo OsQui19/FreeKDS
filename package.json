@@ -22,6 +22,7 @@
     "helmet": "^8.1.0",
     "mysql2": "^3.14.1",
     "socket.io": "^4.7.4",
+    "date-fns": "^2.30.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-big-calendar": "^1.11.4"
