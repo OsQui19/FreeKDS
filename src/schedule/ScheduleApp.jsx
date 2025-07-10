@@ -89,11 +89,17 @@ export default function ScheduleApp() {
   };
 
   const handleDrop = ({ event, start, end }) => {
-    pushUndo(events.map((e) => (e === event ? { ...e, start, end } : e)));
+    const wk = start.toISOString().split("T")[0];
+    pushUndo(
+      events.map((e) => (e === event ? { ...e, start, end, week_key: wk } : e)),
+    );
   };
 
   const handleResize = ({ event, start, end }) => {
-    pushUndo(events.map((e) => (e === event ? { ...e, start, end } : e)));
+    const wk = start.toISOString().split("T")[0];
+    pushUndo(
+      events.map((e) => (e === event ? { ...e, start, end, week_key: wk } : e)),
+    );
   };
 
   const onDropFromOutside = ({ start, end }) => {
