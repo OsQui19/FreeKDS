@@ -33,6 +33,7 @@ function loadScheduleScript(attempts = 3, delay = 1000) {
       const attemptLoad = (n) => {
         const script = document.createElement("script");
         script.src = "/dist/schedule.js";
+        script.type = "module";
         script.defer = true;
         script.onload = () => {
           scheduleLoaded = true;
