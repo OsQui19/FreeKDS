@@ -589,10 +589,16 @@ function renderPermissionsTable() {
   });
 }
 
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initEmployeesTabs);
-} else {
+function initWithPrefetch() {
+  // Preload the schedule bundle so it's cached before the tab is opened
+  loadScheduleScript().catch(() => {});
   initEmployeesTabs();
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initWithPrefetch);
+} else {
+  initWithPrefetch();
 }
 
 
