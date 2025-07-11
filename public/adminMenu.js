@@ -37,6 +37,7 @@ function handleForm(form, onSuccess) {
   form.addEventListener("submit", (e) => {
     e.preventDefault();
     const scroll = window.scrollY;
+    const hide = window.showSpinner ? window.showSpinner() : () => {};
     fetch(form.action, {
       method: form.method || "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -66,6 +67,9 @@ function handleForm(form, onSuccess) {
       .catch((err) => {
         console.error("Form submit failed", err);
         showAlert("Error saving");
+      })
+      .finally(() => {
+        if (typeof hide === "function") hide();
       });
   });
 }

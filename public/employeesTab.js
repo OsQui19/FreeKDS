@@ -111,6 +111,8 @@ async function initEmployeesTabs() {
     activate(panes[0].id, true);
   }
 
+  const hide = window.showSpinner ? window.showSpinner() : () => {};
+
   await Promise.allSettled([
     retrySync(syncEmployeesFromServer, 5),
     retrySync(syncHierarchyFromServer, 5),
@@ -118,6 +120,8 @@ async function initEmployeesTabs() {
     retrySync(syncModulesFromServer, 5),
     retrySync(syncTimeFromServer, 5),
   ]);
+
+  if (typeof hide === "function") hide();
 
   setupOnboardingForm();
   setupAddRoleForm();
@@ -736,6 +740,7 @@ async function renderPayrollTable() {
   if (!tbl) return;
   const tbody = tbl.querySelector("tbody");
   let summary = null;
+  const hide = window.showSpinner ? window.showSpinner() : () => {};
   try {
     const res = await fetch("/api/payroll");
     if (res.ok) {
@@ -750,6 +755,8 @@ async function renderPayrollTable() {
     }
   } catch {
     /* ignore */
+  } finally {
+    if (typeof hide === "function") hide();
   }
   if (!summary) summary = summarizeTime(loadTime());
   tbody.innerHTML = summary
