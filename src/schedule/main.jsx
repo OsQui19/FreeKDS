@@ -2,9 +2,12 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import ScheduleApp from './ScheduleApp.jsx';
 
-function init() {
+function mountApp() {
   const rootEl = document.getElementById('scheduleApp');
-  if (!rootEl) return;
+  if (!rootEl) {
+    console.error('scheduleApp element not found');
+    return;
+  }
   ReactDOM.createRoot(rootEl).render(
     <React.StrictMode>
       <ScheduleApp />
@@ -13,7 +16,7 @@ function init() {
 }
 
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', init);
+  document.addEventListener('DOMContentLoaded', mountApp, { once: true });
 } else {
-  init();
+  mountApp();
 }
