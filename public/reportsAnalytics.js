@@ -180,3 +180,7 @@ function startReports() {
 }
 
 window.initReportsTab = startReports;
+
+document.addEventListener("adminTabShown", (e) => {
+  if (e.detail === "reports") startReports();
+});
