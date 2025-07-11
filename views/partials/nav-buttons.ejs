@@ -16,7 +16,7 @@
       hasAccess('theme') ||
       hasAccess('locations'))
   ) { %>
-    <a href="/admin?tab=stations" class="btn btn-secondary btn-sm" aria-label="Admin">Admin</a>
+    <a href="/admin?tab=stations" id="adminNavBtn" class="btn btn-secondary btn-sm" aria-label="Admin">Admin</a>
   <% } %>
   <a href="/clock/dashboard" class="btn btn-secondary btn-sm" aria-label="Clock">Clock</a>
   <form action="/logout" method="post" class="m-0">
