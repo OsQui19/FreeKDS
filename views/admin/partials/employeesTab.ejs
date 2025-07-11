@@ -118,10 +118,27 @@
       <div class="employees-pane" id="timePane">
         <table class="table table-sm" id="timeTable">
           <thead>
-            <tr><th>Employee</th><th>Clock In</th><th>Clock Out</th></tr>
+            <tr><th>Employee</th><th>Clock In</th><th>Clock Out</th><th></th></tr>
           </thead>
           <tbody></tbody>
         </table>
+        <div id="timeEditModal" class="modal d-none">
+          <div class="modal-content modal-small">
+            <button id="timeEditCancel" class="btn-secondary btn-sm mb-2">Close</button>
+            <form id="timeEditForm">
+              <input type="hidden" name="id">
+              <div class="mb-2">
+                <label class="form-label">Clock In</label>
+                <input type="datetime-local" name="clock_in" class="form-control form-control-sm" required>
+              </div>
+              <div class="mb-2">
+                <label class="form-label">Clock Out</label>
+                <input type="datetime-local" name="clock_out" class="form-control form-control-sm">
+              </div>
+              <button type="submit" class="btn btn-primary btn-sm">Save</button>
+            </form>
+          </div>
+        </div>
       </div>
       <div class="employees-pane" id="payrollPane">
         <p>Payroll calculations will appear here.</p>

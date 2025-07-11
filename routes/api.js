@@ -514,6 +514,33 @@ module.exports = (db, io) => {
     }
   });
 
+  router.put("/api/time-clock/:id", async (req, res) => {
+    const id = parseInt(req.params.id, 10);
+    if (!id) return res.status(400).send("Invalid id");
+    const start = new Date(req.body.clock_in);
+    const end = req.body.clock_out ? new Date(req.body.clock_out) : null;
+    if (!req.body.clock_in || Number.isNaN(start) || (req.body.clock_out && Number.isNaN(end))) {
+      return res.status(400).send("Invalid data");
+    }
+    if (end && end <= start) return res.status(400).send("Invalid range");
+    try {
+      await db
+        .promise()
+        .query("UPDATE time_clock SET clock_in=?, clock_out=? WHERE id=?", [start, end, id]);
+      const [rows] = await db
+        .promise()
+        .query(
+          "SELECT tc.*, e.username AS name FROM time_clock tc JOIN employees e ON tc.employee_id=e.id WHERE tc.id=?",
+          [id],
+        );
+      if (rows.length) io.emit("timeUpdated", rows[0]);
+      res.json({ success: true, record: rows[0] || null });
+    } catch (err) {
+      console.error("Error updating time clock:", err);
+      res.status(500).send("DB Error");
+    }
+  });
+
   router.post("/api/permissions", async (req, res) => {
     if (!req.body.permissions || typeof req.body.permissions !== "object")
       return res.status(400).send("Invalid data");

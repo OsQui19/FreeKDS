@@ -121,6 +121,7 @@ async function initEmployeesTabs() {
 
   setupOnboardingForm();
   setupAddRoleForm();
+  setupTimeEditModal();
 
   renderEmployeeList();
   renderOnboardingTable();
@@ -256,9 +257,72 @@ function renderTimeTable() {
   tbody.innerHTML = recs
     .map(
       (r) =>
-        `<tr><td>${r.name}</td><td>${r.clock_in}</td><td>${r.clock_out || ""}</td></tr>`,
+        `<tr data-id="${r.id}"><td>${r.name}</td><td>${r.clock_in}</td><td>${
+          r.clock_out || ""
+        }</td><td><button class="btn btn-sm btn-outline-primary edit-time" data-id="${
+          r.id
+        }">Edit</button></td></tr>`,
     )
     .join("");
+  tbody.querySelectorAll(".edit-time").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = btn.dataset.id;
+      const rec = loadTime().find((r) => String(r.id) === String(id));
+      if (rec) openTimeEdit(rec);
+    });
+  });
+}
+
+function openTimeEdit(rec) {
+  const modal = document.getElementById("timeEditModal");
+  const form = document.getElementById("timeEditForm");
+  if (!modal || !form) return;
+  form.elements.id.value = rec.id;
+  form.elements.clock_in.value = (rec.clock_in || "").replace(" ", "T").slice(0, 16);
+  form.elements.clock_out.value = rec.clock_out
+    ? rec.clock_out.replace(" ", "T").slice(0, 16)
+    : "";
+  modal.classList.remove("d-none");
+  modal.classList.add("d-flex");
+}
+
+function setupTimeEditModal() {
+  const modal = document.getElementById("timeEditModal");
+  const cancelBtn = document.getElementById("timeEditCancel");
+  const form = document.getElementById("timeEditForm");
+  if (!modal || !cancelBtn || !form) return;
+
+  const close = () => {
+    modal.classList.add("d-none");
+    modal.classList.remove("d-flex");
+  };
+
+  cancelBtn.addEventListener("click", close);
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const data = new FormData(form);
+    const id = data.get("id");
+    const clockIn = data.get("clock_in");
+    const clockOut = data.get("clock_out");
+    if (clockOut && clockOut <= clockIn) {
+      alert("Clock out must be after clock in");
+      return;
+    }
+    try {
+      const res = await fetch(`/api/time-clock/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ clock_in: clockIn, clock_out: clockOut || null }),
+      });
+      if (!res.ok) throw new Error("update");
+      await syncTimeFromServer();
+      renderTimeTable();
+      close();
+    } catch {
+      alert("Failed to update record");
+    }
+  });
 }
 
 function randomColor() {
