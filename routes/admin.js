@@ -143,28 +143,8 @@ module.exports = (db, io) => {
       res.status(500).send("DB Error");
     }
   });
-  router.get("/admin/menu", async (req, res) => {
-    try {
-      const {
-        categories,
-        stations,
-        mods,
-        modGroups,
-        ingredients: publicIngredients,
-        units,
-      } = await getMenuData(db);
-      res.render("admin/menu", {
-        categories,
-        stations,
-        mods,
-        modGroups,
-        publicIngredients,
-        units,
-      });
-    } catch (err) {
-      console.error("Error fetching menu data:", err);
-      res.status(500).send("DB Error");
-    }
+  router.get("/admin/menu", (req, res) => {
+    res.redirect("/admin?tab=menu");
   });
 
   router.post("/admin/items", async (req, res) => {
@@ -782,14 +762,8 @@ module.exports = (db, io) => {
     });
   });
 
-  router.get("/admin/stations", async (req, res) => {
-    try {
-      const rows = await getStations(db);
-      res.render("admin/stations", { stations: rows });
-    } catch (err) {
-      console.error("Error fetching stations:", err);
-      res.status(500).send("DB Error");
-    }
+  router.get("/admin/stations", (req, res) => {
+    res.redirect("/admin?tab=stations");
   });
 
   router.post("/admin/stations", (req, res) => {
@@ -847,60 +821,11 @@ module.exports = (db, io) => {
       res.redirect("/admin?tab=stations&msg=Station+deleted");
     });
   });
-  router.get("/admin/inventory", async (req, res) => {
-    try {
-      const ingredients = await getIngredients(db);
-      const itemCategories = await getItemCategories(db);
-      const tags = await getTags(db);
-      const unitRows = await getUnits(db);
-      const logSql = `SELECT l.*, mi.name AS item_name, ing.name AS ingredient_name, u.abbreviation AS unit
-                      FROM inventory_log l
-                      JOIN menu_items mi ON l.menu_item_id = mi.id
-                      JOIN ingredients ing ON l.ingredient_id = ing.id
-                      LEFT JOIN units u ON ing.unit_id = u.id
-                      ORDER BY l.id DESC LIMIT 100`;
-      const [logs] = await db.promise().query(logSql);
-      const [transactions] = await db.promise()
-        .query(`SELECT t.*, ing.name AS ingredient_name, u.abbreviation AS unit
-                                                      FROM inventory_transactions t
-                                                      JOIN ingredients ing ON t.ingredient_id = ing.id
-                                                      LEFT JOIN units u ON ing.unit_id = u.id
-                                                      ORDER BY t.id DESC LIMIT 100`);
-      const summarySql = `SELECT ing.id AS ingredient_id, ing.name, u.abbreviation AS unit, SUM(d.amount) AS total
-                          FROM daily_usage_log d
-                          JOIN ingredients ing ON d.ingredient_id = ing.id
-                          LEFT JOIN units u ON ing.unit_id = u.id
-                          GROUP BY ing.id
-                          ORDER BY ing.name`;
-      const [summary] = await db.promise().query(summarySql);
-
-      res.render("admin/inventory", {
-        ingredients,
-        itemCategories,
-        tags,
-        logs,
-        summary,
-        transactions,
-        units: unitRows,
-      });
-    } catch (err) {
-      console.error("Error fetching inventory:", err);
-      res.status(500).send("DB Error");
-    }
+  router.get("/admin/inventory", (req, res) => {
+    res.redirect("/admin?tab=inventory");
   });
-  router.get("/admin/theme", async (req, res) => {
-    try {
-      const [rows] = await db.promise().query("SELECT * FROM settings");
-      const settings = {};
-      rows.forEach((r) => {
-        settings[r.setting_key] = r.setting_value;
-      });
-      const stations = await getStations(db);
-      res.render("admin/themes", { settings, stations });
-    } catch (err) {
-      console.error("Error fetching settings:", err);
-      res.status(500).send("DB Error");
-    }
+  router.get("/admin/theme", (req, res) => {
+    res.redirect("/admin?tab=theme");
   });
 
   router.post("/admin/settings", (req, res) => {
@@ -939,199 +864,10 @@ module.exports = (db, io) => {
     });
   });
 
-  // Suppliers
-  router.get("/admin/suppliers", async (req, res) => {
-    try {
-      const suppliers = await getSuppliers(db);
-      res.render("admin/suppliers", { suppliers });
-    } catch (err) {
-      console.error("Error fetching suppliers:", err);
-      res.status(500).send("DB Error");
-    }
-  });
-  router.get("/admin/purchase-orders", async (req, res) => {
-    try {
-      const [orders] = await db.promise().query(
-        `SELECT po.*, s.name AS supplier_name, l.name AS location_name
-           FROM purchase_orders po
-           JOIN suppliers s ON po.supplier_id = s.id
-           LEFT JOIN inventory_locations l ON po.location_id = l.id
-          ORDER BY po.id DESC`,
-      );
-      const [suppliers] = await db
-        .promise()
-        .query("SELECT * FROM suppliers ORDER BY name");
-      const [locations] = await db
-        .promise()
-        .query("SELECT * FROM inventory_locations ORDER BY name");
-      res.render("admin/purchase_orders", { orders, suppliers, locations });
-    } catch (err) {
-      console.error("Error fetching purchase orders:", err);
-      res.status(500).send("DB Error");
-    }
-  });
-
-  router.post("/admin/suppliers", (req, res) => {
-    const id = req.body.id;
-    const name = req.body.name;
-    const contact = req.body.contact_info || null;
-    if (!name) return res.redirect("/admin/suppliers");
-    if (id) {
-      db.query(
-        "UPDATE suppliers SET name=?, contact_info=? WHERE id=?",
-        [name, contact, id],
-        (err) => {
-          if (err) console.error("Error updating supplier:", err);
-          res.redirect("/admin/suppliers?msg=Supplier+saved");
-        },
-      );
-    } else {
-      db.query(
-        "INSERT INTO suppliers (name, contact_info) VALUES (?, ?)",
-        [name, contact],
-        (err) => {
-          if (err) console.error("Error inserting supplier:", err);
-          res.redirect("/admin/suppliers?msg=Supplier+saved");
-        },
-      );
-    }
-  });
-
-  router.post("/admin/suppliers/delete", (req, res) => {
-    const id = req.body.id;
-    if (!id) return res.redirect("/admin/suppliers");
-    db.query("DELETE FROM suppliers WHERE id=?", [id], (err) => {
-      if (err) console.error("Error deleting supplier:", err);
-      res.redirect("/admin/suppliers?msg=Supplier+deleted");
-    });
-  });
-
-  // Inventory locations
-  router.get("/admin/locations", async (req, res) => {
-    try {
-      const locations = await getLocations(db);
-      res.render("admin/locations", { locations });
-    } catch (err) {
-      console.error("Error fetching locations:", err);
-      res.status(500).send("DB Error");
-    }
-  });
-
-  router.post("/admin/purchase-orders", async (req, res) => {
-    try {
-      const { order_date, supplier_id, location_id } = req.body;
-      if (!order_date || !supplier_id)
-        return res.redirect("/admin/purchase-orders");
-      await db
-        .promise()
-        .query(
-          "INSERT INTO purchase_orders (order_date, supplier_id, location_id) VALUES (?, ?, ?)",
-          [order_date, supplier_id, location_id || null],
-        );
-      res.redirect("/admin/purchase-orders?msg=Order+created");
-    } catch (err) {
-      console.error("Error creating purchase order:", err);
-      res.status(500).send("DB Error");
-    }
-  });
-
-  router.post("/admin/purchase-orders/delete", async (req, res) => {
-    const { id } = req.body;
-    if (!id) return res.redirect("/admin/purchase-orders");
-    try {
-      await db.promise().query("DELETE FROM purchase_orders WHERE id=?", [id]);
-      res.redirect("/admin/purchase-orders?msg=Order+deleted");
-    } catch (err) {
-      console.error("Error deleting order:", err);
-      res.status(500).send("DB Error");
-    }
-  });
-
-  router.get("/admin/purchase-orders/:id", async (req, res) => {
-    const orderId = parseInt(req.params.id, 10);
-    if (isNaN(orderId)) return res.redirect("/admin/purchase-orders");
-    try {
-      const [[order]] = await db.promise().query(
-        `SELECT po.*, s.name AS supplier_name, l.name AS location_name
-           FROM purchase_orders po
-           JOIN suppliers s ON po.supplier_id = s.id
-           LEFT JOIN inventory_locations l ON po.location_id = l.id
-          WHERE po.id=?`,
-        [orderId],
-      );
-      if (!order) return res.redirect("/admin/purchase-orders");
-      const [items] = await db.promise().query(
-        `SELECT poi.*, ing.name AS ingredient_name, u.abbreviation AS unit
-           FROM purchase_order_items poi
-           JOIN ingredients ing ON poi.ingredient_id = ing.id
-           LEFT JOIN units u ON poi.unit_id = u.id
-          WHERE poi.purchase_order_id=?
-          ORDER BY poi.id`,
-        [orderId],
-      );
-      const [ingredients] = await db
-        .promise()
-        .query("SELECT id, name FROM ingredients ORDER BY name");
-      const [units] = await db
-        .promise()
-        .query("SELECT id, abbreviation FROM units ORDER BY name");
-      res.render("admin/purchase_order_detail", {
-        order,
-        items,
-        ingredients,
-        units,
-      });
-    } catch (err) {
-      console.error("Error fetching order detail:", err);
-      res.status(500).send("DB Error");
-    }
-  });
-
-  router.post("/admin/locations", (req, res) => {
-    const id = req.body.id;
-    const name = req.body.name;
-    if (!name) return res.redirect("/admin/locations");
-    if (id) {
-      db.query(
-        "UPDATE inventory_locations SET name=? WHERE id=?",
-        [name, id],
-        (err) => {
-          if (err) console.error("Error updating location:", err);
-          res.redirect("/admin/locations?msg=Location+saved");
-        },
-      );
-    } else {
-      db.query(
-        "INSERT INTO inventory_locations (name) VALUES (?)",
-        [name],
-        (err) => {
-          if (err) console.error("Error inserting location:", err);
-          res.redirect("/admin/locations?msg=Location+saved");
-        },
-      );
-    }
-  });
-
-  router.post("/admin/locations/delete", (req, res) => {
-    const id = req.body.id;
-    if (!id) return res.redirect("/admin/locations");
-    db.query("DELETE FROM inventory_locations WHERE id=?", [id], (err) => {
-      if (err) console.error("Error deleting location:", err);
-      res.redirect("/admin/locations?msg=Location+deleted");
-    });
-  });
 
   // Purchase orders
-  router.get("/admin/purchase-orders", async (req, res) => {
-    try {
-      const orders = await getPurchaseOrders(db);
-      const suppliers = await getSuppliers(db);
-      const locations = await getLocations(db);
-      res.render("admin/purchase_orders", { orders, suppliers, locations });
-    } catch (err) {
-      console.error("Error fetching purchase orders:", err);
-      res.status(500).send("DB Error");
-    }
+  router.get("/admin/purchase-orders", (req, res) => {
+    res.redirect("/admin?tab=purchase-orders");
   });
 
   router.post("/admin/purchase-orders/:id/receive", async (req, res) => {
@@ -1248,16 +984,8 @@ module.exports = (db, io) => {
       res.status(500).send("DB Error");
     }
   });
-  router.get("/admin/suppliers", async (req, res) => {
-    try {
-      const [suppliers] = await db
-        .promise()
-        .query("SELECT * FROM suppliers ORDER BY name");
-      res.render("admin/suppliers", { suppliers });
-    } catch (err) {
-      console.error("Error fetching suppliers:", err);
-      res.status(500).send("DB Error");
-    }
+  router.get("/admin/suppliers", (req, res) => {
+    res.redirect("/admin?tab=suppliers");
   });
 
   router.post("/admin/suppliers", async (req, res) => {
@@ -1345,16 +1073,8 @@ module.exports = (db, io) => {
       res.redirect(`/admin/purchase-orders/${orderId}`);
     });
   });
-  router.get("/admin/locations", async (req, res) => {
-    try {
-      const [locations] = await db
-        .promise()
-        .query("SELECT * FROM inventory_locations ORDER BY name");
-      res.render("admin/locations", { locations });
-    } catch (err) {
-      console.error("Error fetching locations:", err);
-      res.status(500).send("DB Error");
-    }
+  router.get("/admin/locations", (req, res) => {
+    res.redirect("/admin?tab=locations");
   });
 
   router.post("/admin/locations", async (req, res) => {
