@@ -16,14 +16,19 @@ const storage = {
 };
 
 let schedulePromise;
+let scheduleLoaded = false;
 function loadScheduleScript(attempts = 3, delay = 1000) {
+  if (scheduleLoaded) return Promise.resolve();
   if (!schedulePromise) {
     schedulePromise = new Promise((resolve, reject) => {
       const attemptLoad = (n) => {
         const script = document.createElement("script");
         script.src = "/dist/schedule.js";
         script.defer = true;
-        script.onload = resolve;
+        script.onload = () => {
+          scheduleLoaded = true;
+          resolve();
+        };
         script.onerror = () => {
           script.remove();
           if (n > 1) {
@@ -78,7 +83,7 @@ async function initEmployeesTabs() {
       storage.set(STORAGE_KEY, id);
       if (!skipHash) location.hash = id;
     }
-    if (id === "schedulePane") {
+    if (id === "schedulePane" && !scheduleLoaded) {
       loadScheduleScript().catch(() => {});
     }
   }
@@ -601,16 +606,14 @@ function renderPermissionsTable() {
   });
 }
 
-function initWithPrefetch() {
-  // Preload the schedule bundle so it's cached before the tab is opened
-  loadScheduleScript().catch(() => {});
+function initEmployeesModule() {
   initEmployeesTabs();
 }
 
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initWithPrefetch);
+  document.addEventListener("DOMContentLoaded", initEmployeesModule);
 } else {
-  initWithPrefetch();
+  initEmployeesModule();
 }
 
 

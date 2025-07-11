@@ -146,6 +146,7 @@ function loadReports() {
     .catch((err) => console.error("Reports fetch error", err));
 }
 
+let reportsInitialized = false;
 function initReports() {
   const rangeForm = document.getElementById("reportsRangeForm");
   const startInput = document.getElementById("reportStart");
@@ -169,8 +170,13 @@ function initReports() {
   }
 }
 
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initReports);
-} else {
-  initReports();
+function startReports() {
+  if (!reportsInitialized) {
+    reportsInitialized = true;
+    initReports();
+  } else {
+    loadReports();
+  }
 }
+
+window.initReportsTab = startReports;

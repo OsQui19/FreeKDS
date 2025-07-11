@@ -17,6 +17,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const url = new URL(window.location);
     url.searchParams.set("tab", type);
     history.replaceState(null, "", url);
+    if (type === "reports" && typeof window.initReportsTab === "function") {
+      window.initReportsTab();
+    }
   }
 
   allowed.forEach((type) => {
