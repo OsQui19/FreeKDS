@@ -16,15 +16,27 @@ const storage = {
 };
 
 let schedulePromise;
-function loadScheduleScript() {
+function loadScheduleScript(attempts = 3, delay = 1000) {
   if (!schedulePromise) {
     schedulePromise = new Promise((resolve, reject) => {
-      const script = document.createElement("script");
-      script.src = "/dist/schedule.js";
-      script.defer = true;
-      script.onload = resolve;
-      script.onerror = reject;
-      document.head.appendChild(script);
+      const attemptLoad = (n) => {
+        const script = document.createElement("script");
+        script.src = "/dist/schedule.js";
+        script.defer = true;
+        script.onload = resolve;
+        script.onerror = () => {
+          script.remove();
+          if (n > 1) {
+            setTimeout(() => attemptLoad(n - 1), delay);
+          } else {
+            schedulePromise = null;
+            console.error("Failed to load schedule.js");
+            reject();
+          }
+        };
+        document.head.appendChild(script);
+      };
+      attemptLoad(attempts);
     });
   }
   return schedulePromise;
