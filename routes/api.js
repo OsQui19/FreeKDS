@@ -541,6 +541,26 @@ module.exports = (db, io) => {
     }
   });
 
+  router.get("/api/payroll", async (req, res) => {
+    try {
+      const [rows] = await db
+        .promise()
+        .query(
+          `SELECT e.username AS name,
+                  DATE_SUB(DATE(tc.clock_in), INTERVAL (DAYOFWEEK(tc.clock_in)+5)%7 DAY) AS period_start,
+                  SUM(TIMESTAMPDIFF(MINUTE, tc.clock_in, COALESCE(tc.clock_out, NOW())))/60 AS hours
+           FROM time_clock tc
+           JOIN employees e ON tc.employee_id=e.id
+           GROUP BY e.id, period_start
+           ORDER BY e.username, period_start`
+        );
+      res.json({ payroll: rows });
+    } catch (err) {
+      console.error("Error fetching payroll data:", err);
+      res.status(500).send("DB Error");
+    }
+  });
+
   router.post("/api/permissions", async (req, res) => {
     if (!req.body.permissions || typeof req.body.permissions !== "object")
       return res.status(400).send("Invalid data");

@@ -128,6 +128,9 @@ async function initEmployeesTabs() {
   renderHierarchy();
   renderPermissionsTable();
   renderTimeTable();
+  renderPayrollTable();
+  const exportBtn = document.getElementById("exportPayroll");
+  if (exportBtn) exportBtn.addEventListener("click", exportPayrollCSV);
 
 
   if (window.io) {
@@ -140,6 +143,7 @@ async function initEmployeesTabs() {
       else data.unshift(rec);
       storage.set(TIME_KEY, JSON.stringify(data.slice(0, 100)));
       renderTimeTable();
+      renderPayrollTable();
     });
   }
 }
@@ -318,6 +322,7 @@ function setupTimeEditModal() {
       if (!res.ok) throw new Error("update");
       await syncTimeFromServer();
       renderTimeTable();
+      renderPayrollTable();
       close();
     } catch {
       alert("Failed to update record");
@@ -677,6 +682,82 @@ function renderPermissionsTable() {
       savePermissions(perms);
     });
   });
+}
+
+function summarizeTime(records) {
+  const map = {};
+  records.forEach((r) => {
+    if (!r.clock_in || !r.clock_out) return;
+    const start = new Date(r.clock_in);
+    const end = new Date(r.clock_out);
+    if (Number.isNaN(start) || Number.isNaN(end) || end <= start) return;
+    const monday = new Date(start);
+    const day = (monday.getDay() + 6) % 7; // 0 = Monday
+    monday.setDate(monday.getDate() - day);
+    monday.setHours(0, 0, 0, 0);
+    const key = monday.toISOString().split("T")[0];
+    if (!map[r.name]) map[r.name] = {};
+    if (!map[r.name][key]) map[r.name][key] = 0;
+    map[r.name][key] += (end - start) / 3600000;
+  });
+  const out = [];
+  Object.keys(map).forEach((name) => {
+    Object.keys(map[name]).forEach((period) => {
+      out.push({ name, period, hours: map[name][period] });
+    });
+  });
+  out.sort((a, b) => {
+    if (a.name !== b.name) return a.name.localeCompare(b.name);
+    return a.period.localeCompare(b.period);
+  });
+  return out;
+}
+
+async function renderPayrollTable() {
+  const tbl = document.getElementById("payrollTable");
+  if (!tbl) return;
+  const tbody = tbl.querySelector("tbody");
+  let summary = null;
+  try {
+    const res = await fetch("/api/payroll");
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data.payroll)) {
+        summary = data.payroll.map((r) => ({
+          name: r.name,
+          period: r.period_start,
+          hours: parseFloat(r.hours),
+        }));
+      }
+    }
+  } catch {
+    /* ignore */
+  }
+  if (!summary) summary = summarizeTime(loadTime());
+  tbody.innerHTML = summary
+    .map(
+      (s) =>
+        `<tr><td>${s.name}</td><td>${s.period}</td><td>${s.hours.toFixed(2)}</td></tr>`,
+    )
+    .join("");
+}
+
+function exportPayrollCSV() {
+  const summary = summarizeTime(loadTime());
+  let csv = "Employee,Period Start,Hours\n";
+  csv += summary
+    .map((s) => `${s.name},${s.period},${s.hours.toFixed(2)}`)
+    .join("\n");
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "payroll.csv";
+  a.style.display = "none";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 

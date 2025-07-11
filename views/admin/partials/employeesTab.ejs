@@ -141,7 +141,15 @@
         </div>
       </div>
       <div class="employees-pane" id="payrollPane">
-        <p>Payroll calculations will appear here.</p>
+        <div class="d-flex justify-content-end mb-2">
+          <button id="exportPayroll" class="btn btn-sm btn-outline-secondary">Export CSV</button>
+        </div>
+        <table class="table table-sm" id="payrollTable">
+          <thead>
+            <tr><th>Employee</th><th>Period Start</th><th>Hours</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
       </div>
     </div>
 </div>
