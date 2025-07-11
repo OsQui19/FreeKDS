@@ -95,7 +95,7 @@
                 <td><button type="submit" class="btn btn-primary btn-sm">Save</button></td>
               </form>
               <td>
-                <form action="/admin/ingredients/delete" method="POST" onsubmit="return confirm('Delete ingredient \"<%= ing.name %>\"?');">
+                <form action="/admin/ingredients/delete" method="POST" data-confirm="Delete ingredient &quot;<%= ing.name %>&quot;?">
                   <input type="hidden" name="id" value="<%= ing.id %>">
                   <button type="submit" class="btn btn-secondary btn-sm">Delete</button>
                 </form>
@@ -216,8 +216,5 @@
     <option value="<%= ing.name %>" data-id="<%= ing.id %>"></option>
   <% }) %>
 </datalist>
-<script>
-  window.inventoryIngredients = <%- JSON.stringify(ingredients) %>;
-</script>
-<script defer src="/adminInventory.js"></script>
+<script defer src="/adminInventory.js" data-ingredients='<%- JSON.stringify(ingredients) %>'></script>
 <script defer src="/inventoryTabs.js"></script>

@@ -129,17 +129,6 @@
     </div>
   </div>
   </div>
-<script>
-  const themeForm = document.getElementById('themeForm');
-  const themeToggle = document.querySelector('button[data-bs-target="#themeForm"]');
-  if (themeForm && themeToggle) {
-    const updateText = () => {
-      themeToggle.textContent = themeForm.classList.contains('show') ? 'Hide Settings' : 'Show Settings';
-    };
-    updateText();
-    themeForm.addEventListener('shown.bs.collapse', updateText);
-    themeForm.addEventListener('hidden.bs.collapse', updateText);
-  }
-</script>
+<script defer src="/themeToggle.js"></script>
 <script defer src="/themePreview.js"></script>
 </div>

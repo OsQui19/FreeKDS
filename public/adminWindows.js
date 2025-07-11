@@ -1,7 +1,15 @@
 document.addEventListener("DOMContentLoaded", () => {
   const sideNav = document.getElementById("sideNav");
   const container = document.getElementById("windowsContainer");
-  const allowed = Array.isArray(window.allowedModules) ? window.allowedModules : [];
+  const script = document.querySelector('script[data-modules]');
+  let allowed = [];
+  if (script) {
+    try {
+      allowed = JSON.parse(script.dataset.modules || '[]');
+    } catch (e) {
+      console.warn('Failed to parse allowed modules', e);
+    }
+  }
   const templates = {};
   allowed.forEach((m) => {
     const el = document.getElementById(`tpl-${m}`);

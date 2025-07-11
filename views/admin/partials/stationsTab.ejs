@@ -59,7 +59,7 @@
             <button type="submit" class="btn btn-primary">Save</button>
           </div>
         </form>
-        <form method="POST" action="/admin/stations/delete" class="text-end" onsubmit="return confirm('Delete station <%= st.name %>?');">
+        <form method="POST" action="/admin/stations/delete" class="text-end" data-confirm="Delete station <%= st.name %>?">
           <input type="hidden" name="id" value="<%= st.id %>">
           <button type="submit" class="btn btn-secondary">Delete</button>
         </form>
@@ -68,29 +68,7 @@
     </div>
   <% }); %>
 </div>
-<script>
-  document.querySelectorAll('[id^="station-"]').forEach(sec => {
-    const btn = document.querySelector(`button[data-bs-target="#${sec.id}"]`);
-    if (!btn) return;
-    const updateText = () => {
-      btn.textContent = sec.classList.contains('show') ? 'Hide Settings' : 'Show Settings';
-    };
-    updateText();
-    sec.addEventListener('shown.bs.collapse', updateText);
-    sec.addEventListener('hidden.bs.collapse', updateText);
-  });
-
-  const formSection = document.getElementById('newStationForm');
-  const formToggle = document.querySelector('button[data-bs-target="#newStationForm"]');
-  if (formSection && formToggle) {
-    const updateFormText = () => {
-      formToggle.textContent = formSection.classList.contains('show') ? 'Hide Form' : 'Show Form';
-    };
-    updateFormText();
-    formSection.addEventListener('shown.bs.collapse', updateFormText);
-    formSection.addEventListener('hidden.bs.collapse', updateFormText);
-  }
-</script>
+<script defer src="/stationsTab.js"></script>
 <h3>Add New Station</h3>
 <button class="btn btn-secondary mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#newStationForm">Show Form</button>
 <div class="card mb-4 shadow-sm collapse" id="newStationForm">

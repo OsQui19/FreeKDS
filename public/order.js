@@ -1,11 +1,24 @@
+const script = document.currentScript;
+let MENU_CATS = [];
+let MOD_GROUPS = [];
+let TABLE = null;
+if (script) {
+  try {
+    MENU_CATS = JSON.parse(script.dataset.categories || '[]');
+    MOD_GROUPS = JSON.parse(script.dataset['modGroups'] || '[]');
+    TABLE = script.dataset.table || null;
+  } catch (e) {
+    console.warn('Failed to parse order data', e);
+  }
+}
 const itemMap = {};
-(window.MENU_CATS || []).forEach((cat) => {
+(MENU_CATS || []).forEach((cat) => {
   (cat.items || []).forEach((it) => {
     itemMap[it.id] = it;
   });
 });
 const modGroupMap = {};
-(window.MOD_GROUPS || []).forEach((g) => {
+(MOD_GROUPS || []).forEach((g) => {
   modGroupMap[g.id] = g.name;
 });
 const cart = [];
@@ -122,7 +135,7 @@ document.querySelectorAll("#menu .item-card .btn").forEach((btn) => {
 });
 submitBtn.addEventListener("click", () => {
   const payload = {
-    order_number: window.TABLE || null,
+    order_number: TABLE || null,
     order_type: orderTypeEl ? orderTypeEl.value : null,
     items: cart.map((c) => ({
       menu_item_id: c.itemId,

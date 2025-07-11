@@ -1,6 +1,15 @@
 // JS for inventory management
 
 function initAdminInventory() {
+  const script = document.querySelector('script[data-ingredients]');
+  let inventoryIngredients = [];
+  if (script) {
+    try {
+      inventoryIngredients = JSON.parse(script.dataset.ingredients || '[]');
+    } catch (e) {
+      console.warn('Failed to parse ingredient data', e);
+    }
+  }
   function serialize(form) {
     return new URLSearchParams(new FormData(form));
   }
@@ -74,7 +83,7 @@ function initAdminInventory() {
   applyFilter();
 
   function initQuickAdd() {
-    const ings = window.inventoryIngredients || [];
+    const ings = inventoryIngredients || [];
     const findByName = (name) =>
       ings.find((i) => i.name.toLowerCase() === name.toLowerCase());
     const form = document.getElementById("quickAddForm");
