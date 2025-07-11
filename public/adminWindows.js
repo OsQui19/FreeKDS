@@ -1,4 +1,14 @@
-document.addEventListener("DOMContentLoaded", () => {
+function startAdminWindows() {
+  if (window.adminWindowsInitialized) {
+    const allowed = window.adminAllowedModules || [];
+    const initialTab =
+      new URLSearchParams(location.search).get("tab") || allowed[0] || "stations";
+    if (typeof window.adminShowTab === "function") {
+      window.adminShowTab(initialTab);
+    }
+    return;
+  }
+  window.adminWindowsInitialized = true;
   const sideNav = document.getElementById("sideNav");
   const container = document.getElementById("windowsContainer");
   const script = document.querySelector('script[data-modules]');
@@ -10,6 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
       console.warn('Failed to parse allowed modules', e);
     }
   }
+  window.adminAllowedModules = allowed;
   const templates = {};
   allowed.forEach((m) => {
     const el = document.getElementById(`tpl-${m}`);
@@ -30,6 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
       window.initReportsTab();
     }
   }
+  window.adminShowTab = show;
 
   allowed.forEach((type) => {
     const pane = document.createElement("section");
@@ -83,4 +95,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const initialTab =
     new URLSearchParams(location.search).get("tab") || allowed[0] || "stations";
   show(initialTab);
+}
+
+document.addEventListener("DOMContentLoaded", startAdminWindows);
+// Reinitialize when returning via bfcache or navigating to the same page
+window.addEventListener("pageshow", () => {
+  if (document.visibilityState === "visible") {
+    startAdminWindows();
+  }
 });
