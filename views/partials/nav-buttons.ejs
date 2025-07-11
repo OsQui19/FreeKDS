@@ -1,4 +1,35 @@
 <div class="nav-buttons d-flex gap-2">
+  <% if (typeof hasAccess === 'function' && hasAccess('order')) { %>
+    <form action="/order" method="get" class="m-0">
+      <button type="submit" class="btn btn-secondary btn-sm" aria-label="Order">
+        Order
+      </button>
+    </form>
+  <% } %>
+  <% if (typeof hasAccess === 'function' && hasAccess('stations')) { %>
+    <form action="/stations" method="get" class="m-0">
+      <button type="submit" class="btn btn-secondary btn-sm" aria-label="KDS">
+        KDS
+      </button>
+    </form>
+  <% } %>
+  <% if (
+    typeof hasAccess === 'function' &&
+    (hasAccess('menu') ||
+      hasAccess('inventory') ||
+      hasAccess('suppliers') ||
+      hasAccess('purchase-orders') ||
+      hasAccess('reports') ||
+      hasAccess('employees') ||
+      hasAccess('theme') ||
+      hasAccess('locations'))
+  ) { %>
+    <form action="/admin" method="get" class="m-0">
+      <button type="submit" class="btn btn-secondary btn-sm" aria-label="Admin">
+        Admin
+      </button>
+    </form>
+  <% } %>
   <form action="/clock/dashboard" method="get" class="m-0">
     <button type="submit" class="btn btn-secondary btn-sm" aria-label="Clock">
       Clock
