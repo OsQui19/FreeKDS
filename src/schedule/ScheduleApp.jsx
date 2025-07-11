@@ -25,7 +25,25 @@ export default function ScheduleApp() {
   const [employees, setEmployees] = useState([]);
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [view, setView] = useState(Views.WEEK);
+  const viewKey = "scheduleView";
+  const [view, setView] = useState(() => {
+    try {
+      const stored = localStorage.getItem(viewKey);
+      if (stored && Object.values(Views).includes(stored)) return stored;
+    } catch {
+      /* ignore */
+    }
+    return Views.WEEK;
+  });
+
+  const changeView = (val) => {
+    setView(val);
+    try {
+      localStorage.setItem(viewKey, val);
+    } catch {
+      /* ignore */
+    }
+  };
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [undoStack, setUndoStack] = useState([]);
@@ -223,9 +241,7 @@ export default function ScheduleApp() {
       const newEnd = new Date(start.getTime() + (copied.end - copied.start));
       onDropFromOutside({ start, end: newEnd });
     } else {
-      const opts = employees
-        .map((e) => `${e.id}: ${e.name}`)
-        .join("\n");
+      const opts = employees.map((e) => `${e.id}: ${e.name}`).join("\n");
       const input = prompt(`Assign employee ID:\n${opts}`);
       const empId = parseInt(input, 10);
       if (empId && employees.find((e) => e.id === empId)) {
@@ -304,8 +320,9 @@ export default function ScheduleApp() {
               localizer={localizer}
               events={displayEvents}
               defaultView={view}
-              views={[Views.WEEK, Views.MONTH]}
-              onView={setView}
+              views={[Views.DAY, Views.WEEK, Views.MONTH]}
+              onView={changeView}
+              dayLayoutAlgorithm="no-overlap"
               onEventDrop={handleDrop}
               onEventResize={handleResize}
               resizable
