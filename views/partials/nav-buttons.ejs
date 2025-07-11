@@ -1,17 +1,9 @@
 <div class="nav-buttons d-flex gap-2">
   <% if (typeof hasAccess === 'function' && hasAccess('order')) { %>
-    <form action="/order" method="get" class="m-0">
-      <button type="submit" class="btn btn-secondary btn-sm" aria-label="Order">
-        Order
-      </button>
-    </form>
+    <a href="/order" class="btn btn-secondary btn-sm" aria-label="Order">Order</a>
   <% } %>
   <% if (typeof hasAccess === 'function' && hasAccess('stations')) { %>
-    <form action="/stations" method="get" class="m-0">
-      <button type="submit" class="btn btn-secondary btn-sm" aria-label="KDS">
-        KDS
-      </button>
-    </form>
+    <a href="/stations" class="btn btn-secondary btn-sm" aria-label="KDS">KDS</a>
   <% } %>
   <% if (
     typeof hasAccess === 'function' &&
@@ -24,17 +16,9 @@
       hasAccess('theme') ||
       hasAccess('locations'))
   ) { %>
-    <form action="/admin" method="get" class="m-0">
-      <button type="submit" class="btn btn-secondary btn-sm" aria-label="Admin">
-        Admin
-      </button>
-    </form>
+    <a href="/admin?tab=stations" class="btn btn-secondary btn-sm" aria-label="Admin">Admin</a>
   <% } %>
-  <form action="/clock/dashboard" method="get" class="m-0">
-    <button type="submit" class="btn btn-secondary btn-sm" aria-label="Clock">
-      Clock
-    </button>
-  </form>
+  <a href="/clock/dashboard" class="btn btn-secondary btn-sm" aria-label="Clock">Clock</a>
   <form action="/logout" method="post" class="m-0">
     <button type="submit" class="btn btn-danger btn-sm" aria-label="Log Out">
       Log Out
