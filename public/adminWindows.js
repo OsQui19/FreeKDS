@@ -8,24 +8,30 @@ function startAdminWindows() {
     }
     return;
   }
-  window.adminWindowsInitialized = true;
   const sideNav = document.getElementById("sideNav");
   const container = document.getElementById("windowsContainer");
+  if (!sideNav || !container) {
+    console.error("Admin layout missing sideNav or container");
+    return;
+  }
   const script = document.querySelector('script[data-modules]');
   let allowed = [];
   if (script) {
     try {
-      allowed = JSON.parse(script.dataset.modules || '[]');
+      allowed = JSON.parse(script.dataset.modules || "[]");
     } catch (e) {
-      console.warn('Failed to parse allowed modules', e);
+      console.error("Failed to parse allowed modules", e);
+      allowed = [];
     }
   }
+  window.adminWindowsInitialized = true;
   window.adminAllowedModules = allowed;
   const templates = {};
   allowed.forEach((m) => {
     const el = document.getElementById(`tpl-${m}`);
     if (el) templates[m] = el.innerHTML;
   });
+  container.querySelectorAll(".admin-window").forEach((el) => el.remove());
   function show(type) {
     sideNav.querySelectorAll(".nav-link").forEach((l) => {
       l.classList.toggle("active", l.dataset.type === type);
