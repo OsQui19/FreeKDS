@@ -12,4 +12,9 @@ module.exports = {
   sessionSecret: 'changeme',
   secureCookie: false,
   backupDir: path.join(__dirname, 'backups'),
+  rateLimit: {
+    // Allow up to 1000 requests per minute by default
+    windowMs: 60 * 1000,
+    max: 1000,
+  },
 };

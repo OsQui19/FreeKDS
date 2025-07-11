@@ -42,8 +42,8 @@ app.use(
   }),
 );
 const limiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 100,
+  windowMs: config.rateLimit.windowMs,
+  max: config.rateLimit.max,
   // socket.io polling can easily exceed the limit, so skip those requests
   skip: (req) => req.path.startsWith('/socket.io'),
 });
