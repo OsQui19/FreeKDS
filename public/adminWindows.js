@@ -29,10 +29,84 @@ function startAdminWindows() {
   const templates = {};
   allowed.forEach((m) => {
     const el = document.getElementById(`tpl-${m}`);
-    if (el) templates[m] = el.innerHTML;
+    if (el) {
+      templates[m] = el.innerHTML;
+      el.remove();
+    }
   });
   container.querySelectorAll(".admin-window").forEach((el) => el.remove());
-  function show(type) {
+
+  function loadScripts(scripts, attempts = 3, delay = 1000) {
+    return Promise.all(
+      scripts.map((oldScript) => {
+        if (oldScript.src) {
+          const src = oldScript.getAttribute("src");
+          if (document.querySelector(`head script[src="${src}"]`)) {
+            oldScript.remove();
+            return Promise.resolve();
+          }
+          return new Promise((resolve, reject) => {
+            const attempt = (n) => {
+              const script = document.createElement("script");
+              for (const attr of oldScript.attributes) {
+                if (attr.name !== "defer")
+                  script.setAttribute(attr.name, attr.value);
+              }
+              script.onload = resolve;
+              script.onerror = () => {
+                script.remove();
+                if (n > 1) {
+                  setTimeout(() => attempt(n - 1), delay);
+                } else {
+                  reject(new Error(`Failed to load ${src}`));
+                }
+              };
+              document.head.appendChild(script);
+            };
+            attempt(attempts);
+          }).finally(() => {
+            oldScript.remove();
+          });
+        } else {
+          const clone = document.createElement("script");
+          for (const attr of oldScript.attributes) {
+            if (attr.name !== "defer") clone.setAttribute(attr.name, attr.value);
+          }
+          clone.textContent = oldScript.textContent;
+          document.head.appendChild(clone);
+          oldScript.remove();
+          return Promise.resolve();
+        }
+      })
+    );
+  }
+
+  const panes = {};
+  allowed.forEach((type) => {
+    const pane = document.createElement("section");
+    pane.className = "admin-window";
+    pane.dataset.type = type;
+    pane.dataset.loaded = "false";
+    container.appendChild(pane);
+    panes[type] = pane;
+  });
+  async function loadPane(type) {
+    const pane = panes[type];
+    if (!pane || pane.dataset.loaded === "true") return;
+    pane.innerHTML = templates[type] || "";
+    const scripts = Array.from(pane.querySelectorAll("script"));
+    pane.dataset.loaded = "true";
+    try {
+      await loadScripts(scripts);
+    } catch (err) {
+      console.error(err);
+      alert(`Failed to load scripts for ${type}`);
+    }
+  }
+
+  async function show(type) {
+    const hide = window.showSpinner ? window.showSpinner() : () => {};
+    await loadPane(type);
     sideNav.querySelectorAll(".nav-link").forEach((l) => {
       l.classList.toggle("active", l.dataset.type === type);
     });
@@ -46,35 +120,10 @@ function startAdminWindows() {
     if (type === "reports" && typeof window.initReportsTab === "function") {
       window.initReportsTab();
     }
+    if (typeof hide === "function") hide();
   }
+
   window.adminShowTab = show;
-
-  allowed.forEach((type) => {
-    const pane = document.createElement("section");
-    pane.className = "admin-window";
-    pane.dataset.type = type;
-    pane.innerHTML = templates[type] || "";
-
-    // append pane before executing embedded scripts so DOM elements exist
-    container.appendChild(pane);
-
-    // execute any scripts from the loaded template
-    pane.querySelectorAll("script").forEach((oldScript) => {
-      if (oldScript.src) {
-        const exists = document.querySelector(
-          `head script[src="${oldScript.getAttribute("src")}"]`,
-        );
-        if (exists) return oldScript.remove();
-      }
-      const clone = document.createElement("script");
-      for (const attr of oldScript.attributes) {
-        if (attr.name !== "defer") clone.setAttribute(attr.name, attr.value);
-      }
-      clone.textContent = oldScript.textContent;
-      document.head.appendChild(clone);
-      oldScript.remove();
-    });
-  });
   sideNav.querySelectorAll(".open-tab").forEach((link) => {
     link.addEventListener("click", (e) => {
       e.preventDefault();
