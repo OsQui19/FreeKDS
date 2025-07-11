@@ -224,15 +224,17 @@ module.exports = (db, io) => {
       const [empRows] = await db
         .promise()
         .query(
-          "SELECT id, first_name, last_name, position, start_date, email, phone, wage_rate, username, role FROM employees"
+          "SELECT id, first_name, last_name, position, start_date, email, phone, wage_rate, username, role FROM employees",
         );
       const employees = empRows.map((r) => ({
         id: r.id,
         first_name: r.first_name || "",
         last_name: r.last_name || "",
-        name: `${r.first_name || ''} ${r.last_name || ''}`.trim() || r.username,
+        name: `${r.first_name || ""} ${r.last_name || ""}`.trim() || r.username,
         position: r.position || "",
-        start_date: r.start_date ? r.start_date.toISOString().split('T')[0] : "",
+        start_date: r.start_date
+          ? r.start_date.toISOString().split("T")[0]
+          : "",
         email: r.email || "",
         phone: r.phone || "",
         wage_rate: r.wage_rate != null ? String(r.wage_rate) : "",
@@ -246,7 +248,11 @@ module.exports = (db, io) => {
     }
   });
 
-  const { hasLevel, getHierarchy, saveHierarchy } = require("../controllers/accessControl");
+  const {
+    hasLevel,
+    getHierarchy,
+    saveHierarchy,
+  } = require("../controllers/accessControl");
 
   router.post("/api/employees", async (req, res) => {
     const topRole = getHierarchy().slice(-1)[0];
@@ -273,7 +279,17 @@ module.exports = (db, io) => {
         ) {
           role = allowedRoles[0];
         }
-        const cols = ['username', 'role', 'first_name', 'last_name', 'position', 'start_date', 'email', 'phone', 'wage_rate'];
+        const cols = [
+          "username",
+          "role",
+          "first_name",
+          "last_name",
+          "position",
+          "start_date",
+          "email",
+          "phone",
+          "wage_rate",
+        ];
         const vals = [
           emp.username,
           role,
@@ -286,31 +302,31 @@ module.exports = (db, io) => {
           emp.wage_rate || null,
         ];
         const updates = [
-          'role=VALUES(role)',
-          'first_name=VALUES(first_name)',
-          'last_name=VALUES(last_name)',
-          'position=VALUES(position)',
-          'start_date=VALUES(start_date)',
-          'email=VALUES(email)',
-          'phone=VALUES(phone)',
-          'wage_rate=VALUES(wage_rate)',
+          "role=VALUES(role)",
+          "first_name=VALUES(first_name)",
+          "last_name=VALUES(last_name)",
+          "position=VALUES(position)",
+          "start_date=VALUES(start_date)",
+          "email=VALUES(email)",
+          "phone=VALUES(phone)",
+          "wage_rate=VALUES(wage_rate)",
         ];
         if (emp.password) {
-          cols.push('password_hash');
+          cols.push("password_hash");
           const hash = await bcrypt.hash(emp.password, 10);
           vals.push(hash);
-          updates.push('password_hash=VALUES(password_hash)');
+          updates.push("password_hash=VALUES(password_hash)");
         }
         if (emp.pin) {
-          cols.push('pin_hash');
+          cols.push("pin_hash");
           const pinHash = await bcrypt.hash(emp.pin, 10);
           vals.push(pinHash);
-          updates.push('pin_hash=VALUES(pin_hash)');
+          updates.push("pin_hash=VALUES(pin_hash)");
         }
         await db
           .promise()
           .query(
-            `INSERT INTO employees (${cols.join(', ')}) VALUES (${cols.map(() => '?').join(', ')}) ON DUPLICATE KEY UPDATE ${updates.join(', ')}`,
+            `INSERT INTO employees (${cols.join(", ")}) VALUES (${cols.map(() => "?").join(", ")}) ON DUPLICATE KEY UPDATE ${updates.join(", ")}`,
             vals,
           );
       }
@@ -336,7 +352,7 @@ module.exports = (db, io) => {
             "SELECT setting_value FROM settings WHERE setting_key='schedule' LIMIT 1",
           );
         if (oldRows.length) {
-          const legacy = JSON.parse(oldRows[0].setting_value || '{}');
+          const legacy = JSON.parse(oldRows[0].setting_value || "{}");
           const inserts = [];
           for (const [week, days] of Object.entries(legacy)) {
             for (const [day, arr] of Object.entries(days || {})) {
@@ -380,11 +396,44 @@ module.exports = (db, io) => {
     if (!Array.isArray(req.body.schedule))
       return res.status(400).send("Invalid data");
 
+    // Basic validation to avoid corrupt data being saved
+    for (const r of req.body.schedule) {
+      const start = new Date(r.start_time);
+      const end = new Date(r.end_time);
+      if (Number.isNaN(start) || Number.isNaN(end) || end <= start) {
+        return res.status(400).send("Invalid shift times");
+      }
+    }
+
+    // Detect overlapping shifts per employee
+    const byEmp = {};
+    for (const r of req.body.schedule) {
+      const start = new Date(r.start_time);
+      const end = new Date(r.end_time);
+      if (!byEmp[r.employee_id]) byEmp[r.employee_id] = [];
+      byEmp[r.employee_id].push({ start, end });
+    }
+    for (const list of Object.values(byEmp)) {
+      list.sort((a, b) => a.start - b.start);
+      for (let i = 1; i < list.length; i++) {
+        if (list[i].start < list[i - 1].end)
+          return res.status(400).send("Overlap detected");
+      }
+    }
+
     let conn;
     try {
       conn = await db.promise().getConnection();
       await conn.beginTransaction();
-      await conn.query("TRUNCATE TABLE employee_schedule");
+
+      // Only replace the weeks included in the request
+      const weeks = [...new Set(req.body.schedule.map((s) => s.week_key))];
+      for (const wk of weeks) {
+        await conn.query("DELETE FROM employee_schedule WHERE week_key = ?", [
+          wk,
+        ]);
+      }
+
       if (req.body.schedule.length) {
         const values = req.body.schedule.map((s) => [
           s.employee_id,
@@ -397,6 +446,7 @@ module.exports = (db, io) => {
           [values],
         );
       }
+
       await conn.commit();
       res.json({ success: true });
     } catch (err) {
@@ -455,7 +505,7 @@ module.exports = (db, io) => {
       const [rows] = await db
         .promise()
         .query(
-          `SELECT tc.*, e.username AS name FROM time_clock tc JOIN employees e ON tc.employee_id=e.id ORDER BY tc.id DESC LIMIT 100`
+          `SELECT tc.*, e.username AS name FROM time_clock tc JOIN employees e ON tc.employee_id=e.id ORDER BY tc.id DESC LIMIT 100`,
         );
       res.json({ records: rows });
     } catch (err) {
