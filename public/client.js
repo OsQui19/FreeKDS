@@ -1,5 +1,16 @@
-const stationId = window.STATION_ID;
-const stationType = window.STATION_TYPE;
+const script = document.currentScript;
+let stationId = null;
+let stationType = null;
+let bumpedHistory = [];
+if (script) {
+  stationId = script.dataset.stationId || null;
+  stationType = script.dataset.stationType || null;
+  try {
+    bumpedHistory = JSON.parse(script.dataset.bumpedHistory || '[]');
+  } catch (e) {
+    console.warn('Failed to parse bumped history', e);
+  }
+}
 const socket = io({ query: { stationId } });
 socket.emit("register", stationId);
 let lastBumpedOrderId = null;
@@ -89,8 +100,8 @@ function createTicketElement({
   return ticketDiv;
 }
 
-if (Array.isArray(window.BUMPED_HISTORY)) {
-  window.BUMPED_HISTORY.forEach((o) => {
+if (Array.isArray(bumpedHistory)) {
+  bumpedHistory.forEach((o) => {
     const ticket = createTicketElement({
       orderId: o.order_id,
       orderNumber: o.order_number,

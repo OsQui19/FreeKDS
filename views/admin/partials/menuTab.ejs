@@ -15,7 +15,7 @@
           <div class="category-actions">
             <button type="button" class="btn btn-secondary edit-cat-btn">Edit</button>
             <button type="button" class="btn btn-secondary toggle-items-btn" data-bs-toggle="collapse" data-bs-target="#catBody-<%= category.id %>">Show Items</button>
-            <form action="/admin/categories/delete" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete the \"<%= category.name %>\" category and all its items?');">
+            <form action="/admin/categories/delete" method="POST" class="d-inline" data-confirm="Are you sure you want to delete the &quot;<%= category.name %>&quot; category and all its items?">
               <input type="hidden" name="id" value="<%= category.id %>">
               <button type="submit" class="btn btn-secondary">Delete</button>
             </form>
@@ -45,7 +45,7 @@
                 <div class="item-mods">Extras: <%= item.modifierNamesStr || 'None' %></div>
                 <div class="item-actions">
                   <button type="button" class="btn btn-secondary edit-item-btn">Edit</button>
-                  <form action="/admin/items/delete" method="POST" class="d-inline" onsubmit="return confirm('Delete menu item \"<%= item.name %>\"?');">
+                  <form action="/admin/items/delete" method="POST" class="d-inline" data-confirm="Delete menu item &quot;<%= item.name %>&quot;?">
                     <input type="hidden" name="id" value="<%= item.id %>">
                     <button type="submit" class="btn btn-secondary">Delete</button>
                   </form>
@@ -292,7 +292,7 @@
                   <input class="form-control" type="text" name="name" value="<%= g.name %>" required>
                   <button type="submit" class="btn btn-primary">Save</button>
                 </form>
-                <form action="/admin/modifier-groups/delete" method="POST" onsubmit="return confirm('Delete group \"<%= g.name %>\"?');">
+                <form action="/admin/modifier-groups/delete" method="POST" data-confirm="Delete group &quot;<%= g.name %>&quot;?">
                   <input type="hidden" name="id" value="<%= g.id %>">
                   <button type="submit" class="btn btn-secondary">Delete</button>
                 </form>
@@ -331,7 +331,7 @@
                   </select>
                   <button type="submit" class="btn btn-primary">Save</button>
                 </form>
-                <form action="/admin/modifiers/delete" method="POST" onsubmit="return confirm('Delete modifier \"<%= mod.name %>\"?');">
+                <form action="/admin/modifiers/delete" method="POST" data-confirm="Delete modifier &quot;<%= mod.name %>&quot;?">
                   <input type="hidden" name="id" value="<%= mod.id %>">
                   <button type="submit" class="btn btn-secondary">Delete</button>
                 </form>
@@ -364,6 +364,4 @@
       <option value="<%= ing.name %>"></option>
     <% }) %>
   </datalist>
-  <script>window.publicIngredients = <%- JSON.stringify(publicIngredients) %>;</script>
-  <script>window.units = <%- JSON.stringify(units) %>;</script>
-  <script defer src="/adminMenu.js"></script>
+  <script defer src="/adminMenu.js" data-ingredients='<%- JSON.stringify(publicIngredients) %>' data-units='<%- JSON.stringify(units) %>'></script>

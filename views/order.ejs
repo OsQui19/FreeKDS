@@ -72,12 +72,7 @@
     <button id="modCancel" class="btn">Cancel</button>
   </div>
 </div>
-<script>
-  window.TABLE = "<%= table %>";
-  window.MENU_CATS = <%- JSON.stringify(categories) %>;
-  window.MOD_GROUPS = <%- JSON.stringify(modGroups || []) %>;
-</script>
 <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-<script src="/order.js"></script>
+<script defer src="/order.js" data-table="<%= table %>" data-categories='<%- JSON.stringify(categories) %>' data-mod-groups='<%- JSON.stringify(modGroups || []) %>'></script>
 </body>
 </html>

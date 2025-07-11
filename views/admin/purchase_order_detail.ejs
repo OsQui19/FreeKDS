@@ -27,7 +27,7 @@
           <td><%= it.quantity %></td>
           <td><%= it.unit || '' %></td>
           <td>
-            <form action="/admin/purchase-order-items/delete" method="POST" onsubmit="return confirm('Delete item?');">
+            <form action="/admin/purchase-order-items/delete" method="POST" data-confirm="Delete item?">
               <input type="hidden" name="id" value="<%= it.id %>">
               <input type="hidden" name="order_id" value="<%= order.id %>">
               <button class="btn btn-secondary btn-sm" type="submit">Delete</button>

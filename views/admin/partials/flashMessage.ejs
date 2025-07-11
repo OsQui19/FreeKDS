@@ -3,9 +3,5 @@
   <%= req.query.msg %>
   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 </div>
-<script>
-  const url = new URL(window.location);
-  url.searchParams.delete('msg');
-  history.replaceState(null, '', url);
-</script>
+<script defer src="/flashMessage.js"></script>
 <% } %>

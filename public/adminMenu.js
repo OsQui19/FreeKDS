@@ -4,7 +4,19 @@
 if (!window.__ADMIN_MENU_SCRIPT_LOADED__) {
   window.__ADMIN_MENU_SCRIPT_LOADED__ = true;
 
-  const UNIT_OPTIONS = (window.units || [])
+  const script = document.currentScript;
+  let PUBLIC_INGREDIENTS = [];
+  let UNITS = [];
+  if (script) {
+    try {
+      PUBLIC_INGREDIENTS = JSON.parse(script.dataset.ingredients || '[]');
+      UNITS = JSON.parse(script.dataset.units || '[]');
+    } catch (e) {
+      console.warn('Failed to parse menu data', e);
+    }
+  }
+
+  const UNIT_OPTIONS = (UNITS || [])
     .map((u) => `<option value="${u.id}">${u.abbreviation}</option>`)
     .join("");
 
@@ -60,7 +72,7 @@ function handleForm(form, onSuccess) {
 
 function updateModReplaceOptions(form) {
   if (!form) return;
-  const ings = window.publicIngredients || [];
+  const ings = PUBLIC_INGREDIENTS || [];
   const ingIds = Array.from(
     form.querySelectorAll('input[name="ingredient_ids"]'),
   )
@@ -99,7 +111,7 @@ function initModifierReplaceFields() {
 }
 
 function initModifierFields() {
-  const ings = window.publicIngredients || [];
+  const ings = PUBLIC_INGREDIENTS || [];
   const findByName = (name) =>
     ings.find((i) => i.name.toLowerCase() === name.toLowerCase());
   document
@@ -130,7 +142,7 @@ function initModifierFields() {
 }
 
 function initIngredientFields() {
-  const ings = window.publicIngredients || [];
+  const ings = PUBLIC_INGREDIENTS || [];
   if (!document.getElementById("ingredientsList")) {
     const dl = document.createElement("datalist");
     dl.id = "ingredientsList";
@@ -270,7 +282,7 @@ function initRecipeModal() {
         const units = Array.from(
           currentForm.querySelectorAll('input[name="ingredient_unit_ids"]'),
         );
-        const ings = window.publicIngredients || [];
+        const ings = PUBLIC_INGREDIENTS || [];
         for (let i = 0; i < ids.length; i++) {
           const id = ids[i].value;
           if (!id) continue;

@@ -19,7 +19,7 @@
           <td><%= o.location_name || '' %></td>
           <td><%= o.status %></td>
           <td>
-            <form action="/admin/purchase-orders/delete" method="POST" onsubmit="return confirm('Delete order?');">
+            <form action="/admin/purchase-orders/delete" method="POST" data-confirm="Delete order?">
               <input type="hidden" name="id" value="<%= o.id %>">
               <button class="btn btn-secondary btn-sm" type="submit">Delete</button>
             </form>

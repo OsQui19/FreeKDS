@@ -126,12 +126,7 @@
   
   <!-- Client-side scripts -->
   <script src="/socket.io/socket.io.js"></script>
-  <script>
-    window.STATION_ID = <%= station.id %>;
-    window.STATION_TYPE = "<%= station.type %>";
-    window.BUMPED_HISTORY = <%- JSON.stringify(bumpedOrders || []) %>;
-  </script>
-  <script src="/client.js"></script>
   <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script defer src="/client.js" data-station-id="<%= station.id %>" data-station-type="<%= station.type %>" data-bumped-history='<%- JSON.stringify(bumpedOrders || []) %>'></script>
 </body>
 </html>
