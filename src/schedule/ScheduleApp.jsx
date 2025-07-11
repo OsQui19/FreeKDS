@@ -24,6 +24,22 @@ export default function ScheduleApp() {
   const [error, setError] = useState(null);
   const [undoStack, setUndoStack] = useState([]);
   const [copied, setCopied] = useState(null);
+  const [dirty, setDirty] = useState(false);
+  const timeKey = "scheduleTimeRange";
+  const defaultRange = { start: "08:00", end: "18:00" };
+  const [timeRange, setTimeRange] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem(timeKey)) || defaultRange;
+    } catch {
+      return defaultRange;
+    }
+  });
+  const parseTime = (val) => {
+    const [h = 0, m = 0] = (val || "0:0").split(":");
+    const d = new Date();
+    d.setHours(parseInt(h, 10) || 0, parseInt(m, 10) || 0, 0, 0);
+    return d;
+  };
   const externalEmp = useRef(null);
 
   const getEventStyle = useCallback(
@@ -70,6 +86,7 @@ export default function ScheduleApp() {
           "Shift",
       }));
       setEvents(evts);
+      setDirty(false);
     } catch (err) {
       console.error(err);
       setError("Failed to load schedule");
@@ -81,6 +98,14 @@ export default function ScheduleApp() {
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(timeKey, JSON.stringify(timeRange));
+    } catch {
+      /* ignore */
+    }
+  }, [timeRange]);
 
   const save = useCallback(async (evts) => {
     setSaving(true);
@@ -109,6 +134,7 @@ export default function ScheduleApp() {
       });
       if (!res.ok) throw new Error("save");
       setError(null);
+      setDirty(false);
     } catch (err) {
       console.error(err);
       setError("Failed to save schedule");
@@ -120,6 +146,7 @@ export default function ScheduleApp() {
   const pushUndo = (next) => {
     setUndoStack((u) => [...u, events]);
     setEvents(next);
+    setDirty(true);
   };
 
   const handleDrop = ({ event, start, end }) => {
@@ -206,6 +233,28 @@ export default function ScheduleApp() {
             ))}
           </ul>
           <div style={{ flex: 1 }}>
+            <div className="mb-2 d-flex" style={{ gap: "0.5rem" }}>
+              <label className="form-label mb-0">From</label>
+              <input
+                type="time"
+                className="form-control form-control-sm"
+                style={{ width: "110px" }}
+                value={timeRange.start}
+                onChange={(e) =>
+                  setTimeRange((r) => ({ ...r, start: e.target.value }))
+                }
+              />
+              <label className="form-label mb-0 ms-2">To</label>
+              <input
+                type="time"
+                className="form-control form-control-sm"
+                style={{ width: "110px" }}
+                value={timeRange.end}
+                onChange={(e) =>
+                  setTimeRange((r) => ({ ...r, end: e.target.value }))
+                }
+              />
+            </div>
             <DnDCalendar
               localizer={localizer}
               events={events}
@@ -220,6 +269,11 @@ export default function ScheduleApp() {
               selectable
               onSelectEvent={copyEvent}
               onSelectSlot={pasteEvent}
+              min={parseTime(timeRange.start)}
+              max={parseTime(timeRange.end)}
+              step={15}
+              timeslots={4}
+              longPressThreshold={10}
               style={{ height: 600 }}
             />
           </div>
@@ -236,7 +290,7 @@ export default function ScheduleApp() {
         <button
           className="btn btn-sm btn-primary"
           onClick={() => save(events)}
-          disabled={saving}
+          disabled={saving || !dirty}
         >
           Save
           {saving && (
