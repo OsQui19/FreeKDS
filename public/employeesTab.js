@@ -788,14 +788,19 @@ function exportPayrollCSV() {
 
 
 function initEmployeesModule() {
-  initEmployeesTabs();
+  return initEmployeesTabs();
 }
 
 let employeesInitialized = false;
-function startEmployeesTab() {
+async function startEmployeesTab() {
   if (!employeesInitialized) {
-    employeesInitialized = true;
-    initEmployeesModule();
+    try {
+      await initEmployeesModule();
+      employeesInitialized = true;
+    } catch (err) {
+      console.error("Employees initialization failed", err);
+      employeesInitialized = false;
+    }
   }
 }
 

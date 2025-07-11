@@ -7,7 +7,7 @@ function fmt(d) {
   return d.toISOString().slice(0, 10);
 }
 
-function loadReports() {
+async function loadReports() {
   const salesEl = document.getElementById("salesChart");
   const usageEl = document.getElementById("usageChart");
   const catEl = document.getElementById("categoryChart");
@@ -27,9 +27,9 @@ function loadReports() {
       ? new Date(startInput.value)
       : new Date(end.getTime() - 29 * 86400000);
 
-  fetch(`/admin/reports/data?start=${fmt(start)}&end=${fmt(end)}`)
-    .then((r) => r.json())
-    .then((data) => {
+  try {
+    const res = await fetch(`/admin/reports/data?start=${fmt(start)}&end=${fmt(end)}`);
+    const data = await res.json();
       const labels = data.sales.map((r) => r.date);
       const revenue = data.sales.map((r) => r.total);
       const cost = data.sales.map((r) => r.cost);
@@ -142,12 +142,14 @@ function loadReports() {
           avgBody.appendChild(tr);
         });
       }
-    })
-    .catch((err) => console.error("Reports fetch error", err));
+  } catch (err) {
+    console.error("Reports fetch error", err);
+    throw err;
+  }
 }
 
 let reportsInitialized = false;
-function initReports() {
+async function initReports() {
   const rangeForm = document.getElementById("reportsRangeForm");
   const startInput = document.getElementById("reportStart");
   const endInput = document.getElementById("reportEnd");
@@ -163,19 +165,28 @@ function initReports() {
       loadReports();
     });
   }
-  loadReports();
+  await loadReports();
   setInterval(loadReports, 60000);
   if (socket) {
     socket.on("reportsUpdated", loadReports);
   }
 }
 
-function startReports() {
+async function startReports() {
   if (!reportsInitialized) {
-    reportsInitialized = true;
-    initReports();
+    try {
+      await initReports();
+      reportsInitialized = true;
+    } catch (err) {
+      console.error("Reports initialization failed", err);
+      reportsInitialized = false;
+    }
   } else {
-    loadReports();
+    try {
+      await loadReports();
+    } catch (err) {
+      console.error("Reports reload failed", err);
+    }
   }
 }
 
