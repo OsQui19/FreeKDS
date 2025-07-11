@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  useMemo,
+} from "react";
 import { Calendar, dateFnsLocalizer, Views } from "react-big-calendar";
 import withDragAndDrop from "react-big-calendar/lib/addons/dragAndDrop";
 import { format, parse, startOfWeek, getDay } from "date-fns";
@@ -25,6 +31,7 @@ export default function ScheduleApp() {
   const [undoStack, setUndoStack] = useState([]);
   const [copied, setCopied] = useState(null);
   const [dirty, setDirty] = useState(false);
+  const [roleFilter, setRoleFilter] = useState("All");
   const timeKey = "scheduleTimeRange";
   const defaultRange = { start: "08:00", end: "18:00" };
   const [timeRange, setTimeRange] = useState(() => {
@@ -40,6 +47,22 @@ export default function ScheduleApp() {
     d.setHours(parseInt(h, 10) || 0, parseInt(m, 10) || 0, 0, 0);
     return d;
   };
+  const roles = useMemo(() => {
+    const set = new Set(employees.map((e) => e.role));
+    return ["All", ...Array.from(set)];
+  }, [employees]);
+  const filteredEmployees = useMemo(() => {
+    return roleFilter === "All"
+      ? employees
+      : employees.filter((e) => e.role === roleFilter);
+  }, [employees, roleFilter]);
+  const displayEvents = useMemo(() => {
+    if (roleFilter === "All") return events;
+    const allowed = new Set(
+      employees.filter((e) => e.role === roleFilter).map((e) => e.id),
+    );
+    return events.filter((e) => allowed.has(e.employee_id));
+  }, [events, employees, roleFilter]);
   const externalEmp = useRef(null);
 
   const getEventStyle = useCallback(
@@ -195,10 +218,20 @@ export default function ScheduleApp() {
     setCopied(event);
   };
 
-  const pasteEvent = ({ start }) => {
+  const pasteEvent = ({ start, end }) => {
     if (copied) {
-      const end = new Date(start.getTime() + (copied.end - copied.start));
-      onDropFromOutside({ start, end });
+      const newEnd = new Date(start.getTime() + (copied.end - copied.start));
+      onDropFromOutside({ start, end: newEnd });
+    } else {
+      const opts = employees
+        .map((e) => `${e.id}: ${e.name}`)
+        .join("\n");
+      const input = prompt(`Assign employee ID:\n${opts}`);
+      const empId = parseInt(input, 10);
+      if (empId && employees.find((e) => e.id === empId)) {
+        externalEmp.current = empId;
+        onDropFromOutside({ start, end });
+      }
     }
   };
 
@@ -221,7 +254,7 @@ export default function ScheduleApp() {
       ) : (
         <div className="d-flex">
           <ul className="list-group me-3" style={{ width: "200px" }}>
-            {employees.map((e) => (
+            {filteredEmployees.map((e) => (
               <li
                 key={e.id}
                 className="list-group-item"
@@ -254,10 +287,22 @@ export default function ScheduleApp() {
                   setTimeRange((r) => ({ ...r, end: e.target.value }))
                 }
               />
+              <select
+                className="form-select form-select-sm ms-2"
+                style={{ width: "150px" }}
+                value={roleFilter}
+                onChange={(e) => setRoleFilter(e.target.value)}
+              >
+                {roles.map((r) => (
+                  <option key={r} value={r}>
+                    {r}
+                  </option>
+                ))}
+              </select>
             </div>
             <DnDCalendar
               localizer={localizer}
-              events={events}
+              events={displayEvents}
               defaultView={view}
               views={[Views.WEEK, Views.MONTH]}
               onView={setView}
