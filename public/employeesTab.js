@@ -124,7 +124,13 @@ async function initEmployeesTabs() {
   setupTimeEditModal();
 
   renderEmployeeList();
-  renderOnboardingTable();
+  const searchInput = document.getElementById("onboardingSearch");
+  renderOnboardingTable(searchInput ? searchInput.value : "");
+  if (searchInput) {
+    searchInput.addEventListener("input", () => {
+      renderOnboardingTable(searchInput.value);
+    });
+  }
   renderHierarchy();
   renderPermissionsTable();
   renderTimeTable();
@@ -460,7 +466,9 @@ function setupOnboardingForm() {
       .finally(() => {
         resetForm();
         renderEmployeeList();
-        renderOnboardingTable();
+        renderOnboardingTable(
+          document.getElementById("onboardingSearch")?.value || "",
+        );
       });
   });
 }
@@ -482,11 +490,21 @@ function renderEmployeeList() {
   });
 }
 
-function renderOnboardingTable() {
+function renderOnboardingTable(filter = "") {
   const tbl = document.getElementById("onboardingTable");
   if (!tbl) return;
   const tbody = tbl.querySelector("tbody");
-  const employees = loadEmployees();
+  let employees = loadEmployees();
+  if (filter) {
+    const f = filter.toLowerCase();
+    employees = employees.filter(
+      (e) =>
+        (e.first_name && e.first_name.toLowerCase().includes(f)) ||
+        (e.last_name && e.last_name.toLowerCase().includes(f)) ||
+        (e.position && e.position.toLowerCase().includes(f)) ||
+        (e.role && e.role.toLowerCase().includes(f)),
+    );
+  }
   tbody.innerHTML = employees
     .map(
       (e, i) =>
