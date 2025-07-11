@@ -17,6 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const url = new URL(window.location);
     url.searchParams.set("tab", type);
     history.replaceState(null, "", url);
+    document.dispatchEvent(new CustomEvent("adminTabShown", { detail: type }));
     if (type === "reports" && typeof window.initReportsTab === "function") {
       window.initReportsTab();
     }

@@ -65,6 +65,13 @@ export default function ScheduleApp() {
     d.setHours(parseInt(h, 10) || 0, parseInt(m, 10) || 0, 0, 0);
     return d;
   };
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      window.dispatchEvent(new Event("resize"));
+    }, 0);
+    return () => clearTimeout(t);
+  }, []);
   const roles = useMemo(() => {
     const set = new Set(employees.map((e) => e.role));
     return ["All", ...Array.from(set)];
