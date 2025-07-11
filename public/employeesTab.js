@@ -52,7 +52,6 @@ async function initEmployeesTabs() {
   const links = tabList ? tabList.querySelectorAll(".nav-link") : [];
   const panes = document.querySelectorAll(".employees-pane");
   const STORAGE_KEY = "activeEmployeesPane";
-  loadScheduleScript().catch(() => {});
 
   function activate(id, skipHash) {
     if (tabList) {

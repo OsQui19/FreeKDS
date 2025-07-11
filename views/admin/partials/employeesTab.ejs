@@ -78,74 +78,15 @@
         </table>
       </div>
     </div>
-      <div class="employees-pane" id="schedulePane">
-        <div class="row g-3">
-          <div class="col-lg-3">
-            <ul id="employeeList" class="list-group employee-list mb-3 mb-lg-0"></ul>
-          </div>
-          <div class="col-lg-9">
-            <div id="scheduleControls" class="controls">
-              <button id="prevWeek" class="btn btn-sm btn-outline-secondary" type="button">&laquo;</button>
-              <span id="currentWeekLabel"></span>
-              <button id="nextWeek" class="btn btn-sm btn-outline-secondary" type="button">&raquo;</button>
-              <label class="ms-auto me-1">Start</label>
-              <select id="scheduleStartHour" class="form-select form-select-sm w-auto me-2"></select>
-              <label class="me-1">End</label>
-              <select id="scheduleEndHour" class="form-select form-select-sm w-auto"></select>
-              <button id="toggleScheduleView" class="btn btn-sm btn-outline-primary ms-auto">Monthly View</button>
-              <button id="undoSchedule" class="btn btn-sm btn-outline-secondary">Undo</button>
-            </div>
-            <div id="scheduleApp">
-              <div class="text-center w-100 p-5" id="scheduleLoading">
-                <div class="spinner-border" role="status">
-                  <span class="visually-hidden">Loading schedule...</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div
-          id="scheduleDrawer"
-          class="offcanvas offcanvas-end"
-          tabindex="-1"
-        >
-          <div class="offcanvas-header">
-            <h5 class="offcanvas-title">Edit Shift</h5>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="offcanvas"
-              aria-label="Close"
-            ></button>
-          </div>
-          <div class="offcanvas-body">
-            <form id="scheduleForm">
-              <input type="hidden" name="employeeId" />
-              <div class="mb-2">
-                <label class="form-label">Day</label>
-                <select name="day" class="form-select form-select-sm">
-                  <option value="0">Mon</option>
-                  <option value="1">Tue</option>
-                  <option value="2">Wed</option>
-                  <option value="3">Thu</option>
-                  <option value="4">Fri</option>
-                  <option value="5">Sat</option>
-                  <option value="6">Sun</option>
-                </select>
-              </div>
-              <div class="mb-2">
-                <label class="form-label">Start</label>
-                <select name="start" class="form-select form-select-sm"></select>
-              </div>
-              <div class="mb-2">
-                <label class="form-label">End</label>
-                <select name="end" class="form-select form-select-sm"></select>
-              </div>
-              <button type="submit" class="btn btn-primary btn-sm">Save</button>
-            </form>
-          </div>
+  <div class="employees-pane" id="schedulePane">
+    <div id="scheduleApp">
+      <div class="text-center w-100 p-5" id="scheduleLoading">
+        <div class="spinner-border" role="status">
+          <span class="visually-hidden">Loading schedule...</span>
         </div>
       </div>
+    </div>
+  </div>
       <div class="employees-pane" id="hierarchyPane">
         <ul id="hierarchyTree" class="list-unstyled mb-3"></ul>
         <h5>Roles</h5>
@@ -190,4 +131,3 @@
 </div>
 <script src="/socket.io/socket.io.js"></script>
 <script defer src="/employeesTab.js"></script>
-<script defer src="/dist/schedule.js"></script>
