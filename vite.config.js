@@ -8,9 +8,13 @@ export default defineConfig({
     outDir: 'public/dist',
     emptyOutDir: true,
     rollupOptions: {
-      input: 'src/schedule/main.jsx',
+      input: {
+        schedule: 'src/schedule/main.jsx',
+        onboarding: 'src/employees/onboardingMain.jsx',
+        hierarchy: 'src/employees/hierarchyMain.jsx',
+      },
       output: {
-        entryFileNames: 'schedule.js',
+        entryFileNames: '[name].js',
         chunkFileNames: '[name].js',
         assetFileNames: '[name][extname]'
       }
