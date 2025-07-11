@@ -615,14 +615,34 @@ function renderPermissionsTable() {
   });
 }
 
+
 function initEmployeesModule() {
   initEmployeesTabs();
 }
 
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initEmployeesModule);
-} else {
-  initEmployeesModule();
+let employeesInitialized = false;
+function startEmployeesTab() {
+  if (!employeesInitialized) {
+    employeesInitialized = true;
+    initEmployeesModule();
+  }
 }
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", startEmployeesTab);
+} else {
+  startEmployeesTab();
+}
+
+document.addEventListener("adminTabShown", (e) => {
+  if (e.detail === "employees") startEmployeesTab();
+});
+
+// Reinitialize when returning via bfcache
+window.addEventListener("pageshow", () => {
+  if (document.visibilityState === "visible") {
+    startEmployeesTab();
+  }
+});
 
 

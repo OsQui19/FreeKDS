@@ -184,3 +184,10 @@ window.initReportsTab = startReports;
 document.addEventListener("adminTabShown", (e) => {
   if (e.detail === "reports") startReports();
 });
+
+// Reinitialize when returning via bfcache
+window.addEventListener("pageshow", () => {
+  if (document.visibilityState === "visible") {
+    startReports();
+  }
+});
