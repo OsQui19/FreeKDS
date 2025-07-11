@@ -3,5 +3,9 @@
   <%= req.query.msg %>
   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 </div>
-<script>history.replaceState(null,'',location.pathname+location.hash);</script>
+<script>
+  const url = new URL(window.location);
+  url.searchParams.delete('msg');
+  history.replaceState(null, '', url);
+</script>
 <% } %>
