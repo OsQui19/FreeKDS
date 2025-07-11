@@ -17,6 +17,15 @@ const storage = {
 
 let schedulePromise;
 let scheduleLoaded = false;
+
+function onReady(fn) {
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", fn, { once: true });
+  } else {
+    fn();
+  }
+}
+
 function loadScheduleScript(attempts = 3, delay = 1000) {
   if (scheduleLoaded) return Promise.resolve();
   if (!schedulePromise) {
@@ -84,7 +93,7 @@ async function initEmployeesTabs() {
       if (!skipHash) location.hash = id;
     }
     if (id === "schedulePane" && !scheduleLoaded) {
-      loadScheduleScript().catch(() => {});
+      onReady(() => loadScheduleScript().catch(() => {}));
     }
   }
 
