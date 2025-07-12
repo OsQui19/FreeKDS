@@ -125,7 +125,6 @@ async function initEmployeesTabs() {
   if (typeof hide === "function") hide();
 
   setupOnboardingForm();
-  setupAddRoleForm();
   setupTimeEditModal();
 
   renderEmployeeList();
@@ -136,8 +135,6 @@ async function initEmployeesTabs() {
       renderOnboardingTable(searchInput.value);
     });
   }
-  renderHierarchy();
-  renderPermissionsTable();
   renderTimeTable();
   renderPayrollTable();
   const exportBtn = document.getElementById("exportPayroll");
@@ -555,157 +552,6 @@ function startEditEmployee(idx) {
   }
 }
 
-function renderHierarchy() {
-  const ul = document.getElementById("hierarchyTree");
-  if (!ul) return;
-  const employees = loadEmployees();
-  const managers = employees.filter((e) => e.position === "Manager");
-  ul.innerHTML = managers
-    .map((m) => {
-      const subs = employees
-        .filter((e) => e.manager_id === m.id)
-        .map((s) => `<li>${s.name}</li>`) // simplistic
-        .join("");
-      return `<li>${m.name}<ul>${subs}</ul></li>`;
-    })
-    .join("");
-
-  renderRoleList();
-  populateRoleSelect();
-}
-
-function renderRoleList() {
-  const list = document.getElementById("roleList");
-  if (!list) return;
-  const roles = loadHierarchy();
-  list.innerHTML = roles
-    .map((r, i) => {
-      const badge =
-        i === roles.length - 1
-          ? '<span class="badge bg-success ms-2">Highest</span>'
-          : "";
-      return `\
-<li class="list-group-item d-flex justify-content-between align-items-center" data-index="${i}">\
-  <span>${r}${badge}</span>\
-  <span>\
-    <button class="btn btn-sm btn-outline-secondary me-1 move-up">&uarr;</button>\
-    <button class="btn btn-sm btn-outline-secondary me-1 move-down">&darr;</button>\
-    <button class="btn btn-sm btn-outline-danger delete-role">&times;</button>\
-  </span>\
-</li>`;
-    })
-    .join("");
-  list.querySelectorAll(".move-up").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const li = btn.closest("li");
-      const idx = parseInt(li.dataset.index, 10);
-      if (idx > 0) {
-        const roles = loadHierarchy();
-        [roles[idx - 1], roles[idx]] = [roles[idx], roles[idx - 1]];
-        saveHierarchy(roles);
-        renderRoleList();
-        populateRoleSelect();
-        renderPermissionsTable();
-      }
-    });
-  });
-  list.querySelectorAll(".move-down").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const li = btn.closest("li");
-      const idx = parseInt(li.dataset.index, 10);
-      const roles = loadHierarchy();
-      if (idx < roles.length - 1) {
-        [roles[idx + 1], roles[idx]] = [roles[idx], roles[idx + 1]];
-        saveHierarchy(roles);
-        renderRoleList();
-        populateRoleSelect();
-        renderPermissionsTable();
-      }
-    });
-  });
-  list.querySelectorAll(".delete-role").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const li = btn.closest("li");
-      const idx = parseInt(li.dataset.index, 10);
-      const roles = loadHierarchy();
-      const removed = roles.splice(idx, 1)[0];
-      saveHierarchy(roles);
-      const perms = loadPermissions();
-      delete perms[removed];
-      savePermissions(perms);
-      renderRoleList();
-      populateRoleSelect();
-      renderPermissionsTable();
-    });
-  });
-}
-
-function populateRoleSelect() {
-  const sel = document.getElementById("roleSelect");
-  if (!sel) return;
-  const roles = loadHierarchy();
-  sel.innerHTML = roles
-    .map((r) => `<option value="${r}">${r}</option>`)
-    .join("");
-}
-
-function setupAddRoleForm() {
-  const form = document.getElementById("addRoleForm");
-  if (!form) return;
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const name = form.elements.role.value.trim();
-    if (!name) return;
-    const roles = loadHierarchy();
-    if (!roles.includes(name)) {
-      roles.push(name);
-      saveHierarchy(roles);
-      const perms = loadPermissions();
-      perms[name] = [];
-      savePermissions(perms);
-      renderRoleList();
-      populateRoleSelect();
-      renderPermissionsTable();
-    }
-    form.reset();
-  });
-}
-
-function renderPermissionsTable() {
-  const tbl = document.getElementById("permissionsTable");
-  if (!tbl) return;
-  const roles = loadHierarchy();
-  const perms = loadPermissions();
-  const rows = roles
-    .map((r) => {
-      const allowed = new Set(perms[r] || []);
-      const cells = ALL_MODULES.map(
-        (m) =>
-          `<td><input type="checkbox" data-role="${r}" data-mod="${m}" ${
-            allowed.has(m) ? "checked" : ""
-          }></td>`,
-      ).join("");
-      return `<tr><th>${r}</th>${cells}</tr>`;
-    })
-    .join("");
-  tbl.querySelector("tbody").innerHTML = rows;
-  tbl.querySelectorAll("input[type=checkbox]").forEach((cb) => {
-    cb.addEventListener("change", () => {
-      const role = cb.dataset.role;
-      const mod = cb.dataset.mod;
-      const perms = loadPermissions();
-      const arr = perms[role] || [];
-      if (cb.checked) {
-        if (!arr.includes(mod)) arr.push(mod);
-      } else {
-        const i = arr.indexOf(mod);
-        if (i >= 0) arr.splice(i, 1);
-      }
-      perms[role] = arr;
-      savePermissions(perms);
-    });
-  });
-}
 
 function summarizeTime(records) {
   const map = {};
