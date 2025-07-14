@@ -518,6 +518,26 @@ function initPersistentModifierSection() {
   });
 }
 
+function initCategoryCollapseState() {
+  document.querySelectorAll(".category-section").forEach((section) => {
+    const id = section.getAttribute("data-category-id");
+    if (!id) return;
+    const key = `category-${id}`;
+    const body = section.querySelector(`#catBody-${id}`);
+    if (!body) return;
+    const stored = localStorage.getItem(key);
+    if (stored === "true") {
+      body.classList.add("show");
+    }
+    body.addEventListener("shown.bs.collapse", () => {
+      localStorage.setItem(key, "true");
+    });
+    body.addEventListener("hidden.bs.collapse", () => {
+      localStorage.setItem(key, "false");
+    });
+  });
+}
+
 function bindForms() {
   document.querySelectorAll(".item-edit-form form").forEach((form) => {
     handleForm(form, () => {
@@ -720,6 +740,7 @@ function initAdminMenu() {
   bindForms();
   initDragAndDrop();
   initEditToggles();
+  initCategoryCollapseState();
   initCollapseText();
   initSearchFilter();
   initOptionSections();

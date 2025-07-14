@@ -5,7 +5,11 @@
   <!-- Category and Items listing -->
   <div id="categories-container">
     <% categories.forEach(category => { %>
-      <div class="category-section card mb-3" data-category-id="<%= category.id %>">
+      <div
+        class="category-section card mb-3"
+        data-category-id="<%= category.id %>"
+        data-storage-key="category-<%= category.id %>"
+      >
         <div class="card-header category-header d-flex justify-content-between align-items-center">
           <div class="category-title-group">
             <span class="drag-handle">☰</span>
