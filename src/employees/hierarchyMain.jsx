@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import HierarchyApp from './HierarchyApp.jsx';
+import './hierarchy.css';
 
 function mount() {
   const el = document.getElementById('hierarchyApp');

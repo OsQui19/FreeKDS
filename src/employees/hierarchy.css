@@ -1,0 +1,50 @@
+.roles-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.5rem 0;
+}
+.role-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-color);
+  color: var(--text-color);
+  box-shadow: var(--card-shadow);
+  border-radius: var(--button-radius);
+  font-family: var(--font-family);
+  margin-bottom: 0.5rem;
+}
+.drag-handle {
+  cursor: grab;
+  margin-right: 0.5rem;
+  color: var(--text-color);
+}
+.delete-btn {
+  border: none;
+  background: transparent;
+  color: var(--primary-color);
+  padding: 0.25rem;
+  border-radius: var(--button-radius);
+}
+.permissions-grid {
+  display: grid;
+  overflow-x: auto;
+  font-family: var(--font-family);
+}
+.permissions-grid .header {
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  background: var(--bg-color);
+  padding: 0.25rem 0.5rem;
+  z-index: 1;
+}
+.permissions-grid .cell {
+  padding: 0.25rem 0.5rem;
+  text-align: center;
+}
+.role-name {
+  font-weight: 500;
+}
+
