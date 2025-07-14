@@ -56,10 +56,10 @@
   <div id="cartTotal" class="cart-total">$0.00</div>
   <button id="submitBtn" class="btn" disabled>Submit Order</button>
 </div>
-<div id="modModal" class="modal d-none">
-  <div class="modal-content modal-small bg-white text-dark p-3">
-    <h3 id="modTitle"></h3>
-    <div id="modOptions"></div>
+  <div id="modModal" class="modal d-none">
+    <div class="modal-content modal-small bg-white text-dark p-3">
+      <h3 id="modTitle"></h3>
+      <div id="modOptions"></div>
     <div class="mb-2">
       <label for="modInstructions" class="form-label">Special Instructions:</label>
       <textarea id="modInstructions" rows="2" class="form-control"></textarea>
@@ -69,10 +69,15 @@
       <label for="modAllergy" class="form-check-label">Allergy</label>
     </div>
     <button id="modConfirm" class="btn">Add Item</button>
-    <button id="modCancel" class="btn">Cancel</button>
+      <button id="modCancel" class="btn">Cancel</button>
+    </div>
   </div>
-</div>
-<script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-<script defer src="/order.js" data-table="<%= table %>" data-categories='<%- JSON.stringify(categories) %>' data-mod-groups='<%- JSON.stringify(modGroups || []) %>'></script>
+  <div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="orderToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="toast-body" id="orderToastBody"></div>
+    </div>
+  </div>
+  <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script defer src="/order.js" data-table="<%= table %>" data-categories='<%- JSON.stringify(categories) %>' data-mod-groups='<%- JSON.stringify(modGroups || []) %>'></script>
 </body>
 </html>

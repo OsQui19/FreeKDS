@@ -26,17 +26,49 @@ const cartItemsEl = document.getElementById("cartItems");
 const totalEl = document.getElementById("cartTotal");
 const submitBtn = document.getElementById("submitBtn");
 const orderTypeEl = document.getElementById("orderType");
+const toastEl = document.getElementById("orderToast");
+const toastBodyEl = document.getElementById("orderToastBody");
+const toastInstance = toastEl ? new bootstrap.Toast(toastEl) : null;
+
+function showToast(message, isError = false) {
+  if (!toastInstance) return;
+  toastBodyEl.textContent = message;
+  toastEl.classList.remove("text-bg-success", "text-bg-danger");
+  toastEl.classList.add(isError ? "text-bg-danger" : "text-bg-success");
+  toastInstance.show();
+}
 function renderCart() {
   cartItemsEl.innerHTML = "";
   let total = 0;
   cart.forEach((c, idx) => {
     const li = document.createElement("li");
+    const infoSpan = document.createElement("span");
     let text = `${c.quantity}× ${c.name}`;
     if (c.modifierNames.length) text += ` (${c.modifierNames.join(", ")})`;
     if (c.allergy) text += " [ALLERGY]";
     if (c.instructions) text += ` - ${c.instructions}`;
-    li.textContent = text;
+    infoSpan.textContent = text;
+    li.appendChild(infoSpan);
     total += c.quantity * (c.price || 0);
+    const controls = document.createElement("span");
+    const dec = document.createElement("button");
+    dec.textContent = "-";
+    dec.className = "btn ms-1";
+    dec.addEventListener("click", () => {
+      if (c.quantity > 1) {
+        c.quantity -= 1;
+      } else {
+        cart.splice(idx, 1);
+      }
+      renderCart();
+    });
+    const inc = document.createElement("button");
+    inc.textContent = "+";
+    inc.className = "btn ms-1";
+    inc.addEventListener("click", () => {
+      c.quantity += 1;
+      renderCart();
+    });
     const rm = document.createElement("button");
     rm.textContent = "Remove";
     rm.className = "btn ms-1";
@@ -44,7 +76,10 @@ function renderCart() {
       cart.splice(idx, 1);
       renderCart();
     });
-    li.appendChild(rm);
+    controls.appendChild(dec);
+    controls.appendChild(inc);
+    controls.appendChild(rm);
+    li.appendChild(controls);
     cartItemsEl.appendChild(li);
   });
   submitBtn.disabled = cart.length === 0;
@@ -154,11 +189,11 @@ submitBtn.addEventListener("click", () => {
     .then((data) => {
       cart.length = 0;
       renderCart();
-      alert("Order placed!");
+      showToast("Order placed!");
     })
     .catch((err) => {
       console.error("Failed to submit order", err);
-      alert("Error sending order");
+      showToast("Error sending order", true);
     });
 });
 renderCart();
