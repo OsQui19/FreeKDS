@@ -108,9 +108,9 @@ body.menu-layout-list .item-card img {
 }
 
 .item-card {
-  background: var(--bg-color, #fff);
-  border: 1px solid var(--primary-color, #eee);
-  border-radius: var(--button-radius, 8px);
+  background: var(--bs-card-bg, #fff);
+  border: 1px solid var(--bs-primary, #eee);
+  border-radius: var(--bs-card-border-radius, 8px);
   padding: 10px;
   text-align: center;
   box-shadow: var(--card-shadow, 0 2px 6px rgba(0, 0, 0, 0.08));
@@ -187,17 +187,17 @@ body.menu-layout-list .item-card img {
 .btn {
   padding: 6px 10px;
   border: none;
-  border-radius: var(--button-radius, 6px);
+  border-radius: var(--bs-btn-border-radius, 6px);
   cursor: pointer;
-  background: var(--primary-color, #4a90e2);
+  background: var(--bs-primary, #4a90e2);
   color: #fff;
   transition:
     background 0.2s ease-in-out,
-    opacity 0.2s ease-in-out;
+    filter 0.2s ease-in-out;
 }
 
 .btn:hover {
-  opacity: 0.9;
+  filter: brightness(0.9);
 }
 
 .btn:disabled {
