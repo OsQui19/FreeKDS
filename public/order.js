@@ -55,8 +55,8 @@ function renderCart() {
     total += c.quantity * (c.price || 0);
     const controls = document.createElement("span");
     const dec = document.createElement("button");
-    dec.textContent = "-";
-    dec.className = "btn ms-1";
+    dec.innerHTML = '<i class="bi bi-dash-lg"></i>';
+    dec.className = "btn btn-primary btn-sm ms-1";
     dec.addEventListener("click", () => {
       if (c.quantity > 1) {
         c.quantity -= 1;
@@ -66,15 +66,15 @@ function renderCart() {
       renderCart();
     });
     const inc = document.createElement("button");
-    inc.textContent = "+";
-    inc.className = "btn ms-1";
+    inc.innerHTML = '<i class="bi bi-plus-lg"></i>';
+    inc.className = "btn btn-primary btn-sm ms-1";
     inc.addEventListener("click", () => {
       c.quantity += 1;
       renderCart();
     });
     const rm = document.createElement("button");
-    rm.textContent = "Remove";
-    rm.className = "btn ms-1";
+    rm.innerHTML = '<i class="bi bi-trash"></i>';
+    rm.className = "btn btn-danger btn-sm ms-1";
     rm.addEventListener("click", () => {
       cart.splice(idx, 1);
       renderCart();
