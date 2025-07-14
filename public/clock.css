@@ -16,3 +16,17 @@
 .keypad .placeholder {
   visibility: hidden;
 }
+
+/* Layout nav buttons within the clock page card */
+.clock-page .nav-buttons {
+  position: static;
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.clock-page .nav-buttons .btn {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+}
