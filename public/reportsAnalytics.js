@@ -73,8 +73,21 @@ async function loadReports() {
       const revenue = data.sales.map((r) => r.total);
       const cost = data.sales.map((r) => r.cost);
       const profit = data.sales.map((r) => r.profit);
-      const margin = data.sales.map((r) => r.margin);
-      const roi = data.sales.map((r) => r.roi);
+
+      // Calculate overall totals for margin/ROI display
+      const totalRevenue = revenue.reduce(
+        (sum, val) => sum + parseFloat(val || 0),
+        0,
+      );
+      const totalCost = cost.reduce(
+        (sum, val) => sum + parseFloat(val || 0),
+        0,
+      );
+      const totalProfit = totalRevenue - totalCost;
+      const totalMargin = totalRevenue
+        ? (totalProfit / totalRevenue) * 100
+        : 0;
+      const totalRoi = totalCost ? (totalProfit / totalCost) * 100 : 0;
 
       if (!labels.length) {
         labels.push(fmt(start));
@@ -108,12 +121,10 @@ async function loadReports() {
       });
 
       if (marginEl) {
-        const lastMargin = margin.length ? margin[margin.length - 1] : 0;
-        marginEl.textContent = lastMargin.toFixed(2);
+        marginEl.textContent = totalMargin.toFixed(2);
       }
       if (roiEl) {
-        const lastRoi = roi.length ? roi[roi.length - 1] : 0;
-        roiEl.textContent = lastRoi.toFixed(2);
+        roiEl.textContent = totalRoi.toFixed(2);
       }
 
       if (usageEl) {
