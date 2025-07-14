@@ -17,6 +17,7 @@ const storage = {
 
 let schedulePromise;
 let scheduleLoaded = false;
+let scheduleEventBound = false;
 
 function onReady(fn) {
   if (document.readyState === "loading") {
@@ -46,6 +47,7 @@ function loadScheduleScript(attempts = 3, delay = 1000) {
           } else {
             schedulePromise = null;
             console.error("Failed to load schedule.js");
+            document.dispatchEvent(new CustomEvent("scheduleLoadFailed"));
             reject();
           }
         };
@@ -55,6 +57,33 @@ function loadScheduleScript(attempts = 3, delay = 1000) {
     });
   }
   return schedulePromise;
+}
+
+function showScheduleError() {
+  const pane = document.getElementById("schedulePane");
+  if (!pane) return;
+  const existing = pane.querySelector(".schedule-error-alert");
+  if (existing) existing.remove();
+  const div = document.createElement("div");
+  div.className =
+    "alert alert-danger alert-dismissible fade show m-2 schedule-error-alert";
+  div.role = "alert";
+  div.innerHTML =
+    'Failed to load schedule <button type="button" class="btn btn-sm btn-outline-danger ms-2 retry-schedule">Retry<\/button>';
+  const closeBtn = document.createElement("button");
+  closeBtn.type = "button";
+  closeBtn.className = "btn-close";
+  closeBtn.setAttribute("data-bs-dismiss", "alert");
+  closeBtn.setAttribute("aria-label", "Close");
+  div.appendChild(closeBtn);
+  pane.prepend(div);
+  const retry = div.querySelector(".retry-schedule");
+  if (retry) {
+    retry.addEventListener("click", () => {
+      div.remove();
+      loadScheduleScript().catch(() => {});
+    });
+  }
 }
 
 function retrySync(fn, attempts = 3, delay = 1000) {
@@ -637,6 +666,10 @@ function initEmployeesModule() {
 
 let employeesInitialized = false;
 async function startEmployeesTab() {
+  if (!scheduleEventBound) {
+    document.addEventListener("scheduleLoadFailed", showScheduleError);
+    scheduleEventBound = true;
+  }
   if (!employeesInitialized) {
     try {
       await initEmployeesModule();
