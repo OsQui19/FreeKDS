@@ -3,6 +3,32 @@ let usageChart;
 let categoryChart;
 const socket = window.io ? io() : null;
 
+function showReportsError(msg) {
+  const tab = document.getElementById("reportsTab");
+  if (!tab) return;
+  const existing = tab.querySelector(".reports-error-alert");
+  if (existing) existing.remove();
+  const div = document.createElement("div");
+  div.className =
+    "alert alert-danger alert-dismissible fade show m-2 reports-error-alert";
+  div.role = "alert";
+  div.innerHTML = `${msg} <button type="button" class="btn btn-sm btn-outline-danger ms-2 retry-reports">Retry</button>`;
+  const closeBtn = document.createElement("button");
+  closeBtn.type = "button";
+  closeBtn.className = "btn-close";
+  closeBtn.setAttribute("data-bs-dismiss", "alert");
+  closeBtn.setAttribute("aria-label", "Close");
+  div.appendChild(closeBtn);
+  tab.prepend(div);
+  const retry = div.querySelector(".retry-reports");
+  if (retry) {
+    retry.addEventListener("click", () => {
+      div.remove();
+      loadReports();
+    });
+  }
+}
+
 let reportsIntervalId = null;
 let reportsSocketListener = null;
 let reportsAbortController = null;
@@ -17,6 +43,7 @@ async function loadReports() {
   }
   const controller = new AbortController();
   reportsAbortController = controller;
+  const hide = window.showSpinner ? window.showSpinner() : () => {};
   const salesEl = document.getElementById("salesChart");
   const usageEl = document.getElementById("usageChart");
   const catEl = document.getElementById("categoryChart");
@@ -180,11 +207,12 @@ async function loadReports() {
       return;
     }
     console.error("Reports fetch error", err);
-    throw err;
+    showReportsError("Failed to load reports");
   } finally {
     if (reportsAbortController === controller) {
       reportsAbortController = null;
     }
+    if (typeof hide === "function") hide();
   }
 }
 
