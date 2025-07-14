@@ -5,12 +5,18 @@ const socket = window.io ? io() : null;
 
 let reportsIntervalId = null;
 let reportsSocketListener = null;
+let reportsAbortController = null;
 
 function fmt(d) {
   return d.toISOString().slice(0, 10);
 }
 
 async function loadReports() {
+  if (reportsAbortController) {
+    reportsAbortController.abort();
+  }
+  const controller = new AbortController();
+  reportsAbortController = controller;
   const salesEl = document.getElementById("salesChart");
   const usageEl = document.getElementById("usageChart");
   const catEl = document.getElementById("categoryChart");
@@ -31,7 +37,10 @@ async function loadReports() {
       : new Date(end.getTime() - 29 * 86400000);
 
   try {
-    const res = await fetch(`/admin/reports/data?start=${fmt(start)}&end=${fmt(end)}`);
+    const res = await fetch(
+      `/admin/reports/data?start=${fmt(start)}&end=${fmt(end)}`,
+      { signal: controller.signal },
+    );
     const data = await res.json();
       const labels = data.sales.map((r) => r.date);
       const revenue = data.sales.map((r) => r.total);
@@ -167,8 +176,15 @@ async function loadReports() {
         });
       }
   } catch (err) {
+    if (err.name === "AbortError") {
+      return;
+    }
     console.error("Reports fetch error", err);
     throw err;
+  } finally {
+    if (reportsAbortController === controller) {
+      reportsAbortController = null;
+    }
   }
 }
 
@@ -244,6 +260,10 @@ document.addEventListener("adminTabHidden", (e) => {
     if (socket && reportsSocketListener) {
       socket.off("reportsUpdated", reportsSocketListener);
       reportsSocketListener = null;
+    }
+    if (reportsAbortController) {
+      reportsAbortController.abort();
+      reportsAbortController = null;
     }
   }
 });
