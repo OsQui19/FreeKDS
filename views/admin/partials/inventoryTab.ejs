@@ -308,5 +308,5 @@
     <option value="<%= ing.name %>" data-id="<%= ing.id %>"></option>
   <% }) %>
 </datalist>
-<script type="module" defer src="/adminInventory.js" data-ingredients='<%- JSON.stringify(ingredients) %>'></script>
+<script type="module" defer src="/adminInventory.js" data-ingredients='<%= JSON.stringify(ingredients) %>'></script>
 <script defer src="/inventoryTabs.js"></script>
