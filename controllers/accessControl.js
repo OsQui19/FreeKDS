@@ -1,14 +1,14 @@
 const DEFAULT_HIERARCHY = ["FOH", "BOH", "management"];
-const ALL_MODULES = [
-  "stations",
-  "order",
-  "menu",
-  "theme",
-  "inventory",
-  "reports",
-  "employees",
-  "locations",
+
+const MODULE_GROUPS = [
+  { category: "operations", modules: ["order", "stations"] },
+  {
+    category: "admin",
+    modules: ["menu", "theme", "inventory", "reports", "employees", "locations"],
+  },
 ];
+
+const ALL_MODULES = MODULE_GROUPS.flatMap((g) => g.modules);
 
 let hierarchy = [...DEFAULT_HIERARCHY];
 let permissions = {};
@@ -224,4 +224,5 @@ module.exports = {
   getRolePermissions,
   roleHasAccess,
   ALL_MODULES,
+  MODULE_GROUPS,
 };

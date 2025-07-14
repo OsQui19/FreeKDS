@@ -497,7 +497,10 @@ module.exports = (db, io) => {
   });
 
   router.get("/api/modules", (req, res) => {
-    res.json({ modules: accessControl.ALL_MODULES });
+    res.json({
+      modules: accessControl.ALL_MODULES,
+      groups: accessControl.MODULE_GROUPS,
+    });
   });
 
   router.get("/api/time-clock", async (req, res) => {
