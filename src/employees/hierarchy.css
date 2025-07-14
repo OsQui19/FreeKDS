@@ -3,6 +3,18 @@
   padding: 0;
   margin: 0 0 0.5rem 0;
 }
+.hierarchy-wrapper {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.roles-panel {
+  flex: 1 1 220px;
+  max-width: 260px;
+}
+.modules-panel {
+  flex: 2 1 300px;
+}
 .role-card {
   display: flex;
   justify-content: space-between;
@@ -14,6 +26,11 @@
   border-radius: var(--button-radius);
   font-family: var(--font-family);
   margin-bottom: 0.5rem;
+  cursor: pointer;
+}
+.role-card.selected {
+  background: var(--primary-color);
+  color: #fff;
 }
 .drag-handle {
   cursor: grab;
@@ -46,5 +63,22 @@
 }
 .role-name {
   font-weight: 500;
+}
+.edit-input {
+  min-width: 120px;
+}
+.module-table th,
+.module-table td {
+  vertical-align: middle;
+  text-align: center;
+}
+@media (max-width: 768px) {
+  .hierarchy-wrapper {
+    flex-direction: column;
+  }
+  .roles-panel,
+  .modules-panel {
+    max-width: none;
+  }
 }
 
