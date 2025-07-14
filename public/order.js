@@ -45,7 +45,10 @@ function renderCart() {
     const infoSpan = document.createElement("span");
     let text = `${c.quantity}× ${c.name}`;
     if (c.modifierNames.length) text += ` (${c.modifierNames.join(", ")})`;
-    if (c.allergy) text += " [ALLERGY]";
+    if (c.allergy) {
+      text += " [ALLERGY]";
+      if (c.allergyDetails) text += ` (${c.allergyDetails})`;
+    }
     if (c.instructions) text += ` - ${c.instructions}`;
     infoSpan.textContent = text;
     li.appendChild(infoSpan);
@@ -85,7 +88,7 @@ function renderCart() {
   submitBtn.disabled = cart.length === 0;
   totalEl.textContent = `Total: $${total.toFixed(2)}`;
 }
-function addToCart(itemId, modIds, instructions, allergy) {
+function addToCart(itemId, modIds, instructions, allergy, allergyDetails) {
   const item = itemMap[itemId];
   if (!item) return;
   const modNames = modIds
@@ -100,6 +103,7 @@ function addToCart(itemId, modIds, instructions, allergy) {
     quantity: 1,
     instructions: instructions || "",
     allergy: !!allergy,
+    allergyDetails: allergyDetails || "",
   });
   renderCart();
 }
@@ -112,6 +116,14 @@ const modConfirm = document.getElementById("modConfirm");
 const modCancel = document.getElementById("modCancel");
 const modInstructions = document.getElementById("modInstructions");
 const modAllergy = document.getElementById("modAllergy");
+const modAllergyDetail = document.getElementById("modAllergyDetail");
+const modAllergyDetailDiv = document.getElementById("modAllergyDetailDiv");
+if (modAllergy) {
+  modAllergy.addEventListener("change", () => {
+    if (!modAllergyDetailDiv) return;
+    modAllergyDetailDiv.classList.toggle("d-none", !modAllergy.checked);
+  });
+}
 modConfirm.addEventListener("click", () => {
   if (!currentItem) return;
   const chosen = Array.from(
@@ -119,13 +131,18 @@ modConfirm.addEventListener("click", () => {
   ).map((cb) => parseInt(cb.value, 10));
   const instr = modInstructions.value.trim();
   const allergy = modAllergy.checked;
-  addToCart(currentItem.id, chosen, instr, allergy);
+  const allergyDesc = modAllergyDetail ? modAllergyDetail.value.trim() : "";
+  addToCart(currentItem.id, chosen, instr, allergy, allergyDesc);
   modInstructions.value = "";
   modAllergy.checked = false;
+  if (modAllergyDetail) modAllergyDetail.value = "";
+  if (modAllergyDetailDiv) modAllergyDetailDiv.classList.add("d-none");
   modModal.classList.add("d-none");
 });
 modCancel.addEventListener("click", () => {
   modModal.classList.add("d-none");
+  if (modAllergyDetail) modAllergyDetail.value = "";
+  if (modAllergyDetailDiv) modAllergyDetailDiv.classList.add("d-none");
 });
 function showModifierModal(item) {
   currentItem = item;
@@ -133,6 +150,8 @@ function showModifierModal(item) {
   modOptions.innerHTML = "";
   modInstructions.value = "";
   modAllergy.checked = false;
+  if (modAllergyDetail) modAllergyDetail.value = "";
+  if (modAllergyDetailDiv) modAllergyDetailDiv.classList.add("d-none");
   const groups = {};
   item.modifiers.forEach((m) => {
     const gid = m.group_id || "extras";
@@ -176,7 +195,10 @@ submitBtn.addEventListener("click", () => {
       menu_item_id: c.itemId,
       quantity: c.quantity,
       modifier_ids: c.modifierIds,
-      special_instructions: c.instructions || null,
+      special_instructions:
+        [c.instructions, c.allergyDetails]
+          .filter(Boolean)
+          .join(" | ") || null,
       allergy: !!c.allergy,
     })),
   };
