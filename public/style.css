@@ -612,6 +612,23 @@ body.admin-screen {
 .ingredient-table td {
   vertical-align: middle;
 }
+
+@media (max-width: 575.98px) {
+  /* Enable horizontal scrolling for inventory and other tables */
+  .ingredient-table,
+  table.table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  .ingredient-table th,
+  .ingredient-table td,
+  table.table th,
+  table.table td {
+    padding: 0.25rem;
+    font-size: 0.85rem;
+  }
+}
 /* Inventory tabs */
 .inventory-tabs .nav-tabs {
   flex-wrap: wrap;
