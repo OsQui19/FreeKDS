@@ -11,6 +11,21 @@ function ensureDir() {
   }
 }
 
+function listBackups(cb) {
+  ensureDir();
+  fs.readdir(BACKUP_DIR, (err, files) => {
+    if (err) return cb(err);
+    const list = files
+      .filter((f) => f.endsWith('.sql'))
+      .map((f) => {
+        const stat = fs.statSync(path.join(BACKUP_DIR, f));
+        return { name: f, size: stat.size, mtime: stat.mtime };
+      })
+      .sort((a, b) => b.mtime - a.mtime);
+    cb(null, list);
+  });
+}
+
 function backupDatabase(cb) {
   ensureDir();
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
@@ -64,6 +79,7 @@ function scheduleDailyBackup() {
 
 function restoreDatabase(file, cb) {
   const args = [
+    "--force",
     "-h",
     config.db.host,
     "-u",
@@ -100,6 +116,7 @@ function restoreDatabase(file, cb) {
 module.exports = {
   backupDatabase,
   restoreDatabase,
+  listBackups,
   BACKUP_DIR,
   scheduleDailyBackup,
 };

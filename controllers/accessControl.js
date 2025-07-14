@@ -4,7 +4,15 @@ const MODULE_GROUPS = [
   { category: "operations", modules: ["order", "stations"] },
   {
     category: "admin",
-    modules: ["menu", "theme", "inventory", "reports", "employees", "locations"],
+    modules: [
+      "menu",
+      "theme",
+      "inventory",
+      "reports",
+      "employees",
+      "locations",
+      "backup",
+    ],
   },
 ];
 

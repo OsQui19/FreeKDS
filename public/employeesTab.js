@@ -198,6 +198,7 @@ let ALL_MODULES = [
   "reports",
   "employees",
   "locations",
+  "backup",
 ];
 
 async function syncModulesFromServer() {

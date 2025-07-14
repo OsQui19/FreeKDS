@@ -35,6 +35,9 @@
   <% if ((allowedModules || []).includes('reports')) { %>
   <template id="tpl-reports"><%- include('partials/reportsTab') %></template>
   <% } %>
+  <% if ((allowedModules || []).includes('backup')) { %>
+  <template id="tpl-backup"><%- include('partials/backupTab') %></template>
+  <% } %>
   <% if ((allowedModules || []).includes('employees')) { %>
   <template id="tpl-employees"><%- include('partials/employeesTab', { modules }) %></template>
   <% } %>

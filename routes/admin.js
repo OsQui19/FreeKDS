@@ -27,6 +27,12 @@ const settingsCache = require("../controllers/settingsCache");
 const { convert } = require("../controllers/unitConversion");
 const { logSecurityEvent } = require("../controllers/securityLog");
 const { validateSettings } = require("../utils/validateSettings");
+const path = require("path");
+const {
+  listBackups,
+  restoreDatabase,
+  BACKUP_DIR,
+} = require("../controllers/dbBackup");
 
 module.exports = (db, io) => {
   const router = express.Router();
@@ -56,6 +62,7 @@ module.exports = (db, io) => {
       "/admin/purchase-orders": "inventory",
       "/admin/reports": "reports",
       "/admin/locations": "locations",
+      "/admin/backups": "backup",
     };
     const comp = Object.entries(map).find(([p]) => req.path.startsWith(p));
     if (comp) {
@@ -1216,6 +1223,33 @@ module.exports = (db, io) => {
       console.error("Error deleting location:", err);
       res.status(500).send("DB Error");
     }
+  });
+
+  router.get("/admin/backups", (req, res) => {
+    res.redirect("/admin?tab=backup");
+  });
+
+  router.get("/admin/backups/list", (req, res) => {
+    listBackups((err, files) => {
+      if (err) {
+        console.error("Error listing backups:", err);
+        return res.status(500).json({ error: "Failed" });
+      }
+      res.json({ backups: files });
+    });
+  });
+
+  router.post("/admin/backups/restore", (req, res) => {
+    const file = req.body.file;
+    if (!file) return res.redirect("/admin?tab=backup");
+    const full = path.join(BACKUP_DIR, path.basename(file));
+    restoreDatabase(full, (err) => {
+      if (err) {
+        console.error("Restore error:", err);
+        return res.status(500).send("DB Error");
+      }
+      res.redirect("/admin/backups?msg=Restore+complete");
+    });
   });
 
   return router;
