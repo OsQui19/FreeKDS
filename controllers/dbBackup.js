@@ -2,6 +2,7 @@ const { spawn } = require("child_process");
 const path = require("path");
 const fs = require("fs");
 const config = require("../config");
+const SCHEMA_PATH = path.join(__dirname, "../schema.sql");
 
 const BACKUP_DIR = config.backupDir;
 
@@ -77,6 +78,35 @@ function scheduleDailyBackup() {
   }, next - now);
 }
 
+function applySchema(cb) {
+  if (!fs.existsSync(SCHEMA_PATH)) return cb && cb(null);
+  const args = [
+    "--force",
+    "-h",
+    config.db.host,
+    "-u",
+    config.db.user,
+    `-p${config.db.password}`,
+    config.db.name,
+  ];
+  const proc = spawn("mysql", args);
+  fs.createReadStream(SCHEMA_PATH).pipe(proc.stdin);
+
+  proc.stderr.on("data", (data) => {
+    console.error(`mysql schema error: ${data}`);
+  });
+  proc.on("error", (err) => {
+    console.error("Failed to apply schema:", err);
+    if (cb) cb(err);
+  });
+  proc.on("close", (code) => {
+    if (code === 0) return cb && cb(null);
+    const err = new Error(`mysql exited with code ${code}`);
+    console.error("Error applying schema:", err);
+    if (cb) cb(err);
+  });
+}
+
 function restoreDatabase(file, cb) {
   const args = [
     "--force",
@@ -104,7 +134,10 @@ function restoreDatabase(file, cb) {
   mysqlProc.on("close", (code) => {
     if (code === 0) {
       console.log(`Database restored from ${file}`);
-      if (cb) cb(null);
+      applySchema((err) => {
+        if (err) return cb && cb(err);
+        if (cb) cb(null);
+      });
     } else {
       const err = new Error(`mysql exited with code ${code}`);
       console.error("Error restoring DB:", err);

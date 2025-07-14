@@ -1229,6 +1229,16 @@ module.exports = (db, io) => {
     res.redirect("/admin?tab=backup");
   });
 
+  router.post("/admin/backups/create", (req, res) => {
+    backupDatabase((err) => {
+      if (err) {
+        console.error("Backup error:", err);
+        return res.status(500).send("DB Error");
+      }
+      res.redirect("/admin/backups?msg=Backup+created");
+    });
+  });
+
   router.get("/admin/backups/list", (req, res) => {
     listBackups((err, files) => {
       if (err) {

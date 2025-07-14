@@ -37,7 +37,7 @@ The `/api/modules` endpoint exposes modules grouped by category. Each entry has 
 Use these groups in the Employees &rarr; Hierarchy screen to expand or collapse access to each module category.
 
 ## Database Backup
-Automated daily backups are created in the `BACKUP_DIR` directory. You can run a manual backup anytime with:
+Automated daily backups are created in the `BACKUP_DIR` directory. You can create or restore backups from the **Backups** tab in the admin interface. To create a backup from the command line use:
 
 ```bash
 npm run backup
