@@ -1,4 +1,5 @@
 // JS for inventory management
+import { showAlert, handleForm } from '/adminUtils.js';
 
 function initAdminInventory() {
   const script = document.querySelector('script[data-ingredients]');
@@ -10,48 +11,22 @@ function initAdminInventory() {
       console.warn('Failed to parse ingredient data', e);
     }
   }
+  const ALERT_CONTAINER = document.getElementById("usageLogPane") || document.body;
   function serialize(form) {
     return new URLSearchParams(new FormData(form));
-  }
-  function showAlert(msg) {
-    const alert = document.createElement("div");
-    alert.className = "alert alert-danger alert-dismissible fade show m-2";
-    alert.role = "alert";
-    alert.innerHTML = `${msg}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>`;
-    const pane = document.getElementById("usageLogPane") || document.body;
-    pane.prepend(alert);
-  }
-  function handleForm(form) {
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      try {
-        const resp = await fetch(form.action, {
-          method: form.method || "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: serialize(form),
-          redirect: "follow",
-        });
-        if (!resp.ok) {
-          const msg = await resp.text().catch(() => "Error saving");
-          showAlert(msg || "Error saving");
-          return;
-        }
-        if (resp.redirected) {
-          window.location.href = resp.url;
-        } else {
-          location.reload();
-        }
-      } catch (err) {
-        console.error("Form submit failed", err);
-        showAlert("Error saving");
-      }
-    });
   }
   document
     .querySelectorAll(
       ".ingredient-list form, #transaction-form",
     )
-    .forEach(handleForm);
+    .forEach((f) =>
+      handleForm(f, null, {
+        followRedirect: true,
+        reloadOnSuccess: true,
+        alertContainer: ALERT_CONTAINER,
+        errorType: 'danger',
+      }),
+    );
 
   const logForm = document.getElementById("logRangeForm");
   if (logForm) {
@@ -77,7 +52,7 @@ function initAdminInventory() {
             .join("");
         })
         .catch(() => {
-          showAlert("Couldn't load usage log");
+          showAlert("Couldn't load usage log", 'danger', ALERT_CONTAINER);
         })
         .finally(() => {
           if (submitBtn) submitBtn.disabled = false;
@@ -153,7 +128,12 @@ function initAdminInventory() {
       modal.classList.add("d-flex");
     });
     cancel.addEventListener("click", close);
-    handleForm(form);
+    handleForm(form, null, {
+      followRedirect: true,
+      reloadOnSuccess: true,
+      alertContainer: ALERT_CONTAINER,
+      errorType: 'danger',
+    });
   }
 
   initAddCategoryModal();

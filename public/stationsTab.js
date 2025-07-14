@@ -1,57 +1,18 @@
 let stationsTabInitialized = false;
+import { showAlert, handleForm } from '/adminUtils.js';
 
 function serialize(form) {
   return new URLSearchParams(new FormData(form));
 }
 
-function showAlert(msg) {
-  const alert = document.createElement('div');
-  alert.className = 'alert alert-success alert-dismissible fade show m-2';
-  alert.role = 'alert';
-  alert.innerHTML = `${msg}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>`;
-  const container = document.querySelector('.admin-container') || document.body;
-  container.prepend(alert);
-}
+const ALERT_CONTAINER = document.querySelector('.admin-container') || document.body;
 
-function handleForm(form, onSuccess) {
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const scroll = window.scrollY;
-    const hide = window.showSpinner ? window.showSpinner() : () => {};
-    fetch(form.action, {
-      method: form.method || 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        Accept: 'application/json',
-      },
-      body: serialize(form),
-      redirect: 'manual',
-    })
-      .then(async (res) => {
-        let msg = null;
-        if (res.headers.get('Location')) {
-          const loc = new URL(res.headers.get('Location'), window.location.origin);
-          msg = loc.searchParams.get('msg');
-        } else if (res.url) {
-          try {
-            msg = new URL(res.url).searchParams.get('msg');
-          } catch {}
-        }
-        if (typeof onSuccess === 'function') await onSuccess(res);
-        if (msg) {
-          showAlert(decodeURIComponent(msg.replace(/\+/g, ' ')));
-          history.replaceState(null, '', window.location.pathname);
-        }
-        window.scrollTo(0, scroll);
-      })
-      .catch((err) => {
-        console.error('Form submit failed', err);
-        showAlert('Error saving');
-      })
-      .finally(() => {
-        if (typeof hide === 'function') hide();
-      });
-  });
+function handleFormLocal(form, onSuccess) {
+  handleForm(
+    form,
+    onSuccess,
+    { alertContainer: ALERT_CONTAINER },
+  );
 }
 
 function attachConfirm(form) {
@@ -172,7 +133,7 @@ function initStationsTab() {
   }
 
   document.querySelectorAll('form[action="/admin/stations/update"]').forEach((f) => {
-    handleForm(f, () => {
+    handleFormLocal(f, () => {
       const card = f.closest('.card');
       const nameInput = f.querySelector('input[name="name"]');
       if (card && nameInput) {
@@ -184,7 +145,7 @@ function initStationsTab() {
 
   const addForm = document.querySelector('#newStationForm form');
   if (addForm) {
-    handleForm(addForm, async (res) => {
+    handleFormLocal(addForm, async (res) => {
       let data = null;
       if (
         res &&
@@ -206,7 +167,7 @@ function initStationsTab() {
         attachCollapse(`station-${data.station.id}`);
         attachConfirm(card.querySelector('form[action="/admin/stations/delete"]'));
         const updateForm = card.querySelector('form[action="/admin/stations/update"]');
-        if (updateForm) handleForm(updateForm, () => {
+        if (updateForm) handleFormLocal(updateForm, () => {
           const span = card.querySelector('.card-header span');
           const nameInput = updateForm.querySelector('input[name="name"]');
           if (span && nameInput) span.textContent = nameInput.value;

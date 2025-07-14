@@ -1,4 +1,5 @@
 // JS for admin menu management
+import { showAlert, handleForm } from '/adminUtils.js';
 // Guard against double loading which can happen if this script is included
 // more than once by mistake.
 if (!window.__ADMIN_MENU_SCRIPT_LOADED__) {
@@ -20,62 +21,12 @@ if (!window.__ADMIN_MENU_SCRIPT_LOADED__) {
     .map((u) => `<option value="${u.id}">${u.abbreviation}</option>`)
     .join("");
 
+  const ALERT_CONTAINER = document.querySelector('.admin-screen') || document.body;
+
 function serialize(form) {
   return new URLSearchParams(new FormData(form));
 }
 
-function showAlert(msg) {
-  const alert = document.createElement("div");
-  alert.className = "alert alert-success alert-dismissible fade show m-2";
-  alert.role = "alert";
-  alert.innerHTML = `${msg}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>`;
-  const screen = document.querySelector(".admin-screen");
-  (screen || document.body).prepend(alert);
-}
-
-function handleForm(form, onSuccess) {
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const scroll = window.scrollY;
-    const hide = window.showSpinner ? window.showSpinner() : () => {};
-    fetch(form.action, {
-      method: form.method || "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        Accept: "application/json",
-      },
-      body: serialize(form),
-      redirect: "manual",
-    })
-      .then((res) => {
-        let msg = null;
-        if (res.headers.get("Location")) {
-          const loc = new URL(
-            res.headers.get("Location"),
-            window.location.origin,
-          );
-          msg = loc.searchParams.get("msg");
-        } else if (res.url) {
-          try {
-            msg = new URL(res.url).searchParams.get("msg");
-          } catch {}
-        }
-        if (typeof onSuccess === "function") onSuccess(res);
-        if (msg) {
-          showAlert(decodeURIComponent(msg.replace(/\+/g, " ")));
-          history.replaceState(null, "", window.location.pathname);
-        }
-        window.scrollTo(0, scroll);
-      })
-      .catch((err) => {
-        console.error("Form submit failed", err);
-        showAlert("Error saving");
-      })
-      .finally(() => {
-        if (typeof hide === "function") hide();
-      });
-  });
-}
 
 function updateModReplaceOptions(form) {
   if (!form) return;
@@ -540,7 +491,9 @@ function initCategoryCollapseState() {
 
 function bindForms() {
   document.querySelectorAll(".item-edit-form form").forEach((form) => {
-    handleForm(form, () => {
+    handleForm(
+      form,
+      () => {
       const li = form.closest("li.menu-item");
       if (!li) return;
       li.querySelector(".item-name").textContent = form.elements.name.value;
@@ -564,11 +517,15 @@ function bindForms() {
       }
       li.querySelector(".item-edit-form").classList.add("hidden");
       li.querySelector(".item-view").classList.remove("hidden");
-    });
+    },
+    { alertContainer: ALERT_CONTAINER },
+    );
   });
 
   document.querySelectorAll(".category-edit-form form").forEach((form) => {
-    handleForm(form, () => {
+    handleForm(
+      form,
+      () => {
       const id = form.elements.id.value;
       const section = document.querySelector(
         `.category-section[data-category-id="${id}"]`,
@@ -579,11 +536,15 @@ function bindForms() {
         section.querySelector(".category-edit-form").classList.add("hidden");
         section.querySelector(".category-header").classList.remove("hidden");
       }
-    });
+    },
+    { alertContainer: ALERT_CONTAINER },
+    );
   });
 
   document.querySelectorAll(".add-item-form form").forEach((form) => {
-    handleForm(form, async (res) => {
+    handleForm(
+      form,
+      async (res) => {
       let data = null;
       if (
         res &&
@@ -686,7 +647,9 @@ function bindForms() {
           if (msg && !window.confirm(msg)) e.preventDefault();
         });
       });
-      handleForm(li.querySelector('.item-edit-form form'), () => {
+      handleForm(
+        li.querySelector('.item-edit-form form'),
+        () => {
         const liEl = li;
         const formEl = liEl.querySelector('.item-edit-form form');
         liEl.querySelector('.item-name').textContent = formEl.elements.name.value;
@@ -710,7 +673,9 @@ function bindForms() {
         }
         liEl.querySelector('.item-edit-form').classList.add('hidden');
         liEl.querySelector('.item-view').classList.remove('hidden');
-      });
+      },
+      { alertContainer: ALERT_CONTAINER },
+      );
       li.querySelector('.edit-item-btn').addEventListener('click', () => {
         li.querySelector('.item-view').classList.add('hidden');
         li.querySelector('.item-edit-form').classList.remove('hidden');
@@ -719,15 +684,17 @@ function bindForms() {
         li.querySelector('.item-edit-form').classList.add('hidden');
         li.querySelector('.item-view').classList.remove('hidden');
       });
-    });
+    },
+    { alertContainer: ALERT_CONTAINER },
+    );
   });
 
   document
     .querySelectorAll('.mod-row form[action="/admin/modifiers"]')
     .forEach((form) => {
       handleForm(form, () => {
-        showAlert("Modifier saved");
-      });
+        showAlert("Modifier saved", 'success', ALERT_CONTAINER);
+      }, { alertContainer: ALERT_CONTAINER });
     });
 }
 
