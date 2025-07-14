@@ -5,7 +5,9 @@ import { showAlert, handleForm } from '/adminUtils.js';
 if (!window.__ADMIN_MENU_SCRIPT_LOADED__) {
   window.__ADMIN_MENU_SCRIPT_LOADED__ = true;
 
-  const script = document.currentScript;
+  const script =
+    document.currentScript ||
+    document.querySelector('script[data-units]');
   let PUBLIC_INGREDIENTS = [];
   let UNITS = [];
   if (script) {
