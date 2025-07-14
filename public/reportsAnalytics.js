@@ -121,7 +121,15 @@ async function loadReports() {
         topBody.innerHTML = "";
         data.topItems.forEach((it) => {
           const tr = document.createElement("tr");
-          tr.innerHTML = `<td>${it.name}</td><td>${it.qty}</td><td>$${parseFloat(it.revenue).toFixed(2)}</td>`;
+          const nameTd = document.createElement("td");
+          nameTd.textContent = it.name;
+          const qtyTd = document.createElement("td");
+          qtyTd.textContent = it.qty;
+          const revenueTd = document.createElement("td");
+          revenueTd.textContent = `$${parseFloat(it.revenue).toFixed(2)}`;
+          tr.appendChild(nameTd);
+          tr.appendChild(qtyTd);
+          tr.appendChild(revenueTd);
           topBody.appendChild(tr);
         });
       }
@@ -129,7 +137,15 @@ async function loadReports() {
         lowBody.innerHTML = "";
         data.lowStock.forEach((it) => {
           const tr = document.createElement("tr");
-          tr.innerHTML = `<td>${it.name}</td><td>${it.quantity}</td><td>${it.unit || ""}</td>`;
+          const nameTd = document.createElement("td");
+          nameTd.textContent = it.name;
+          const qtyTd = document.createElement("td");
+          qtyTd.textContent = it.quantity;
+          const unitTd = document.createElement("td");
+          unitTd.textContent = it.unit || "";
+          tr.appendChild(nameTd);
+          tr.appendChild(qtyTd);
+          tr.appendChild(unitTd);
           lowBody.appendChild(tr);
         });
       }
@@ -137,8 +153,13 @@ async function loadReports() {
         avgBody.innerHTML = "";
         data.avgTimes.forEach((row) => {
           const tr = document.createElement("tr");
+          const nameTd = document.createElement("td");
+          nameTd.textContent = row.name;
+          const minsTd = document.createElement("td");
           const mins = row.avg_seconds / 60;
-          tr.innerHTML = `<td>${row.name}</td><td>${mins.toFixed(1)}</td>`;
+          minsTd.textContent = mins.toFixed(1);
+          tr.appendChild(nameTd);
+          tr.appendChild(minsTd);
           avgBody.appendChild(tr);
         });
       }
