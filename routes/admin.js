@@ -362,11 +362,18 @@ module.exports = (db, io) => {
   router.post("/admin/items/delete", (req, res) => {
     const itemId = req.body.id;
     if (!itemId) return res.redirect("/admin?tab=menu");
-    db.query("DELETE FROM menu_items WHERE id=?", [itemId], (err) => {
-      if (err) {
-        console.error("Error deleting item:", err);
-      }
-      return res.redirect("/admin?tab=menu&msg=Item+deleted");
+    db.query("SELECT name FROM menu_items WHERE id=?", [itemId], (err, rows) => {
+      const itemName = !err && rows && rows[0] ? rows[0].name : "Item";
+      db.query("DELETE FROM menu_items WHERE id=?", [itemId], (err2) => {
+        if (err2) {
+          console.error("Error deleting item:", err2);
+        }
+        return res.redirect(
+          `/admin?tab=menu&msg=Item+deleted&detail=${encodeURIComponent(
+            itemName + " removed"
+          )}`
+        );
+      });
     });
   });
 

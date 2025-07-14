@@ -592,6 +592,12 @@ body.admin-screen {
   max-width: 1200px;
   margin: 0 auto;
 }
+/* Consistent heading style for admin sections */
+.admin-section-title {
+  margin-bottom: 1rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid #dee2e6;
+}
 @media (max-width: 575.98px) {
   body.admin-screen {
     padding: 10px;
