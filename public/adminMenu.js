@@ -207,8 +207,23 @@ function initRecipeModal() {
     modal.classList.remove("d-flex");
   };
 
-  const openModal = (btn) => {
+  const openModal = async (btn) => {
     currentForm = btn.closest("form");
+    try {
+      const res = await fetch("/admin/ingredients/list");
+      if (res.ok) {
+        const data = await res.json();
+        if (data && Array.isArray(data.ingredients)) {
+          PUBLIC_INGREDIENTS = data.ingredients;
+          const dl = document.getElementById("ingredientsList");
+          if (dl) {
+            dl.innerHTML = PUBLIC_INGREDIENTS.map((i) => `<option value="${i.name}"></option>`).join("");
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Failed to refresh ingredient list", err);
+    }
       const recipeRows = modal.querySelector(".recipe-rows");
       const ingRows = modal.querySelector(".ingredient-rows");
       recipeRows.innerHTML = "";

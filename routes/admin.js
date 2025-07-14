@@ -549,6 +549,25 @@ module.exports = (db, io) => {
     });
   });
 
+  router.get("/admin/ingredients/list", async (req, res) => {
+    try {
+      const [ingredients] = await db
+        .promise()
+        .query(
+          `SELECT ing.id, ing.name, ing.quantity, ing.unit_id,
+                  u.abbreviation AS unit, ing.sku, ing.cost, ing.is_public
+             FROM ingredients ing
+             LEFT JOIN units u ON ing.unit_id = u.id
+            WHERE ing.is_public=1
+             ORDER BY ing.name`,
+        );
+      res.json({ ingredients });
+    } catch (err) {
+      console.error("Error fetching ingredient list:", err);
+      res.status(500).json({ error: "DB Error" });
+    }
+  });
+
   router.post("/admin/item-categories", (req, res) => {
     const { id, name, parent_id } = req.body;
     if (!name) return res.redirect("/admin?tab=inventory");
