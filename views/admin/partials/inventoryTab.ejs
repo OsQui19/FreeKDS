@@ -4,6 +4,8 @@
     <li class="nav-item"><a href="#" class="nav-link active" data-pane="itemsPane">Items</a></li>
     <li class="nav-item"><a href="#" class="nav-link" data-pane="usageLogPane">Usage Log</a></li>
     <li class="nav-item"><a href="#" class="nav-link" data-pane="usageSummaryPane">Usage Summary</a></li>
+    <li class="nav-item"><a href="#" class="nav-link" data-pane="suppliersPane">Suppliers</a></li>
+    <li class="nav-item"><a href="#" class="nav-link" data-pane="ordersPane">Purchase Orders</a></li>
   </ul>
   <div class="tab-content">
     <div class="inventory-pane active" id="itemsPane">
@@ -206,6 +208,14 @@
           <% }) %>
         </tbody>
       </table>
+    </div>
+
+    <div class="inventory-pane" id="suppliersPane">
+      <%- include('suppliersTab') %>
+    </div>
+
+    <div class="inventory-pane" id="ordersPane">
+      <%- include('purchaseOrdersTab') %>
     </div>
 
 

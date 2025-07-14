@@ -5,8 +5,6 @@ const ALL_MODULES = [
   "menu",
   "theme",
   "inventory",
-  "suppliers",
-  "purchase-orders",
   "reports",
   "employees",
   "locations",

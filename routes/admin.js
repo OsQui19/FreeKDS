@@ -51,8 +51,8 @@ module.exports = (db, io) => {
       "/admin/menu": "menu",
       "/admin/theme": "theme",
       "/admin/inventory": "inventory",
-      "/admin/suppliers": "suppliers",
-      "/admin/purchase-orders": "purchase-orders",
+      "/admin/suppliers": "inventory",
+      "/admin/purchase-orders": "inventory",
       "/admin/reports": "reports",
       "/admin/locations": "locations",
     };

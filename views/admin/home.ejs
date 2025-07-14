@@ -32,12 +32,6 @@
   <% if ((allowedModules || []).includes('inventory')) { %>
   <template id="tpl-inventory"><%- include('partials/inventoryTab') %></template>
   <% } %>
-  <% if ((allowedModules || []).includes('suppliers')) { %>
-  <template id="tpl-suppliers"><%- include('partials/suppliersTab') %></template>
-  <% } %>
-  <% if ((allowedModules || []).includes('purchase-orders')) { %>
-  <template id="tpl-purchase-orders"><%- include('partials/purchaseOrdersTab') %></template>
-  <% } %>
   <% if ((allowedModules || []).includes('reports')) { %>
   <template id="tpl-reports"><%- include('partials/reportsTab') %></template>
   <% } %>
