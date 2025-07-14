@@ -104,7 +104,7 @@ async function loadReports() {
             },
           ],
         },
-        options: { scales: { y: { beginAtZero: true } } },
+        options: { responsive: true, scales: { y: { beginAtZero: true } } },
       });
 
       if (marginEl) {
@@ -136,7 +136,7 @@ async function loadReports() {
               },
             ],
           },
-          options: { scales: { y: { beginAtZero: true } } },
+          options: { responsive: true, scales: { y: { beginAtZero: true } } },
         });
       }
 
@@ -153,7 +153,7 @@ async function loadReports() {
           labels: catLabels,
           datasets: [{ label: "Sales", data: catTotals }],
         },
-        options: { scales: { y: { beginAtZero: true } } },
+        options: { responsive: true, scales: { y: { beginAtZero: true } } },
       });
 
       if (topBody) {

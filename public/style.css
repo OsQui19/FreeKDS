@@ -638,12 +638,7 @@ body.admin-screen {
 }
 #reportsTab canvas {
   max-width: 100%;
-  height: 300px;
-}
-@media (max-width: 575.98px) {
-  #reportsTab canvas {
-    height: 250px;
-  }
+  aspect-ratio: 16 / 9;
 }
 #menuPreview {
   border: 1px solid #ccc;
