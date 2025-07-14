@@ -19,6 +19,7 @@ export default function HierarchyApp() {
   const [modules, setModules] = useState([]);
   const [permissions, setPermissions] = useState({});
   const [selectedRole, setSelectedRole] = useState('');
+  const [modulesCollapsed, setModulesCollapsed] = useState(true);
 
   useEffect(() => {
     async function load() {
@@ -242,8 +243,17 @@ export default function HierarchyApp() {
         </form>
       </div>
       <div className="modules-panel">
-        <h5>Module Access</h5>
-        {selectedRole && (
+        <h5 className="d-flex align-items-center">
+          Module Access
+          <button
+            type="button"
+            className="btn btn-link btn-sm ms-2 module-toggle"
+            onClick={() => setModulesCollapsed(!modulesCollapsed)}
+          >
+            {modulesCollapsed ? 'Show' : 'Hide'}
+          </button>
+        </h5>
+        {!modulesCollapsed && selectedRole && (
           <div className="table-responsive">
             <table className="table table-sm module-table">
               <thead>
