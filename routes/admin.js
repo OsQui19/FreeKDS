@@ -26,6 +26,7 @@ const {
 const settingsCache = require("../controllers/settingsCache");
 const { convert } = require("../controllers/unitConversion");
 const { logSecurityEvent } = require("../controllers/securityLog");
+const { validateSettings } = require("../utils/validateSettings");
 
 module.exports = (db, io) => {
   const router = express.Router();
@@ -916,23 +917,10 @@ module.exports = (db, io) => {
   });
 
   router.post("/admin/settings", (req, res) => {
-    const allowed = [
-      "brand_name",
-      "theme_primary_color",
-      "theme_bg_color",
-      "theme_wallpaper",
-      "ticket_layout",
-      "font_family",
-      "custom_css",
-      "text_color",
-      "button_radius",
-      "card_shadow",
-      "menu_layout",
-    ];
-    const settings = {};
-    allowed.forEach((k) => {
-      if (req.body[k] !== undefined) settings[k] = req.body[k];
-    });
+    const { settings, errors } = validateSettings(req.body);
+    if (errors.length) {
+      return res.redirect("/admin?tab=theme&err=Invalid+settings");
+    }
     const keys = Object.keys(settings);
     if (keys.length === 0) return res.redirect("/admin?tab=theme");
 

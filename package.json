@@ -10,7 +10,8 @@
     "seed": "node tests/seed.js",
     "create-admin": "node scripts/createAdmin.js",
     "check-perms": "node scripts/checkPermissions.js",
-    "backup": "node scripts/backup.js"
+    "backup": "node scripts/backup.js",
+    "test": "mocha \"tests/**/*.test.js\""
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
@@ -29,7 +30,9 @@
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.2.0",
+    "chai": "^5.2.1",
     "eslint": "^9.29.0",
+    "mocha": "^11.7.1",
     "nodemon": "^3.1.10",
     "prettier": "^3.5.3",
     "vite": "^7.0.3"
