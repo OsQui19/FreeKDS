@@ -16,10 +16,11 @@ import { CSS } from '@dnd-kit/utilities';
 
 export default function HierarchyApp() {
   const [roles, setRoles] = useState([]);
-  const [modules, setModules] = useState([]);
+  const [moduleGroups, setModuleGroups] = useState([]);
   const [permissions, setPermissions] = useState({});
   const [selectedRole, setSelectedRole] = useState('');
   const [modulesCollapsed, setModulesCollapsed] = useState(true);
+  const [collapsedGroups, setCollapsedGroups] = useState({});
 
   useEffect(() => {
     async function load() {
@@ -34,7 +35,13 @@ export default function HierarchyApp() {
         const modJson = await modRes.json();
         setRoles(roleJson.hierarchy || []);
         setPermissions(permJson.permissions || {});
-        setModules(modJson.modules || []);
+        if (Array.isArray(modJson.groups)) {
+          setModuleGroups(modJson.groups);
+        } else if (Array.isArray(modJson.modules)) {
+          setModuleGroups([{ category: 'modules', modules: modJson.modules }]);
+        } else {
+          setModuleGroups([]);
+        }
       } catch (err) {
         console.error(err);
       }
@@ -133,6 +140,10 @@ export default function HierarchyApp() {
     if (current.has(mod)) current.delete(mod);
     else current.add(mod);
     savePermissions({ ...permissions, [role]: Array.from(current) });
+  };
+
+  const toggleGroup = (idx) => {
+    setCollapsedGroups((c) => ({ ...c, [idx]: !c[idx] }));
   };
 
   const RoleItem = ({ id, index, highest }) => {
@@ -254,36 +265,39 @@ export default function HierarchyApp() {
           </button>
         </h5>
         {!modulesCollapsed && selectedRole && (
-          <div className="table-responsive">
-            <table className="table table-sm module-table">
-              <thead>
-                <tr>
-                  <th className="text-start">{selectedRole}</th>
-                  {modules.map((m) => (
-                    <th key={m} className="text-center">
-                      <span data-bs-toggle="tooltip" title={`Access to ${m}`}>{m.replace(/-/g, ' ')}</span>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td></td>
-                  {modules.map((m) => (
-                    <td key={m} className="text-center">
-                      <div className="form-check form-switch d-flex justify-content-center">
-                        <input
-                          className="form-check-input"
-                          type="checkbox"
-                          checked={(permissions[selectedRole] || []).includes(m)}
-                          onChange={() => togglePermission(selectedRole, m)}
-                        />
-                      </div>
-                    </td>
-                  ))}
-                </tr>
-              </tbody>
-            </table>
+          <div>
+            {moduleGroups.map((grp, idx) => {
+              const collapsed = collapsedGroups[idx];
+              return (
+                <div key={grp.category || idx} className="module-group mb-3">
+                  <button
+                    type="button"
+                    className="btn btn-link btn-sm arrow-toggle"
+                    onClick={() => toggleGroup(idx)}
+                  >
+                    <i className={`bi ${collapsed ? 'bi-caret-right' : 'bi-caret-down'}`} />
+                  </button>
+                  <span className="ms-1 fw-semibold">{grp.category}</span>
+                  {!collapsed && (
+                    <ul className="list-group mt-2">
+                      {grp.modules.map((m) => (
+                        <li key={m} className="list-group-item d-flex justify-content-between align-items-center">
+                          <span>{m.replace(/-/g, ' ')}</span>
+                          <div className="form-check form-switch">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              checked={(permissions[selectedRole] || []).includes(m)}
+                              onChange={() => togglePermission(selectedRole, m)}
+                            />
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

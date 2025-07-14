@@ -21,6 +21,21 @@ The app now uses [helmet](https://github.com/helmetjs/helmet) and basic rate lim
 ### Role hierarchy
 The highest role in the hierarchy (`management` by default) cannot be removed. This prevents administrators from accidentally losing permission to manage roles. If the top role is missing it will be automatically restored on server start.
 
+### Hierarchy
+The `/api/modules` endpoint exposes modules grouped by category. Each entry has a `category` name and a list of `modules`:
+
+```json
+{
+  "modules": ["stations", "order", "menu", ...],
+  "groups": [
+    { "category": "operations", "modules": ["order", "stations"] },
+    { "category": "admin", "modules": ["menu", "theme", "inventory", "reports", "employees", "locations"] }
+  ]
+}
+```
+
+Use these groups in the Employees &rarr; Hierarchy screen to expand or collapse access to each module category.
+
 ## Database Backup
 Automated daily backups are created in the `BACKUP_DIR` directory. You can run a manual backup anytime with:
 
