@@ -17,6 +17,17 @@ let lastBumpedOrderId = null;
 const bumpedOrders = [];
 const MAX_HISTORY = 20;
 let selectedTicket = null;
+
+function animateRemove(elem) {
+  elem.classList.add("fade-scale-out");
+  elem.addEventListener(
+    "animationend",
+    () => {
+      elem.remove();
+    },
+    { once: true },
+  );
+}
 function loadBumpedOrders() {
   return fetch(
     `/api/bumped_orders?station_id=${stationId}&limit=${MAX_HISTORY}`,
@@ -185,13 +196,17 @@ socket.on("orderAdded", (data) => {
     createdTs: data.createdTs,
     items: data.items,
   });
+  ticketDiv.classList.add("fade-scale-in");
+  ticketDiv.addEventListener("animationend", () => {
+    ticketDiv.classList.remove("fade-scale-in");
+  }, { once: true });
   document.querySelector(".tickets-container").appendChild(ticketDiv);
 });
 socket.on("orderCompleted", (data) => {
   const { orderId } = data;
   const ticket = document.querySelector(`.ticket[data-order-id="${orderId}"]`);
   if (ticket) {
-    ticket.remove();
+    animateRemove(ticket);
   }
 });
 
@@ -272,7 +287,7 @@ actionBtn.addEventListener("click", () => {
     if (bumpedOrders.length > MAX_HISTORY) bumpedOrders.pop();
     socket.emit("bumpOrder", { orderId });
     if (stationType !== "expo") {
-      ticket.remove();
+      animateRemove(ticket);
     }
     if (ticket === selectedTicket) {
       selectedTicket = null;
@@ -322,8 +337,20 @@ document.addEventListener("click", (e) => {
     socket.emit("recallOrder", { orderId: info.orderId });
     const container = document.querySelector(".tickets-container");
     if (container.firstChild) {
+      info.ticket.classList.add("fade-scale-in");
+      info.ticket.addEventListener(
+        "animationend",
+        () => info.ticket.classList.remove("fade-scale-in"),
+        { once: true },
+      );
       container.insertBefore(info.ticket, container.firstChild);
     } else {
+      info.ticket.classList.add("fade-scale-in");
+      info.ticket.addEventListener(
+        "animationend",
+        () => info.ticket.classList.remove("fade-scale-in"),
+        { once: true },
+      );
       container.appendChild(info.ticket);
     }
     bumpedOrders.splice(idx, 1);
