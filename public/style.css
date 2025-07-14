@@ -268,7 +268,7 @@ body.station-screen {
 }
 
 /* Modal for recipe */
-.modal {
+.custom-modal {
   position: fixed;
   top: 0;
   left: 0;
@@ -768,7 +768,7 @@ body.admin-screen {
   margin-bottom: 0.5rem;
 }
 
-#scheduleModal.modal {
+#scheduleModal.custom-modal {
   align-items: flex-start;
   justify-content: flex-start;
 }
