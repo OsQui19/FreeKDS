@@ -15,6 +15,12 @@
 .modules-panel {
   flex: 2 1 300px;
 }
+.module-toggle {
+  border: none;
+  background: none;
+  padding: 0;
+  text-decoration: none;
+}
 .role-card {
   display: flex;
   justify-content: space-between;
