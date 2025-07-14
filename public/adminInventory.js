@@ -24,16 +24,26 @@ function initAdminInventory() {
   function handleForm(form) {
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const resp = await fetch(form.action, {
-        method: form.method || "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: serialize(form),
-        redirect: "follow",
-      });
-      if (resp.redirected) {
-        window.location.href = resp.url;
-      } else {
-        location.reload();
+      try {
+        const resp = await fetch(form.action, {
+          method: form.method || "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: serialize(form),
+          redirect: "follow",
+        });
+        if (!resp.ok) {
+          const msg = await resp.text().catch(() => "Error saving");
+          showAlert(msg || "Error saving");
+          return;
+        }
+        if (resp.redirected) {
+          window.location.href = resp.url;
+        } else {
+          location.reload();
+        }
+      } catch (err) {
+        console.error("Form submit failed", err);
+        showAlert("Error saving");
       }
     });
   }
