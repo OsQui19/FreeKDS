@@ -211,11 +211,93 @@
     </div>
 
     <div class="inventory-pane" id="suppliersPane">
-      <%- include('suppliersTab') %>
+      <div class="container admin-container">
+        <h1>Suppliers</h1>
+        <table class="table">
+          <thead>
+            <tr><th>Name</th><th>Contact</th><th></th><th></th></tr>
+          </thead>
+          <tbody>
+            <% suppliers.forEach(s => { %>
+            <tr>
+              <form action="/admin/suppliers" method="POST">
+                <td>
+                  <input type="hidden" name="id" value="<%= s.id %>">
+                  <input class="form-control" type="text" name="name" value="<%= s.name %>" required>
+                </td>
+                <td><input class="form-control" type="text" name="contact_info" value="<%= s.contact_info || '' %>"></td>
+                <td><button class="btn btn-primary btn-sm" type="submit">Save</button></td>
+              </form>
+              <td>
+                <form action="/admin/suppliers/delete" method="POST" onsubmit="return confirm('Delete supplier \"<%= s.name %>\"?');">
+                  <input type="hidden" name="id" value="<%= s.id %>">
+                  <button class="btn btn-secondary btn-sm" type="submit">Delete</button>
+                </form>
+              </td>
+            </tr>
+            <% }) %>
+            <tr>
+              <form action="/admin/suppliers" method="POST">
+                <td><input class="form-control" type="text" name="name" placeholder="Name" required></td>
+                <td><input class="form-control" type="text" name="contact_info" placeholder="Contact"></td>
+                <td colspan="2"><button class="btn btn-primary btn-sm" type="submit">Add</button></td>
+              </form>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <div class="inventory-pane" id="ordersPane">
-      <%- include('purchaseOrdersTab') %>
+      <div class="container admin-container">
+        <h1>Purchase Orders</h1>
+        <table class="table mb-3">
+          <thead>
+            <tr><th>Date</th><th>Supplier</th><th>Location</th><th>Status</th><th></th></tr>
+          </thead>
+          <tbody>
+            <% orders.forEach(o => { %>
+            <tr>
+              <td><a href="/admin/purchase-orders/<%= o.id %>"><%= o.order_date.toISOString ? o.order_date.toISOString().slice(0,10) : o.order_date %></a></td>
+              <td><%= o.supplier_name %></td>
+              <td><%= o.location_name || '' %></td>
+              <td><%= o.status %></td>
+              <td>
+                <form action="/admin/purchase-orders/delete" method="POST" onsubmit="return confirm('Delete order?');">
+                  <input type="hidden" name="id" value="<%= o.id %>">
+                  <button class="btn btn-secondary btn-sm" type="submit">Delete</button>
+                </form>
+              </td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+        <h2>New Order</h2>
+        <form action="/admin/purchase-orders" method="POST" class="row g-2">
+          <div class="col-auto">
+            <input class="form-control" type="date" name="order_date" required>
+          </div>
+          <div class="col-auto">
+            <select class="form-select" name="supplier_id" required>
+              <option value="">Supplier</option>
+              <% suppliers.forEach(s => { %>
+              <option value="<%= s.id %>"><%= s.name %></option>
+              <% }) %>
+            </select>
+          </div>
+          <div class="col-auto">
+            <select class="form-select" name="location_id">
+              <option value="">Location</option>
+              <% locations.forEach(l => { %>
+              <option value="<%= l.id %>"><%= l.name %></option>
+              <% }) %>
+            </select>
+          </div>
+          <div class="col-auto">
+            <button class="btn btn-primary" type="submit">Create</button>
+          </div>
+        </form>
+      </div>
     </div>
 
 
