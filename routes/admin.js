@@ -818,6 +818,8 @@ module.exports = (db, io) => {
   });
 
   router.post("/admin/stations", (req, res) => {
+    const wantsJSON =
+      req.headers.accept && req.headers.accept.includes("application/json");
     const name = req.body.name;
     const type = req.body.type;
     let filter = req.body.order_type_filter;
@@ -829,8 +831,24 @@ module.exports = (db, io) => {
       db.query(
         "INSERT INTO stations (name, type, order_type_filter, bg_color, primary_color, font_family) VALUES (?, ?, ?, ?, ?, ?)",
         [name, type, filter, bg, primary, font],
-        (err) => {
-          if (err) console.error("Error inserting station:", err);
+        async (err, result) => {
+          if (err) {
+            console.error("Error inserting station:", err);
+            if (wantsJSON) return res.status(500).json({ error: "DB Error" });
+          }
+          if (wantsJSON) {
+            return res.json({
+              station: {
+                id: result.insertId,
+                name,
+                type,
+                order_type_filter: filter,
+                bg_color: bg,
+                primary_color: primary,
+                font_family: font,
+              },
+            });
+          }
           res.redirect("/admin?tab=stations&msg=Station+saved");
         },
       );
@@ -840,6 +858,8 @@ module.exports = (db, io) => {
   });
 
   router.post("/admin/stations/update", (req, res) => {
+    const wantsJSON =
+      req.headers.accept && req.headers.accept.includes("application/json");
     const id = req.body.id;
     const name = req.body.name;
     const type = req.body.type;
@@ -855,7 +875,23 @@ module.exports = (db, io) => {
         "UPDATE stations SET name=?, type=?, order_type_filter=?, bg_color=?, primary_color=?, font_family=? WHERE id=?",
         [name, type, filter, bg, primary, font, id],
         (err) => {
-          if (err) console.error("Error updating station:", err);
+          if (err) {
+            console.error("Error updating station:", err);
+            if (wantsJSON) return res.status(500).json({ error: "DB Error" });
+          }
+          if (wantsJSON) {
+            return res.json({
+              station: {
+                id: parseInt(id, 10),
+                name,
+                type,
+                order_type_filter: filter,
+                bg_color: bg,
+                primary_color: primary,
+                font_family: font,
+              },
+            });
+          }
           res.redirect("/admin?tab=stations&msg=Station+saved");
         },
       );
