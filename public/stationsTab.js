@@ -1,4 +1,9 @@
-document.addEventListener('DOMContentLoaded', () => {
+let stationsTabInitialized = false;
+
+function initStationsTab() {
+  if (stationsTabInitialized) return;
+  stationsTabInitialized = true;
+
   document.querySelectorAll('[id^="station-"]').forEach((sec) => {
     const btn = document.querySelector(`button[data-bs-target="#${sec.id}"]`);
     if (!btn) return;
@@ -20,4 +25,14 @@ document.addEventListener('DOMContentLoaded', () => {
     formSection.addEventListener('shown.bs.collapse', updateFormText);
     formSection.addEventListener('hidden.bs.collapse', updateFormText);
   }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initStationsTab);
+} else {
+  initStationsTab();
+}
+
+document.addEventListener('adminTabShown', (e) => {
+  if (e.detail === 'stations') initStationsTab();
 });
