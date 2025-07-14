@@ -182,6 +182,17 @@ async function initReports() {
     const start = new Date(end.getTime() - 29 * 86400000);
     startInput.value = fmt(start);
     endInput.value = fmt(end);
+    document.querySelectorAll(".report-preset").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const days = parseInt(btn.dataset.days, 10);
+        if (!days) return;
+        const now = new Date();
+        const startDate = new Date(now.getTime() - (days - 1) * 86400000);
+        startInput.value = fmt(startDate);
+        endInput.value = fmt(now);
+        loadReports();
+      });
+    });
   }
   if (rangeForm) {
     rangeForm.addEventListener("submit", (e) => {

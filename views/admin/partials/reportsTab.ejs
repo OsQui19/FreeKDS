@@ -7,6 +7,11 @@
     <div class="col-auto">
       <input type="date" id="reportEnd" class="form-control form-control-sm" required />
     </div>
+    <div class="col-auto d-flex align-items-center gap-1" id="reportPresets">
+      <button type="button" class="btn btn-outline-secondary btn-sm report-preset" data-days="1">Today</button>
+      <button type="button" class="btn btn-outline-secondary btn-sm report-preset" data-days="7">7d</button>
+      <button type="button" class="btn btn-outline-secondary btn-sm report-preset" data-days="30">30d</button>
+    </div>
     <div class="col-auto">
       <button type="submit" class="btn btn-sm btn-primary">Load</button>
     </div>
