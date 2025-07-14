@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Purchase Order Detail</title>
+  <link href="/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/vendor/bootstrap-icons/bootstrap-icons.css">
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/dist/main.css">
+  <%- include('../partials/theme-vars') %>
+  <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script defer src="/loadingSpinner.js"></script>
+  <script defer src="/confirmSubmit.js"></script>
+</head>
+<body class="admin-screen">
+  <%- include('partials/header') %>
+  <%- include('partials/sidenav') %>
+  <%- include('partials/flashMessage') %>
+  <div class="container admin-container mt-3">
+    <h1 class="mb-3">Purchase Order</h1>
+    <div class="mb-3">
+      <strong>Date:</strong> <%= order.order_date.toISOString ? order.order_date.toISOString().slice(0,10) : order.order_date %><br>
+      <strong>Supplier:</strong> <%= order.supplier_name %><br>
+      <strong>Location:</strong> <%= order.location_name || '' %><br>
+      <strong>Status:</strong> <%= order.status %>
+    </div>
+    <% if (order.status !== 'received') { %>
+      <form class="mb-3" method="POST" action="/admin/purchase-orders/<%= order.id %>/receive" onsubmit="return confirm('Mark order as received?');">
+        <button class="btn btn-primary" type="submit">Receive Order</button>
+      </form>
+    <% } %>
+    <h2>Items</h2>
+    <table class="table table-sm align-middle">
+      <thead>
+        <tr><th>Ingredient</th><th>Quantity</th><th>Unit</th><th></th></tr>
+      </thead>
+      <tbody>
+        <% items.forEach(function(it){ %>
+          <tr>
+            <td><%= it.ingredient_name %></td>
+            <td><%= it.quantity %></td>
+            <td><%= it.abbreviation || '' %></td>
+            <td>
+              <% if (order.status !== 'received') { %>
+              <form method="POST" action="/admin/purchase-order-items/delete" onsubmit="return confirm('Delete item?');" class="d-inline">
+                <input type="hidden" name="id" value="<%= it.id %>">
+                <input type="hidden" name="order_id" value="<%= order.id %>">
+                <button class="btn btn-secondary btn-sm" type="submit">Delete</button>
+              </form>
+              <% } %>
+            </td>
+          </tr>
+        <% }) %>
+        <% if (order.status !== 'received') { %>
+        <tr>
+          <form method="POST" action="/admin/purchase-order-items" class="row g-2">
+            <input type="hidden" name="purchase_order_id" value="<%= order.id %>">
+            <td>
+              <select class="form-select form-select-sm" name="ingredient_id" required>
+                <option value="">Ingredient</option>
+                <% ingredients.forEach(function(ing){ %>
+                  <option value="<%= ing.id %>"><%= ing.name %></option>
+                <% }) %>
+              </select>
+            </td>
+            <td><input class="form-control form-control-sm" type="number" step="any" name="quantity" required></td>
+            <td>
+              <select class="form-select form-select-sm" name="unit_id">
+                <option value="">Unit</option>
+                <% units.forEach(function(u){ %>
+                  <option value="<%= u.id %>"><%= u.abbreviation %></option>
+                <% }) %>
+              </select>
+            </td>
+            <td><button class="btn btn-primary btn-sm" type="submit">Add</button></td>
+          </form>
+        </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

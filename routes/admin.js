@@ -1055,11 +1055,14 @@ module.exports = (db, io) => {
       const items = await getPurchaseOrderItems(db, id);
       const ingredients = await getIngredients(db);
       const units = await getUnits(db);
+      const allowedModules = getRolePermissions(req.session.user.role);
       res.render("admin/purchase_order_detail", {
         order,
         items,
         ingredients,
         units,
+        allowedModules,
+        settings: res.locals.settings || {},
       });
     } catch (err) {
       console.error("Error fetching order detail:", err);
