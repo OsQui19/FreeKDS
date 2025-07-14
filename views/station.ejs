@@ -48,13 +48,13 @@
       <p class="no-orders">No current orders.</p>
     <% } %>
     <% orders.forEach(function(order) { %>
-      <div class="ticket <%= order.order_type ? order.order_type.replace(' ', '-').toLowerCase() : '' %>" data-order-id="<%= order.order_id %>" data-created-ts="<%= order.ts %>">
+      <div class="ticket <%= order.order_type ? order.order_type.replace(/\s+/g, '-').toLowerCase() : '' %>" data-order-id="<%= order.order_id %>" data-created-ts="<%= order.ts %>">
         <div class="ticket-header">
           <!-- Order type label -->
           <% if (order.order_type) {
                // Display order type or a source tag (could customize if needed)
           %>
-            <span class="order-type <%= order.order_type.replace(' ', '-').toLowerCase() %>">
+            <span class="order-type <%= order.order_type.replace(/\s+/g, '-').toLowerCase() %>">
               <%= order.order_type %>
             </span>
           <% } %>
