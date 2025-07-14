@@ -148,6 +148,8 @@ module.exports = (db, io) => {
   });
 
   router.post("/admin/items", async (req, res) => {
+    const wantsJSON =
+      req.headers.accept && req.headers.accept.includes("application/json");
     const id = req.body.id;
     const name = req.body.name;
     const price = parseFloat(req.body.price) || 0;
@@ -263,12 +265,37 @@ module.exports = (db, io) => {
           }
           updateItemGroups(db, id, selectedGroups, () => {
             updateItemModifiers(db, id, selectedMods, () => {
-              if (itemIngredients.length) {
-                updateItemIngredients(db, id, itemIngredients, () => {
-                  return res.redirect("/admin?tab=menu&msg=Item+saved");
-                });
-              } else {
+              const finish = async () => {
+                if (wantsJSON) {
+                  try {
+                    const [rows] = await db
+                      .promise()
+                      .query("SELECT name FROM stations WHERE id=?", [stationId]);
+                    const stationName = rows[0] ? rows[0].name : "";
+                    return res.json({
+                      item: {
+                        id: parseInt(id, 10),
+                        name,
+                        price,
+                        station_id: stationId,
+                        station_name: stationName,
+                        category_id: categoryId,
+                        recipe,
+                        image_url: imageUrl,
+                        modifierNamesStr: "",
+                      },
+                    });
+                  } catch (err2) {
+                    console.error("Error returning item json:", err2);
+                    return res.status(500).json({ error: "DB Error" });
+                  }
+                }
                 return res.redirect("/admin?tab=menu&msg=Item+saved");
+              };
+              if (itemIngredients.length) {
+                updateItemIngredients(db, id, itemIngredients, finish);
+              } else {
+                finish();
               }
             });
           });
@@ -296,7 +323,31 @@ module.exports = (db, io) => {
             const newItemId = result.insertId;
             updateItemGroups(db, newItemId, selectedGroups, () => {
               updateItemModifiers(db, newItemId, selectedMods, () => {
-                updateItemIngredients(db, newItemId, itemIngredients, () => {
+                updateItemIngredients(db, newItemId, itemIngredients, async () => {
+                  if (wantsJSON) {
+                    try {
+                      const [rows] = await db
+                        .promise()
+                        .query("SELECT name FROM stations WHERE id=?", [stationId]);
+                      const stationName = rows[0] ? rows[0].name : "";
+                      return res.json({
+                        item: {
+                          id: newItemId,
+                          name,
+                          price,
+                          station_id: stationId,
+                          station_name: stationName,
+                          category_id: categoryId,
+                          recipe,
+                          image_url: imageUrl,
+                          modifierNamesStr: "",
+                        },
+                      });
+                    } catch (err2) {
+                      console.error("Error returning item json:", err2);
+                      return res.status(500).json({ error: "DB Error" });
+                    }
+                  }
                   return res.redirect("/admin?tab=menu&msg=Item+saved");
                 });
               });

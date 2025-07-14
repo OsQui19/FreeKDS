@@ -40,7 +40,10 @@ function handleForm(form, onSuccess) {
     const hide = window.showSpinner ? window.showSpinner() : () => {};
     fetch(form.action, {
       method: form.method || "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        Accept: "application/json",
+      },
       body: serialize(form),
       redirect: "manual",
     })
@@ -57,7 +60,7 @@ function handleForm(form, onSuccess) {
             msg = new URL(res.url).searchParams.get("msg");
           } catch {}
         }
-        if (typeof onSuccess === "function") onSuccess();
+        if (typeof onSuccess === "function") onSuccess(res);
         if (msg) {
           showAlert(decodeURIComponent(msg.replace(/\+/g, " ")));
           history.replaceState(null, "", window.location.pathname);
@@ -253,9 +256,8 @@ function initRecipeModal() {
     modal.classList.remove("d-flex");
   };
 
-  document.querySelectorAll(".open-recipe-modal").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      currentForm = btn.closest("form");
+  const openModal = (btn) => {
+    currentForm = btn.closest("form");
       const recipeRows = modal.querySelector(".recipe-rows");
       const ingRows = modal.querySelector(".ingredient-rows");
       recipeRows.innerHTML = "";
@@ -307,10 +309,17 @@ function initRecipeModal() {
         }
       }
 
-      modal.classList.remove("d-none");
-      modal.classList.add("d-flex");
-    });
+    modal.classList.remove("d-none");
+    modal.classList.add("d-flex");
+  };
+
+  document.querySelectorAll(".open-recipe-modal").forEach((btn) => {
+    btn.addEventListener("click", () => openModal(btn));
   });
+
+  window.attachRecipeModalButton = (btn) => {
+    if (btn) btn.addEventListener("click", () => openModal(btn));
+  };
 
   cancelBtn.addEventListener("click", closeModal);
 
@@ -554,9 +563,142 @@ function bindForms() {
   });
 
   document.querySelectorAll(".add-item-form form").forEach((form) => {
-    handleForm(form, () => {
-      // Reload to display the newly added item in its category
-      window.location.reload();
+    handleForm(form, async (res) => {
+      let data = null;
+      if (
+        res &&
+        res.headers.get("content-type") &&
+        res.headers.get("content-type").includes("application/json")
+      ) {
+        try {
+          data = await res.json();
+        } catch {}
+      }
+      if (!data || !data.item) {
+        window.location.reload();
+        return;
+      }
+      const item = data.item;
+      const list = form.closest(".item-list");
+      const template = document.querySelector(".menu-item");
+      if (!list || !template) {
+        window.location.reload();
+        return;
+      }
+      const li = template.cloneNode(true);
+      li.setAttribute("data-item-id", item.id);
+      li.querySelector(".item-id").textContent = `ID: ${item.id}`;
+      li.querySelector(".item-name").textContent = item.name;
+      li.querySelector(".item-price").textContent =
+        "$" + Number(item.price).toFixed(2);
+      const img = li.querySelector(".item-view img");
+      if (img) img.src = item.image_url ? item.image_url : "/no-image-60.png";
+      const stationSel = li.querySelector(
+        '.item-edit-form select[name="station_id"]',
+      );
+      let stationName = "";
+      if (stationSel) {
+        stationSel.value = item.station_id;
+        const opt = stationSel.querySelector(
+          `option[value="${item.station_id}"]`,
+        );
+        if (opt) stationName = opt.textContent;
+      }
+      li.querySelector(
+        ".item-station",
+      ).textContent = `Station: ${stationName}`;
+      const catSel = li.querySelector(
+        '.item-edit-form select[name="category_id"]',
+      );
+      if (catSel) catSel.value = item.category_id;
+      li.querySelector(
+        '.item-edit-form input[name="name"]',
+      ).value = item.name;
+      li.querySelector(
+        '.item-edit-form input[name="price"]',
+      ).value = item.price;
+      const imgInput = li.querySelector(
+        '.item-edit-form input[name="image_url"]',
+      );
+      if (imgInput) imgInput.value = item.image_url || "";
+      const idInput = li.querySelector('.item-edit-form input[name="id"]');
+      if (idInput) idInput.value = item.id;
+      const recHidden = li.querySelector(
+        '.item-edit-form input[name="recipe"]',
+      );
+      if (recHidden) recHidden.value = item.recipe || "";
+      li.querySelector(".item-recipe").textContent =
+        "Recipe: " + (item.recipe && item.recipe.trim() ? "Yes" : "No");
+      li.querySelector(".item-mods").textContent =
+        item.modifierNamesStr ? `Extras: ${item.modifierNamesStr}` : "Extras: None";
+      li
+        .querySelectorAll('.item-edit-form input[name="modifier_ids"]')
+        .forEach((cb) => {
+          cb.checked = false;
+        });
+      li
+        .querySelectorAll(
+          '.item-edit-form select.mod-replace-select',
+        )
+        .forEach((sel) => {
+          sel.value = "";
+          sel.disabled = true;
+        });
+      const grpSel = li.querySelector(
+        '.item-edit-form select[name="group_ids"]',
+      );
+      if (grpSel)
+        Array.from(grpSel.options).forEach((o) => (o.selected = false));
+      const hidBox = li.querySelector(
+        '.item-edit-form .hidden-ingredients',
+      );
+      if (hidBox) hidBox.innerHTML = "";
+      list.insertBefore(li, form.closest("li.add-item-form"));
+      form.reset();
+      const hiddenBox = form.querySelector(".hidden-ingredients");
+      if (hiddenBox) hiddenBox.innerHTML = "";
+      updateModReplaceOptions(form);
+      if (typeof window.attachRecipeModalButton === "function")
+        window.attachRecipeModalButton(li.querySelector(".open-recipe-modal"));
+      li.querySelectorAll('form[data-confirm]').forEach((f) => {
+        f.addEventListener('submit', (e) => {
+          const msg = f.getAttribute('data-confirm');
+          if (msg && !window.confirm(msg)) e.preventDefault();
+        });
+      });
+      handleForm(li.querySelector('.item-edit-form form'), () => {
+        const liEl = li;
+        const formEl = liEl.querySelector('.item-edit-form form');
+        liEl.querySelector('.item-name').textContent = formEl.elements.name.value;
+        liEl.querySelector('.item-price').textContent =
+          '$' + parseFloat(formEl.elements.price.value).toFixed(2);
+        const stSel2 = formEl.elements.station_id;
+        if (stSel2) {
+          liEl.querySelector('.item-station').textContent =
+            stSel2.options[stSel2.selectedIndex].textContent;
+        }
+        const modNames = Array.from(
+          formEl.querySelectorAll('input[name="modifier_ids"]:checked'),
+        ).map((cb) => cb.parentNode.textContent.trim());
+        liEl.querySelector('.item-mods').textContent = modNames.length
+          ? 'Extras: ' + modNames.join(', ')
+          : 'Extras: None';
+        const recHidden2 = formEl.querySelector('input[name="recipe"]');
+        if (recHidden2) {
+          liEl.querySelector('.item-recipe').textContent =
+            'Recipe: ' + (recHidden2.value.trim() ? 'Yes' : 'No');
+        }
+        liEl.querySelector('.item-edit-form').classList.add('hidden');
+        liEl.querySelector('.item-view').classList.remove('hidden');
+      });
+      li.querySelector('.edit-item-btn').addEventListener('click', () => {
+        li.querySelector('.item-view').classList.add('hidden');
+        li.querySelector('.item-edit-form').classList.remove('hidden');
+      });
+      li.querySelector('.cancel-item-edit').addEventListener('click', () => {
+        li.querySelector('.item-edit-form').classList.add('hidden');
+        li.querySelector('.item-view').classList.remove('hidden');
+      });
     });
   });
 
