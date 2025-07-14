@@ -626,9 +626,14 @@ body.admin-screen {
   display: block;
 }
 @media (max-width: 575.98px) {
+  .inventory-tabs .nav-tabs {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
   .inventory-tabs .nav-tabs .nav-link {
-    flex: 1 0 50%;
+    flex: 0 0 auto;
     text-align: center;
+    white-space: nowrap;
   }
 }
 #reportsTab canvas {
