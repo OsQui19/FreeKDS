@@ -6,7 +6,9 @@ function initInventoryTabs() {
 
   function activate(id) {
     links.forEach((l) => {
-      l.classList.toggle("active", l.dataset.pane === id);
+      const active = l.dataset.pane === id;
+      l.classList.toggle("active", active);
+      l.setAttribute("aria-selected", active ? "true" : "false");
     });
     panes.forEach((p) => {
       p.classList.toggle("active", p.id === id);

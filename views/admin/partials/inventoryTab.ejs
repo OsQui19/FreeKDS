@@ -1,14 +1,14 @@
 <div class="container admin-container inventory-tabs">
   <h1>Inventory</h1>
-  <ul class="nav nav-tabs" id="inventoryTabs">
-    <li class="nav-item"><a href="#" class="nav-link active" data-pane="itemsPane">Items</a></li>
-    <li class="nav-item"><a href="#" class="nav-link" data-pane="usageLogPane">Usage Log</a></li>
-    <li class="nav-item"><a href="#" class="nav-link" data-pane="usageSummaryPane">Usage Summary</a></li>
-    <li class="nav-item"><a href="#" class="nav-link" data-pane="suppliersPane">Suppliers</a></li>
-    <li class="nav-item"><a href="#" class="nav-link" data-pane="ordersPane">Purchase Orders</a></li>
+  <ul class="nav nav-tabs" id="inventoryTabs" role="tablist">
+    <li class="nav-item"><a href="#" id="itemsTab" class="nav-link active" data-pane="itemsPane" role="tab" aria-controls="itemsPane" aria-selected="true">Items</a></li>
+    <li class="nav-item"><a href="#" id="usageLogTab" class="nav-link" data-pane="usageLogPane" role="tab" aria-controls="usageLogPane" aria-selected="false">Usage Log</a></li>
+    <li class="nav-item"><a href="#" id="usageSummaryTab" class="nav-link" data-pane="usageSummaryPane" role="tab" aria-controls="usageSummaryPane" aria-selected="false">Usage Summary</a></li>
+    <li class="nav-item"><a href="#" id="suppliersTab" class="nav-link" data-pane="suppliersPane" role="tab" aria-controls="suppliersPane" aria-selected="false">Suppliers</a></li>
+    <li class="nav-item"><a href="#" id="ordersTab" class="nav-link" data-pane="ordersPane" role="tab" aria-controls="ordersPane" aria-selected="false">Purchase Orders</a></li>
   </ul>
   <div class="tab-content">
-    <div class="inventory-pane active" id="itemsPane">
+    <div class="inventory-pane active" id="itemsPane" role="tabpanel" aria-labelledby="itemsTab">
       <div class="ingredient-list mb-3">
         <div class="d-flex mb-2 align-items-center">
           <select id="filterCategory" class="form-select form-select-sm me-2" style="width:auto;">
@@ -162,7 +162,7 @@
       </div>
     </div>
 
-    <div class="inventory-pane" id="usageLogPane">
+    <div class="inventory-pane" id="usageLogPane" role="tabpanel" aria-labelledby="usageLogTab">
       <h2>Recent Usage</h2>
       <form id="logRangeForm" class="row g-2 mb-2">
         <div class="col-auto">
@@ -193,7 +193,7 @@
       </table>
     </div>
 
-    <div class="inventory-pane" id="usageSummaryPane">
+    <div class="inventory-pane" id="usageSummaryPane" role="tabpanel" aria-labelledby="usageSummaryTab">
       <h2>Usage Summary</h2>
       <table class="table">
         <thead>
@@ -210,7 +210,7 @@
       </table>
     </div>
 
-    <div class="inventory-pane" id="suppliersPane">
+    <div class="inventory-pane" id="suppliersPane" role="tabpanel" aria-labelledby="suppliersTab">
       <div class="container admin-container">
         <h1>Suppliers</h1>
         <table class="table">
@@ -248,7 +248,7 @@
       </div>
     </div>
 
-    <div class="inventory-pane" id="ordersPane">
+    <div class="inventory-pane" id="ordersPane" role="tabpanel" aria-labelledby="ordersTab">
       <div class="container admin-container">
         <h1>Purchase Orders</h1>
         <table class="table mb-3">
