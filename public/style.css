@@ -643,23 +643,36 @@ body.admin-screen {
 #menuPreview {
   border: 1px solid #ccc;
   width: 100%;
-  height: 600px;
+  height: calc(100vh - 250px);
+  min-height: 300px;
 }
 @media (max-width: 768px) {
   #menuPreview {
     margin-top: 15px;
-    height: 400px;
+    height: calc(100vh - 320px);
   }
 }
+@media (max-width: 400px) {
+  #menuPreview {
+    height: calc(100vh - 280px);
+  }
+}
+
 #stationPreview {
   border: 1px solid #ccc;
   width: 100%;
-  height: 600px;
+  height: calc(100vh - 250px);
+  min-height: 300px;
 }
 @media (max-width: 768px) {
   #stationPreview {
     margin-top: 15px;
-    height: 400px;
+    height: calc(100vh - 320px);
+  }
+}
+@media (max-width: 400px) {
+  #stationPreview {
+    height: calc(100vh - 280px);
   }
 }
 
