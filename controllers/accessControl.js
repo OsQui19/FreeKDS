@@ -48,6 +48,9 @@ function loadHierarchy(db, cb) {
 function saveHierarchy(db, arr, cb) {
   if (Array.isArray(arr) && arr.length) {
     hierarchy = arr.map((r) => (typeof r === 'string' ? r.trim() : r));
+    if (!hierarchy.some((r) => normalizeRole(r) === 'management')) {
+      hierarchy.push('management');
+    }
   }
   db.query(
     "INSERT INTO settings (setting_key, setting_value) VALUES ('role_hierarchy', ?) ON DUPLICATE KEY UPDATE setting_value=VALUES(setting_value)",

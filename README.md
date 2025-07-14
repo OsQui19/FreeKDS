@@ -18,6 +18,9 @@ Use `npm start` (or `./start.sh`) to start the server on `http://localhost:$PORT
 ## Security
 The app now uses [helmet](https://github.com/helmetjs/helmet) and basic rate limiting. Set a strong `sessionSecret` in `config.js` for secure sessions. Use the `secureCookie` flag to control whether session cookies require HTTPS: set it to `true` when deploying over HTTPS, or `false` for local HTTP testing. Rate limiting thresholds can be adjusted in the `rateLimit` section of `config.js` if your deployment requires higher traffic.
 
+### Role hierarchy
+The highest role in the hierarchy (`management` by default) cannot be removed. This prevents administrators from accidentally losing permission to manage roles. If the top role is missing it will be automatically restored on server start.
+
 ## Database Backup
 Automated daily backups are created in the `BACKUP_DIR` directory. You can run a manual backup anytime with:
 

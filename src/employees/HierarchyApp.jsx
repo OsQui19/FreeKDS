@@ -92,6 +92,11 @@ export default function HierarchyApp() {
 
 
   const removeRole = (idx) => {
+    if (idx === roles.length - 1) {
+      // prevent removing the highest role
+      alert('Cannot remove the highest role');
+      return;
+    }
     const name = roles[idx];
     const list = roles.filter((_, i) => i !== idx);
     const perms = { ...permissions };
