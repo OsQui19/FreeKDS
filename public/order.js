@@ -110,6 +110,7 @@ function addToCart(itemId, modIds, instructions, allergy, allergyDetails) {
 // modifier modal logic
 let currentItem = null;
 const modModal = document.getElementById("modModal");
+const modModalInstance = modModal ? new bootstrap.Modal(modModal) : null;
 const modTitle = document.getElementById("modTitle");
 const modOptions = document.getElementById("modOptions");
 const modConfirm = document.getElementById("modConfirm");
@@ -137,10 +138,10 @@ modConfirm.addEventListener("click", () => {
   modAllergy.checked = false;
   if (modAllergyDetail) modAllergyDetail.value = "";
   if (modAllergyDetailDiv) modAllergyDetailDiv.classList.add("d-none");
-  modModal.classList.add("d-none");
+  if (modModalInstance) modModalInstance.hide();
 });
 modCancel.addEventListener("click", () => {
-  modModal.classList.add("d-none");
+  if (modModalInstance) modModalInstance.hide();
   if (modAllergyDetail) modAllergyDetail.value = "";
   if (modAllergyDetailDiv) modAllergyDetailDiv.classList.add("d-none");
 });
@@ -175,8 +176,7 @@ function showModifierModal(item) {
       modOptions.appendChild(document.createElement("br"));
     });
   });
-  modModal.classList.remove("d-none");
-  modModal.classList.add("d-flex");
+  if (modModalInstance) modModalInstance.show();
 }
 // add button handlers
 document.querySelectorAll("#menu .item-card .btn").forEach((btn) => {
