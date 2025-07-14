@@ -3,6 +3,9 @@ let usageChart;
 let categoryChart;
 const socket = window.io ? io() : null;
 
+let reportsIntervalId = null;
+let reportsSocketListener = null;
+
 function fmt(d) {
   return d.toISOString().slice(0, 10);
 }
@@ -187,10 +190,7 @@ async function initReports() {
     });
   }
   await loadReports();
-  setInterval(loadReports, 60000);
-  if (socket) {
-    socket.on("reportsUpdated", loadReports);
-  }
+  // Interval and socket listener are initialized when the tab becomes active
 }
 
 async function startReports() {
@@ -209,12 +209,32 @@ async function startReports() {
       console.error("Reports reload failed", err);
     }
   }
+  if (!reportsIntervalId) {
+    reportsIntervalId = setInterval(loadReports, 60000);
+  }
+  if (socket && !reportsSocketListener) {
+    reportsSocketListener = () => loadReports();
+    socket.on("reportsUpdated", reportsSocketListener);
+  }
 }
 
 window.initReportsTab = startReports;
 
 document.addEventListener("adminTabShown", (e) => {
   if (e.detail === "reports") startReports();
+});
+
+document.addEventListener("adminTabHidden", (e) => {
+  if (e.detail === "reports") {
+    if (reportsIntervalId) {
+      clearInterval(reportsIntervalId);
+      reportsIntervalId = null;
+    }
+    if (socket && reportsSocketListener) {
+      socket.off("reportsUpdated", reportsSocketListener);
+      reportsSocketListener = null;
+    }
+  }
 });
 
 // Reinitialize when returning via bfcache

@@ -105,6 +105,12 @@ function startAdminWindows() {
   }
 
   async function show(type) {
+    const current = container.querySelector(".admin-window.active");
+    if (current && current.dataset.type !== type) {
+      document.dispatchEvent(
+        new CustomEvent("adminTabHidden", { detail: current.dataset.type })
+      );
+    }
     const hide = window.showSpinner ? window.showSpinner() : () => {};
     await loadPane(type);
     sideNav.querySelectorAll(".nav-link").forEach((l) => {
