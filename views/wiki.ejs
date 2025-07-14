@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><%= station.name %> – Recipes Wiki</title>
+  <link href="/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
   <link rel="stylesheet" href="/style.css">
   <%- include('partials/theme-vars') %>
   <style>
@@ -30,7 +32,9 @@
   <header class="top-bar">
     <h1 class="station-title"><%= station.name %> – Recipe Wiki</h1>
     <div class="top-bar-links">
-      <a href="/station/<%= station.id %>" class="btn-small">Back to KDS</a>
+      <a href="/station/<%= station.id %>" class="btn btn-secondary btn-sm" aria-label="Back to KDS">
+        <i class="bi bi-arrow-left-circle me-1" aria-hidden="true"></i>Back to KDS
+      </a>
       <%- include('partials/nav-buttons') %>
     </div>
   </header>

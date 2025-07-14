@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><%= station.name %> KDS</title>
   <link href="/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
   <link rel="stylesheet" href="/base.css">
   <link rel="stylesheet" href="/style.css">
   <%- include('partials/theme-vars') %>
@@ -29,8 +30,12 @@
           <option value="<%= st.id %>" <%= st.id === station.id ? 'selected' : '' %>><%= st.name %></option>
         <% }); %>
       </select>
-      <a href="/wiki/<%= station.id %>" class="btn-small">Recipes Wiki</a>
-      <a href="/admin" class="btn-small">⚙️</a>
+      <a href="/wiki/<%= station.id %>" class="btn btn-secondary btn-sm" aria-label="Recipes">
+        <i class="bi bi-journal-bookmark-fill me-1" aria-hidden="true"></i>Recipes
+      </a>
+      <a href="/admin" class="btn btn-secondary btn-sm" aria-label="Admin">
+        <i class="bi bi-gear-fill" aria-hidden="true"></i>
+      </a>
       <%- include('partials/nav-buttons') %>
     </div>
   </header>

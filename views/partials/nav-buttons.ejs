@@ -1,9 +1,13 @@
 <div class="nav-buttons d-flex gap-2">
   <% if (typeof hasAccess === 'function' && hasAccess('order')) { %>
-    <a href="/order" class="btn btn-secondary btn-sm" aria-label="Order">Order</a>
+    <a href="/order" class="btn btn-secondary btn-sm" aria-label="Order">
+      <i class="bi bi-cart-fill me-1" aria-hidden="true"></i>Order
+    </a>
   <% } %>
   <% if (typeof hasAccess === 'function' && hasAccess('stations')) { %>
-    <a href="/stations" class="btn btn-secondary btn-sm" aria-label="KDS">KDS</a>
+    <a href="/stations" class="btn btn-secondary btn-sm" aria-label="KDS">
+      <i class="bi bi-display-fill me-1" aria-hidden="true"></i>KDS
+    </a>
   <% } %>
   <% if (
     typeof hasAccess === 'function' &&
@@ -16,12 +20,16 @@
       hasAccess('theme') ||
       hasAccess('locations'))
   ) { %>
-    <a href="/admin?tab=stations" id="adminNavBtn" class="btn btn-secondary btn-sm" aria-label="Admin">Admin</a>
+    <a href="/admin?tab=stations" id="adminNavBtn" class="btn btn-secondary btn-sm" aria-label="Admin">
+      <i class="bi bi-gear-fill me-1" aria-hidden="true"></i>Admin
+    </a>
   <% } %>
-  <a href="/clock/dashboard" class="btn btn-secondary btn-sm" aria-label="Clock">Clock</a>
+  <a href="/clock/dashboard" class="btn btn-secondary btn-sm" aria-label="Clock">
+    <i class="bi bi-clock-fill me-1" aria-hidden="true"></i>Clock
+  </a>
   <form action="/logout" method="post" class="m-0">
     <button type="submit" class="btn btn-danger btn-sm" aria-label="Log Out">
-      Log Out
+      <i class="bi bi-box-arrow-right me-1" aria-hidden="true"></i>Log Out
     </button>
   </form>
 </div>

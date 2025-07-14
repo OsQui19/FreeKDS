@@ -54,13 +54,13 @@ body.station-screen {
 .brand-name {
   color: var(--primary-color);
 }
-.top-bar .btn-small {
-  color: var(--primary-color);
-  text-decoration: none;
-  margin-left: 10px;
+.top-bar .btn {
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  touch-action: manipulation;
 }
-.top-bar .btn-small:hover {
-  text-decoration: underline;
+.top-bar .btn:hover {
+  opacity: 0.9;
 }
 .top-bar select.station-switch {
   margin-left: var(--spacing-md);
