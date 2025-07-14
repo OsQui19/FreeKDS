@@ -13,6 +13,14 @@ function initAdminInventory() {
   function serialize(form) {
     return new URLSearchParams(new FormData(form));
   }
+  function showAlert(msg) {
+    const alert = document.createElement("div");
+    alert.className = "alert alert-danger alert-dismissible fade show m-2";
+    alert.role = "alert";
+    alert.innerHTML = `${msg}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>`;
+    const pane = document.getElementById("usageLogPane") || document.body;
+    pane.prepend(alert);
+  }
   function handleForm(form) {
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -37,8 +45,10 @@ function initAdminInventory() {
 
   const logForm = document.getElementById("logRangeForm");
   if (logForm) {
+    const submitBtn = logForm.querySelector('button[type="submit"]');
     logForm.addEventListener("submit", (e) => {
       e.preventDefault();
+      if (submitBtn) submitBtn.disabled = true;
       fetch(`/admin/inventory/logs?${serialize(logForm)}`)
         .then((r) => r.json())
         .then((data) => {
@@ -55,6 +65,12 @@ function initAdminInventory() {
             </tr>`,
             )
             .join("");
+        })
+        .catch(() => {
+          showAlert("Couldn't load usage log");
+        })
+        .finally(() => {
+          if (submitBtn) submitBtn.disabled = false;
         });
     });
   }
