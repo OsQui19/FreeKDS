@@ -164,6 +164,10 @@ body.station-screen {
   font-style: italic;
   border-top: 1px dashed #ccc;
 }
+.ticket-instructions.allergy {
+  background: #f8d7da;
+  color: #721c24;
+}
 .items li {
   padding: 2px 0;
 }

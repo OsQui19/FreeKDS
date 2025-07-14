@@ -72,7 +72,8 @@ function createTicketElement({
   headerHTML += `<span class="order-time">${timeStr}</span>`;
   headerHTML += `<span class="elapsed">00:00</span></div>`;
   if (specialInstructions) {
-    headerHTML += `<div class="ticket-instructions">${specialInstructions}</div>`;
+    const allergyClass = allergy ? " allergy" : "";
+    headerHTML += `<div class="ticket-instructions${allergyClass}">${specialInstructions}</div>`;
   }
   let itemsHTML = `<ul class="items${stationType === "expo" ? " expo-items" : ""}">`;
   for (let item of items) {
@@ -88,7 +89,8 @@ function createTicketElement({
       itemsHTML += "</ul>";
     }
     if (item.specialInstructions) {
-      itemsHTML += `<div class="ticket-instructions">${item.specialInstructions}</div>`;
+      const allergyClass = item.allergy ? " allergy" : "";
+      itemsHTML += `<div class="ticket-instructions${allergyClass}">${item.specialInstructions}</div>`;
     }
     if (item.allergy) {
       itemsHTML += '<div class="allergy-label">ALLERGY</div>';

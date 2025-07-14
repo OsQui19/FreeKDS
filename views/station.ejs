@@ -70,7 +70,7 @@
           <span class="elapsed">00:00</span>
         </div>
         <% if (order.special_instructions) { %>
-          <div class="ticket-instructions"><%= order.special_instructions %></div>
+          <div class="ticket-instructions<%= order.allergy ? ' allergy' : '' %>"><%= order.special_instructions %></div>
         <% } %>
         <ul class="items<%= station.type === 'expo' ? ' expo-items' : '' %>">
           <% order.items.forEach(function(item) { %>
@@ -85,7 +85,7 @@
                 </ul>
               <% } %>
               <% if (item.specialInstructions) { %>
-                <div class="ticket-instructions"><%= item.specialInstructions %></div>
+                <div class="ticket-instructions<%= item.allergy ? ' allergy' : '' %>"><%= item.specialInstructions %></div>
               <% } %>
               <% if (item.allergy) { %>
                 <div class="allergy-label">ALLERGY</div>
