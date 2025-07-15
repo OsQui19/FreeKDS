@@ -1,11 +1,16 @@
 <div id="backupTab" class="container admin-container">
   <h1 class="admin-section-title">Database Backups</h1>
-  <form id="backupDirForm" class="mb-2 d-flex flex-wrap gap-2 align-items-end" method="POST" action="/admin/backups/set-dir">
-    <label for="backupDirInput" class="form-label mb-0">Backup Folder:</label>
-    <input id="backupDirInput" name="dir" type="text" class="form-control form-control-sm backup-dir-input" value="<%= settings.backup_dir || '' %>">
-    <button id="browseDirBtn" type="button" class="btn btn-sm btn-outline-secondary">Browse…</button>
-    <button type="submit" class="btn btn-sm btn-secondary">Save Location</button>
-  </form>
+  <div class="card mb-3 shadow-sm">
+    <div class="card-header">Backup Folder</div>
+    <div class="card-body">
+      <form id="backupDirForm" class="backup-actions" method="POST" action="/admin/backups/set-dir">
+        <label for="backupDirInput" class="form-label mb-0">Backup Folder:</label>
+        <input id="backupDirInput" name="dir" type="text" class="form-control form-control-sm backup-dir-input" value="<%= settings.backup_dir || '' %>">
+        <button id="browseDirBtn" type="button" class="btn btn-sm btn-outline-secondary">Browse…</button>
+        <button type="submit" class="btn btn-sm btn-secondary">Save Location</button>
+      </form>
+    </div>
+  </div>
   <div class="modal fade" id="dirBrowserModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-scrollable">
       <div class="modal-content">
@@ -24,34 +29,52 @@
       </div>
     </div>
   </div>
-  <div class="mb-2 d-flex flex-wrap gap-2 align-items-end">
-    <button id="createBackupBtn" class="btn btn-sm btn-primary">Create Backup</button>
-    <div class="d-flex gap-2">
-      <select id="restoreFileSelect" class="form-select form-select-sm"></select>
-      <button id="restoreSelectedBtn" class="btn btn-sm btn-outline-primary">Restore Selected</button>
-    </div>
-    <div class="d-flex gap-2">
-      <input type="file" id="restoreFileInput" accept=".sql" class="form-control form-control-sm" />
-      <button id="restoreUploadedBtn" type="button" class="btn btn-sm btn-outline-primary">Restore File</button>
+  <div class="card mb-3 shadow-sm">
+    <div class="card-header">Actions</div>
+    <div class="card-body backup-actions">
+      <button id="createBackupBtn" class="btn btn-sm btn-primary">
+        <i class="bi bi-play-fill me-1"></i>Create Backup
+      </button>
+      <div>
+        <select id="restoreFileSelect" class="form-select form-select-sm"></select>
+        <button id="restoreSelectedBtn" class="btn btn-sm btn-outline-primary ms-1">
+          <i class="bi bi-arrow-counterclockwise me-1"></i>Restore Selected
+        </button>
+      </div>
+      <div>
+        <input type="file" id="restoreFileInput" accept=".sql" class="form-control form-control-sm" />
+        <button id="restoreUploadedBtn" type="button" class="btn btn-sm btn-outline-primary ms-1">
+          <i class="bi bi-arrow-counterclockwise me-1"></i>Restore File
+        </button>
+      </div>
     </div>
   </div>
   <div id="backupAlertContainer"></div>
-  <div class="table-responsive">
-    <table class="table table-sm" id="backupTable">
-      <thead>
-        <tr><th>File</th><th>Created</th><th>Size</th><th></th></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+  <div class="card mb-3 shadow-sm">
+    <div class="card-header">Existing Backups</div>
+    <div class="card-body p-0">
+      <div class="table-responsive mb-0">
+        <table class="table table-sm mb-0" id="backupTable">
+          <thead>
+            <tr><th>File</th><th>Created</th><th>Size</th><th></th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
   </div>
-  <h2 class="mt-3">Backup Log</h2>
-  <div class="table-responsive">
-    <table class="table table-sm" id="backupLogTable">
-      <thead>
-        <tr><th>Time</th><th>Action</th><th>Result</th><th>Message</th></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+  <div class="card mb-3 shadow-sm">
+    <div class="card-header">Backup Log</div>
+    <div class="card-body p-0">
+      <div class="table-responsive mb-0">
+        <table class="table table-sm mb-0" id="backupLogTable">
+          <thead>
+            <tr><th>Time</th><th>Action</th><th>Result</th><th>Message</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </div>
 <script defer src="/backupTab.js"></script>

@@ -866,4 +866,17 @@ body.admin-screen {
   min-width: 200px;
 }
 
+.backup-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: end;
+}
+
+.backup-actions > div {
+  display: flex;
+  gap: 0.5rem;
+  align-items: end;
+}
+
 

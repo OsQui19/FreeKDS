@@ -100,8 +100,8 @@ function renderRows(backups) {
   <td>${new Date(b.mtime).toLocaleString()}</td>\
   <td>${fmtSize(b.size)}</td>\
   <td>\
-    <button class="btn btn-sm btn-outline-secondary download-backup" data-file="${b.name}">Download</button>\
-    <button class="btn btn-sm btn-outline-primary ms-1 restore-backup" data-file="${b.name}">Restore</button>\
+    <button class="btn btn-sm btn-outline-secondary download-backup" data-file="${b.name}"><i class="bi bi-download me-1"></i>Download</button>\
+    <button class="btn btn-sm btn-outline-primary ms-1 restore-backup" data-file="${b.name}"><i class="bi bi-arrow-counterclockwise me-1"></i>Restore</button>\
   </td>\
 </tr>`
     )
