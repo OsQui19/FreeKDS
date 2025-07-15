@@ -224,6 +224,12 @@ function applyMigrations(db, cb) {
           .promise()
           .query("UPDATE schema_version SET version=?", [num]);
         current = num;
+        try {
+          fs.unlinkSync(path.join(MIGRATIONS_DIR, f));
+          logger.info(`Removed migration file: ${f}`);
+        } catch (delErr) {
+          logger.error(`Failed to remove migration file ${f}:`, delErr);
+        }
       }
       if (cb) cb(null);
     } catch (e) {
