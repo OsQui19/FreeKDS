@@ -43,5 +43,32 @@ Automated daily backups are created in the `BACKUP_DIR` directory. You can creat
 npm run backup
 ```
 
+## Docker
+
+The project includes a `Dockerfile` and `docker-compose.yml` for containerised
+development. Build and start the stack with:
+
+```bash
+docker-compose up --build
+```
+
+`docker-compose` starts two services:
+
+- **app** – the Node.js server defined by the Dockerfile.
+- **mysql** – a MySQL 8 instance with persistent storage.
+
+Database credentials default to the values in `config.js`. You can override them
+by exporting environment variables before running compose:
+
+```bash
+export DB_USER=myuser
+export DB_PASSWORD=mypassword
+export DB_NAME=mydb
+docker-compose up
+```
+
+Alternatively edit `config.js` to change the default settings. On first start
+the MySQL container automatically initializes the schema using `schema.sql`.
+
 ## Reporting / Tracking
 Inventory usage is logged daily via `controllers/dailyUsage.js`. Security events are recorded to the `security_log` table.

@@ -3,13 +3,13 @@ const path = require('path');
 // Default configuration for local, offline installations
 module.exports = {
   db: {
-    host: '127.0.0.1',
-    user: 'freekds',
-    password: 'yourpassword',
-    name: 'kds_db',
+    host: process.env.DB_HOST || '127.0.0.1',
+    user: process.env.DB_USER || 'freekds',
+    password: process.env.DB_PASSWORD || 'yourpassword',
+    name: process.env.DB_NAME || 'kds_db',
   },
-  port: 3000,
-  sessionSecret: 'changeme',
+  port: process.env.PORT || 3000,
+  sessionSecret: process.env.SESSION_SECRET || 'changeme',
   secureCookie: false,
   backupDir: path.join(__dirname, 'backups'),
   rateLimit: {
