@@ -56,13 +56,18 @@ function backupDatabase(cb) {
     config.db.host,
     "-u",
     config.db.user,
-    `-p${config.db.password}`,
     "--add-drop-table",
     config.db.name,
   ];
 
-  const dump = spawn("mysqldump", args);
+  const dump = spawn("mysqldump", args, {
+    env: { ...process.env, MYSQL_PWD: config.db.password },
+  });
   const outStream = fs.createWriteStream(filePath);
+  outStream.on("error", (err) => {
+    console.error("Write stream error during DB backup:", err);
+    if (cb) cb(err);
+  });
   dump.stdout.pipe(outStream);
 
   dump.stderr.on("data", (data) => {
@@ -110,10 +115,11 @@ function applySchema(cb) {
     config.db.host,
     "-u",
     config.db.user,
-    `-p${config.db.password}`,
     config.db.name,
   ];
-  const proc = spawn("mysql", args);
+  const proc = spawn("mysql", args, {
+    env: { ...process.env, MYSQL_PWD: config.db.password },
+  });
   fs.createReadStream(SCHEMA_PATH).pipe(proc.stdin);
 
   proc.stderr.on("data", (data) => {
@@ -138,12 +144,17 @@ function restoreDatabase(file, cb) {
     config.db.host,
     "-u",
     config.db.user,
-    `-p${config.db.password}`,
     config.db.name,
   ];
 
-  const mysqlProc = spawn("mysql", args);
+  const mysqlProc = spawn("mysql", args, {
+    env: { ...process.env, MYSQL_PWD: config.db.password },
+  });
   const inStream = fs.createReadStream(file);
+  inStream.on("error", (err) => {
+    console.error("Read stream error during DB restore:", err);
+    if (cb) cb(err);
+  });
   inStream.pipe(mysqlProc.stdin);
 
   mysqlProc.stderr.on("data", (data) => {
