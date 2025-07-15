@@ -110,14 +110,7 @@ function backupDatabase(db, cb) {
     } else {
       const err = new Error(`mysqldump exited with code ${code}`);
       console.error("Error during DB backup:", err);
-<<<<<<< ours
       logBackup(db, 'backup', 'error', err.message);
-      if (cb) cb(err);
-    }
-    if (backupQueued) {
-      backupQueued = false;
-      backupDatabase(db);
-=======
       fs.unlink(filePath, (delErr) => {
         if (delErr) {
           delErr.deleteFailed = true;
@@ -126,7 +119,6 @@ function backupDatabase(db, cb) {
         } else if (cb) cb(err);
         runQueued();
       });
->>>>>>> theirs
     }
   });
 }
