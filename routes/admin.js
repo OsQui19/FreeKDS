@@ -37,6 +37,7 @@ const {
   listBackups,
   restoreDatabase,
   backupDatabase,
+  deleteBackup,
   getBackupDir,
   setBackupDir,
 } = require("../controllers/dbBackup");
@@ -1376,6 +1377,21 @@ module.exports = (db, io) => {
         console.error("Download error:", err);
         if (!res.headersSent) res.status(500).send("Server Error");
       }
+    });
+  });
+
+  router.post("/admin/backups/delete", (req, res) => {
+    const file = req.body.file;
+    if (!file) return res.redirect("/admin?tab=backup");
+    deleteBackup(db, file, (err) => {
+      if (err) {
+        if (err.message === "Invalid path") {
+          return res.status(400).send("Invalid path");
+        }
+        console.error("Delete error:", err);
+        return res.status(500).send("Server Error");
+      }
+      res.redirect("/admin/backups?msg=Backup+deleted");
     });
   });
 

@@ -112,6 +112,7 @@ function renderRows(backups) {
   <td>\
     <button class="btn btn-sm btn-outline-secondary download-backup" data-file="${b.name}"><i class="bi bi-download me-1"></i>Download</button>\
     <button class="btn btn-sm btn-outline-primary ms-1 restore-backup" data-file="${b.name}"><i class="bi bi-arrow-counterclockwise me-1"></i>Restore</button>\
+    <button class="btn btn-sm btn-outline-danger ms-1 delete-backup" data-file="${b.name}"><i class="bi bi-trash me-1"></i>Delete</button>\
   </td>\
 </tr>`
     )
@@ -123,6 +124,9 @@ function renderRows(backups) {
     btn.addEventListener('click', () => {
       window.location.href = `/admin/backups/download?file=${encodeURIComponent(btn.dataset.file)}`;
     });
+  });
+  tbody.querySelectorAll('.delete-backup').forEach((btn) => {
+    btn.addEventListener('click', () => deleteBackup(btn.dataset.file));
   });
 
   const select = document.getElementById('restoreFileSelect');
@@ -164,6 +168,32 @@ async function restoreBackup(file) {
   } catch (err) {
     console.error(err);
     showAlert('Restore failed', 'danger', document.getElementById('backupAlertContainer'));
+  } finally {
+    if (typeof hide === 'function') hide();
+  }
+}
+
+async function deleteBackup(file) {
+  if (!confirm('Delete this backup?')) return;
+  const hide = window.showSpinner ? window.showSpinner() : () => {};
+  try {
+    const res = await fetch('/admin/backups/delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ file }),
+    });
+    if (res.ok) {
+      showAlert('Backup deleted', 'success', document.getElementById('backupAlertContainer'));
+      loadBackups();
+      loadBackupLog();
+    } else if (res.status === 400) {
+      showAlert('Invalid path', 'danger', document.getElementById('backupAlertContainer'));
+    } else {
+      showAlert('Delete failed', 'danger', document.getElementById('backupAlertContainer'));
+    }
+  } catch (err) {
+    console.error(err);
+    showAlert('Delete failed', 'danger', document.getElementById('backupAlertContainer'));
   } finally {
     if (typeof hide === 'function') hide();
   }

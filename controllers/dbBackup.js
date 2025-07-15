@@ -253,6 +253,37 @@ function restoreDatabase(db, file, cb) {
   });
 }
 
+function deleteBackup(db, file, cb) {
+  if (typeof file === "function") {
+    cb = file;
+    file = db;
+    db = null;
+  }
+  const name = path.basename(file || "");
+  if (!name.endsWith(".sql") || name !== file) {
+    const err = new Error("Invalid path");
+    if (db) logBackup(db, "delete", "error", err.message);
+    return cb ? cb(err) : undefined;
+  }
+  const full = path.join(BACKUP_DIR, name);
+  const root = path.resolve(BACKUP_DIR);
+  const resolved = path.resolve(full);
+  if (resolved !== root && !resolved.startsWith(root + path.sep)) {
+    const err = new Error("Invalid path");
+    if (db) logBackup(db, "delete", "error", err.message);
+    return cb ? cb(err) : undefined;
+  }
+  fs.unlink(full, (err) => {
+    if (err) {
+      if (db) logBackup(db, "delete", "error", err.message);
+      if (cb) cb(err);
+    } else {
+      if (db) logBackup(db, "delete", "success", name);
+      if (cb) cb(null);
+    }
+  });
+}
+
 module.exports = {
   backupDatabase,
   restoreDatabase,
@@ -262,4 +293,5 @@ module.exports = {
   scheduleDailyBackup,
   applySchema,
   applyMigrations,
+  deleteBackup,
 };
