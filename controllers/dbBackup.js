@@ -72,6 +72,8 @@ function backupDatabase(db, cb) {
     config.db.host,
     "-u",
     config.db.user,
+    "-P",
+    config.db.port,
     "--add-drop-table",
     config.db.name,
   ];
@@ -143,6 +145,8 @@ function applySchema(cb) {
     config.db.host,
     "-u",
     config.db.user,
+    "-P",
+    config.db.port,
     config.db.name,
   ];
   const proc = spawn("mysql", args, {
@@ -208,6 +212,8 @@ function restoreDatabase(db, file, cb) {
     config.db.host,
     "-u",
     config.db.user,
+    "-P",
+    config.db.port,
     config.db.name,
   ];
 

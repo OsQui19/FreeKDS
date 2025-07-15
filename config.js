@@ -7,6 +7,7 @@ module.exports = {
     user: process.env.DB_USER || 'freekds',
     password: process.env.DB_PASSWORD || 'yourpassword',
     name: process.env.DB_NAME || 'kds_db',
+    port: Number(process.env.DB_PORT) || 3306,
   },
   port: process.env.PORT || 3000,
   sessionSecret: process.env.SESSION_SECRET || 'changeme',

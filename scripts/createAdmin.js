@@ -13,6 +13,7 @@ async function main() {
     user: config.db.user,
     password: config.db.password,
     database: config.db.name,
+    port: config.db.port,
   });
   const db = conn.promise();
 
