@@ -31,6 +31,7 @@ const path = require("path");
 const fs = require("fs");
 const os = require("os");
 const multer = require("multer");
+const { execSync } = require("child_process");
 const upload = multer({ dest: os.tmpdir() });
 const {
   listBackups,
@@ -76,6 +77,7 @@ module.exports = (db, io) => {
       "/admin/reports": "reports",
       "/admin/locations": "locations",
       "/admin/backups": "backup",
+      "/admin/updates": "updates",
     };
     const comp = Object.entries(map).find(([p]) => req.path.startsWith(p));
     if (comp) {
@@ -1271,6 +1273,27 @@ module.exports = (db, io) => {
 
   router.get("/admin/backups", (req, res) => {
     res.redirect("/admin?tab=backup");
+  });
+
+  router.get("/admin/updates", (req, res) => {
+    res.redirect("/admin?tab=updates");
+  });
+
+  router.get("/admin/updates/info", (req, res) => {
+    try {
+      const commit = execSync("git rev-parse --short HEAD").toString().trim();
+      const date = execSync("git log -1 --format=%cd").toString().trim();
+      const log = execSync(
+        "git log -5 --format=%h %s --date=short"
+      )
+        .toString()
+        .trim()
+        .split("\n");
+      res.json({ commit, date, log });
+    } catch (err) {
+      console.error("Error reading git info:", err);
+      res.status(500).json({ error: "Failed" });
+    }
   });
 
   router.post("/admin/backups/create", (req, res) => {

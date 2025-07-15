@@ -126,6 +126,9 @@ function startAdminWindows() {
     if (type === "reports" && typeof window.initReportsTab === "function") {
       window.initReportsTab();
     }
+    if (type === "updates" && typeof window.initUpdatesTab === "function") {
+      window.initUpdatesTab();
+    }
     if (typeof hide === "function") hide();
   }
 

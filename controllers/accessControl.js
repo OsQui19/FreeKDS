@@ -12,6 +12,7 @@ const MODULE_GROUPS = [
       "employees",
       "locations",
       "backup",
+      "updates",
     ],
   },
 ];
