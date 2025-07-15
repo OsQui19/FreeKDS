@@ -3,11 +3,20 @@
   <div class="card mb-3 shadow-sm">
     <div class="card-header">Backup Folder</div>
     <div class="card-body">
-      <form id="backupDirForm" class="backup-actions" method="POST" action="/admin/backups/set-dir">
-        <label for="backupDirInput" class="form-label mb-0">Backup Folder:</label>
-        <input id="backupDirInput" name="dir" type="text" class="form-control form-control-sm backup-dir-input" value="<%= settings.backup_dir || '' %>">
-        <button id="browseDirBtn" type="button" class="btn btn-sm btn-outline-secondary">Browse…</button>
-        <button type="submit" class="btn btn-sm btn-secondary">Save Location</button>
+      <form id="backupDirForm" method="POST" action="/admin/backups/set-dir" class="backup-actions">
+        <label for="backupDirInput" class="form-label">Backup Folder</label>
+        <div class="input-group input-group-sm">
+          <input
+            id="backupDirInput"
+            name="dir"
+            type="text"
+            class="form-control backup-dir-input"
+            value="<%= settings.backup_dir || '' %>"
+            placeholder="Path to backups"
+          >
+          <button id="browseDirBtn" type="button" class="btn btn-outline-secondary">Browse…</button>
+          <button type="submit" class="btn btn-secondary">Save</button>
+        </div>
       </form>
     </div>
   </div>
@@ -32,18 +41,20 @@
   <div class="card mb-3 shadow-sm">
     <div class="card-header">Actions</div>
     <div class="card-body backup-actions">
-      <button id="createBackupBtn" class="btn btn-sm btn-primary">
-        <i class="bi bi-play-fill me-1"></i>Create Backup
-      </button>
       <div>
-        <select id="restoreFileSelect" class="form-select form-select-sm"></select>
-        <button id="restoreSelectedBtn" class="btn btn-sm btn-outline-primary ms-1">
+        <button id="createBackupBtn" class="btn btn-primary btn-sm">
+          <i class="bi bi-play-fill me-1"></i>Create Backup
+        </button>
+      </div>
+      <div class="input-group input-group-sm">
+        <select id="restoreFileSelect" class="form-select"></select>
+        <button id="restoreSelectedBtn" class="btn btn-outline-primary">
           <i class="bi bi-arrow-counterclockwise me-1"></i>Restore Selected
         </button>
       </div>
-      <div>
-        <input type="file" id="restoreFileInput" accept=".sql" class="form-control form-control-sm" />
-        <button id="restoreUploadedBtn" type="button" class="btn btn-sm btn-outline-primary ms-1">
+      <div class="input-group input-group-sm">
+        <input type="file" id="restoreFileInput" accept=".sql" class="form-control" />
+        <button id="restoreUploadedBtn" type="button" class="btn btn-outline-primary">
           <i class="bi bi-arrow-counterclockwise me-1"></i>Restore File
         </button>
       </div>
@@ -54,7 +65,7 @@
     <div class="card-header">Existing Backups</div>
     <div class="card-body p-0">
       <div class="table-responsive mb-0">
-        <table class="table table-sm mb-0" id="backupTable">
+        <table class="table table-sm table-striped mb-0" id="backupTable">
           <thead>
             <tr><th>File</th><th>Created</th><th>Size</th><th>Actions</th></tr>
           </thead>
@@ -67,7 +78,7 @@
     <div class="card-header">Backup Log</div>
     <div class="card-body p-0">
       <div class="table-responsive mb-0">
-        <table class="table table-sm mb-0" id="backupLogTable">
+        <table class="table table-sm table-striped mb-0" id="backupLogTable">
           <thead>
             <tr><th>Time</th><th>Action</th><th>Result</th><th>Message</th></tr>
           </thead>
