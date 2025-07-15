@@ -44,13 +44,23 @@ async function loadDirectory(dir) {
         if (data.parent) {
           const li = document.createElement('li');
           li.className = 'list-group-item';
-          li.innerHTML = '<button type="button" class="btn btn-sm w-100 text-start dir-link" data-dir="' + data.parent + '">..</button>';
+          li.innerHTML =
+            '<button type="button" class="btn btn-sm w-100 text-start dir-link" data-dir="' +
+            data.parent +
+            '"><i class="bi bi-arrow-90deg-up me-1"></i>..</button>';
           dirList.appendChild(li);
         }
         data.dirs.forEach((d) => {
           const li = document.createElement('li');
           li.className = 'list-group-item';
-          li.innerHTML = '<button type="button" class="btn btn-sm w-100 text-start dir-link" data-dir="' + currentDir + '/' + d + '">' + d + '</button>';
+          li.innerHTML =
+            '<button type="button" class="btn btn-sm w-100 text-start dir-link" data-dir="' +
+            currentDir +
+            '/' +
+            d +
+            '"><i class="bi bi-folder me-1"></i>' +
+            d +
+            '</button>';
           dirList.appendChild(li);
         });
         dirList.querySelectorAll('.dir-link').forEach((btn) => {
