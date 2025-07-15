@@ -6,6 +6,9 @@ const SCHEMA_PATH = path.join(__dirname, "../schema.sql");
 
 let BACKUP_DIR = config.backupDir;
 
+let backupRunning = false;
+let backupQueued = false;
+
 function setBackupDir(dir) {
   BACKUP_DIR = dir;
 }
@@ -36,6 +39,14 @@ function listBackups(cb) {
 }
 
 function backupDatabase(cb) {
+  if (backupRunning) {
+    backupQueued = true;
+    const err = new Error("Backup already running");
+    err.queued = true;
+    if (cb) cb(err);
+    return;
+  }
+  backupRunning = true;
   ensureDir();
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
   const filePath = path.join(BACKUP_DIR, `${config.db.name}_${timestamp}.sql`);
@@ -64,6 +75,7 @@ function backupDatabase(cb) {
   });
 
   dump.on("close", (code) => {
+    backupRunning = false;
     if (code === 0) {
       console.log(`Database backup created: ${filePath}`);
       if (cb) cb(null);
@@ -71,6 +83,10 @@ function backupDatabase(cb) {
       const err = new Error(`mysqldump exited with code ${code}`);
       console.error("Error during DB backup:", err);
       if (cb) cb(err);
+    }
+    if (backupQueued) {
+      backupQueued = false;
+      backupDatabase();
     }
   });
 }

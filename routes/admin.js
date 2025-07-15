@@ -1276,6 +1276,9 @@ module.exports = (db, io) => {
   router.post("/admin/backups/create", (req, res) => {
     backupDatabase((err) => {
       if (err) {
+        if (err.message === "Backup already running") {
+          return res.redirect("/admin/backups?msg=Backup+queued");
+        }
         console.error("Backup error:", err);
         return res.status(500).send("DB Error");
       }
@@ -1308,8 +1311,17 @@ module.exports = (db, io) => {
 
   router.post("/admin/backups/upload", upload.single("backup"), (req, res) => {
     if (!req.file) return res.redirect("/admin?tab=backup");
+    const cleanup = () => fs.unlink(req.file.path, () => {});
+    const isSql =
+      req.file.originalname &&
+      req.file.originalname.toLowerCase().endsWith(".sql");
+    const maxSize = 100 * 1024 * 1024; // 100MB
+    if (!isSql || req.file.size > maxSize) {
+      cleanup();
+      return res.status(400).send("Invalid backup file");
+    }
     restoreDatabase(req.file.path, (err) => {
-      fs.unlink(req.file.path, () => {});
+      cleanup();
       if (err) {
         console.error("Restore error:", err);
         return res.status(500).send("DB Error");

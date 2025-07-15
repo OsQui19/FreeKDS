@@ -150,8 +150,18 @@ function initBackupTab() {
       const hide = window.showSpinner ? window.showSpinner() : () => {};
       try {
         const res = await fetch('/admin/backups/create', { method: 'POST' });
+        let msg = null;
+        if (res.headers.get('Location')) {
+          const loc = new URL(res.headers.get('Location'), window.location.origin);
+          msg = loc.searchParams.get('msg');
+        } else if (res.url) {
+          try {
+            msg = new URL(res.url).searchParams.get('msg');
+          } catch {}
+        }
         if (res.ok) {
-          showAlert('Backup created', 'success', document.getElementById('backupAlertContainer'));
+          const text = msg ? decodeURIComponent(msg.replace(/\+/g, ' ')) : 'Backup created';
+          showAlert(text, 'success', document.getElementById('backupAlertContainer'));
           loadBackups();
         } else {
           showAlert('Backup failed', 'danger', document.getElementById('backupAlertContainer'));
@@ -173,8 +183,11 @@ function initBackupTab() {
       const hide = window.showSpinner ? window.showSpinner() : () => {};
       try {
         const res = await fetch('/admin/backups/upload', { method: 'POST', body: formData });
+        const text = await res.text();
         if (res.ok) {
           showAlert('Restore complete', 'success', document.getElementById('backupAlertContainer'));
+        } else if (res.status === 400 && text.trim() === 'Invalid backup file') {
+          showAlert('Invalid backup file', 'danger', document.getElementById('backupAlertContainer'));
         } else {
           showAlert('Restore failed', 'danger', document.getElementById('backupAlertContainer'));
         }
