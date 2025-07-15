@@ -863,26 +863,7 @@ body.admin-screen {
 
 /* Backup tab */
 .backup-dir-input {
-  min-width: 200px;
-}
-
-.backup-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.backup-actions > div {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-}
-@media (min-width: 576px) {
-  .backup-actions {
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: flex-end;
-  }
+  min-width: 12rem;
 }
 
 

@@ -1,42 +1,39 @@
 <div id="backupTab" class="container admin-container">
   <h1 class="admin-section-title">Database Backups</h1>
   <div class="card mb-3 shadow-sm">
-    <div class="card-header">Backup Folder</div>
+    <div class="card-header">Settings</div>
     <div class="card-body">
-      <form id="backupDirForm" method="POST" action="/admin/backups/set-dir" class="backup-actions">
-        <label for="backupDirInput" class="form-label">Backup Folder</label>
-        <div class="input-group input-group-sm">
-          <input
-            id="backupDirInput"
-            name="dir"
-            type="text"
-            class="form-control backup-dir-input"
-            value="<%= settings.backup_dir || '' %>"
-            placeholder="Path to backups"
-          >
-          <button id="browseDirBtn" type="button" class="btn btn-outline-secondary">Browse…</button>
-          <button type="submit" class="btn btn-secondary">Save</button>
-        </div>
-      </form>
-    </div>
-  </div>
-  <div class="card mb-3 shadow-sm">
-    <div class="card-header">Retention</div>
-    <div class="card-body">
-      <form id="backupRetentionForm" method="POST" action="/admin/backups/set-retention" class="backup-actions">
-        <label for="backupRetentionInput" class="form-label">Keep backups for (days)</label>
-        <div class="input-group input-group-sm">
-          <input
-            id="backupRetentionInput"
-            name="days"
-            type="number"
-            min="1"
-            class="form-control"
-            value="<%= settings.backup_retention_days || 30 %>"
-          >
-          <button type="submit" class="btn btn-secondary">Save</button>
-        </div>
-      </form>
+      <div class="row g-3 align-items-end">
+        <form id="backupDirForm" method="POST" action="/admin/backups/set-dir" class="col-md-6">
+          <label for="backupDirInput" class="form-label">Backup Folder</label>
+          <div class="input-group input-group-sm">
+            <input
+              id="backupDirInput"
+              name="dir"
+              type="text"
+              class="form-control backup-dir-input"
+              value="<%= settings.backup_dir || '' %>"
+              placeholder="Path to backups"
+            >
+            <button id="browseDirBtn" type="button" class="btn btn-outline-secondary">Browse…</button>
+            <button type="submit" class="btn btn-secondary">Save</button>
+          </div>
+        </form>
+        <form id="backupRetentionForm" method="POST" action="/admin/backups/set-retention" class="col-md-6">
+          <label for="backupRetentionInput" class="form-label">Keep backups for (days)</label>
+          <div class="input-group input-group-sm">
+            <input
+              id="backupRetentionInput"
+              name="days"
+              type="number"
+              min="1"
+              class="form-control"
+              value="<%= settings.backup_retention_days || 30 %>"
+            >
+            <button type="submit" class="btn btn-secondary">Save</button>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
   <div class="modal fade" id="dirBrowserModal" tabindex="-1" aria-hidden="true">
@@ -59,23 +56,25 @@
   </div>
   <div class="card mb-3 shadow-sm">
     <div class="card-header">Actions</div>
-    <div class="card-body backup-actions">
-      <div>
-        <button id="createBackupBtn" class="btn btn-primary btn-sm">
-          <i class="bi bi-play-fill me-1"></i>Create Backup
-        </button>
-      </div>
-      <div class="input-group input-group-sm">
-        <select id="restoreFileSelect" class="form-select"></select>
-        <button id="restoreSelectedBtn" class="btn btn-outline-primary">
-          <i class="bi bi-arrow-counterclockwise me-1"></i>Restore Selected
-        </button>
-      </div>
-      <div class="input-group input-group-sm">
-        <input type="file" id="restoreFileInput" accept=".sql" class="form-control" />
-        <button id="restoreUploadedBtn" type="button" class="btn btn-outline-primary">
-          <i class="bi bi-arrow-counterclockwise me-1"></i>Restore File
-        </button>
+    <div class="card-body">
+      <div class="d-flex flex-column gap-2 flex-sm-row flex-wrap align-items-sm-end">
+        <div>
+          <button id="createBackupBtn" class="btn btn-primary btn-sm">
+            <i class="bi bi-play-fill me-1"></i>Create Backup
+          </button>
+        </div>
+        <div class="input-group input-group-sm">
+          <select id="restoreFileSelect" class="form-select"></select>
+          <button id="restoreSelectedBtn" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-counterclockwise me-1"></i>Restore Selected
+          </button>
+        </div>
+        <div class="input-group input-group-sm">
+          <input type="file" id="restoreFileInput" accept=".sql" class="form-control" />
+          <button id="restoreUploadedBtn" type="button" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-counterclockwise me-1"></i>Restore File
+          </button>
+        </div>
       </div>
     </div>
   </div>
