@@ -117,6 +117,9 @@ CREATE TABLE IF NOT EXISTS settings (
   setting_key   VARCHAR(50) PRIMARY KEY,
   setting_value TEXT
 );
+-- Default backup retention of 30 days
+INSERT INTO settings (setting_key, setting_value)
+  VALUES ('backup_retention_days', '30');
 CREATE TABLE IF NOT EXISTS bumped_orders (
   order_id INT NOT NULL,
   station_id INT NOT NULL,

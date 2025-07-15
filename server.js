@@ -14,6 +14,7 @@ const { scheduleDailyLog } = require("./controllers/dailyUsage");
 const {
   scheduleDailyBackup,
   setBackupDir,
+  setBackupRetention,
   applySchema,
   applyMigrations,
 } = require("./controllers/dbBackup");
@@ -88,6 +89,8 @@ db.getConnection((err, connection) => {
       ]);
       const settings = settingsCache.getSettings();
       if (settings.backup_dir) setBackupDir(settings.backup_dir);
+      if (settings.backup_retention_days)
+        setBackupRetention(settings.backup_retention_days);
       scheduleDailyLog(db);
       scheduleDailyBackup(db);
       setupSocketHandlers(io, db);

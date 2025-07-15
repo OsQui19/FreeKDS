@@ -207,6 +207,7 @@ function initBackupTab() {
   const uploadBtn = document.getElementById('restoreUploadedBtn');
   const uploadInput = document.getElementById('restoreFileInput');
   const dirForm = document.getElementById('backupDirForm');
+  const retentionForm = document.getElementById('backupRetentionForm');
   const browseBtn = document.getElementById('browseDirBtn');
   if (restoreBtn) {
     restoreBtn.addEventListener('click', () => {
@@ -271,6 +272,12 @@ function initBackupTab() {
   }
   if (dirForm) {
     handleForm(dirForm, () => loadBackups(), {
+      alertContainer: document.getElementById('backupAlertContainer'),
+      followRedirect: true,
+    });
+  }
+  if (retentionForm) {
+    handleForm(retentionForm, null, {
       alertContainer: document.getElementById('backupAlertContainer'),
       followRedirect: true,
     });

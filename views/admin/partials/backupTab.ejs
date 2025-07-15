@@ -20,6 +20,25 @@
       </form>
     </div>
   </div>
+  <div class="card mb-3 shadow-sm">
+    <div class="card-header">Retention</div>
+    <div class="card-body">
+      <form id="backupRetentionForm" method="POST" action="/admin/backups/set-retention" class="backup-actions">
+        <label for="backupRetentionInput" class="form-label">Keep backups for (days)</label>
+        <div class="input-group input-group-sm">
+          <input
+            id="backupRetentionInput"
+            name="days"
+            type="number"
+            min="1"
+            class="form-control"
+            value="<%= settings.backup_retention_days || 30 %>"
+          >
+          <button type="submit" class="btn btn-secondary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
   <div class="modal fade" id="dirBrowserModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-scrollable">
       <div class="modal-content">

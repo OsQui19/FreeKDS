@@ -6,6 +6,7 @@ const SCHEMA_PATH = path.join(__dirname, "../schema.sql");
 const MIGRATIONS_DIR = path.join(__dirname, "../migrations");
 
 let BACKUP_DIR = config.backupDir;
+let BACKUP_RETENTION_DAYS = 30;
 
 let backupRunning = false;
 let backupQueued = false;
@@ -29,10 +30,39 @@ function getBackupDir() {
   return BACKUP_DIR;
 }
 
+function setBackupRetention(days) {
+  const n = parseInt(days, 10);
+  if (Number.isInteger(n) && n > 0) {
+    BACKUP_RETENTION_DAYS = n;
+  }
+}
+
+function getBackupRetention() {
+  return BACKUP_RETENTION_DAYS;
+}
+
 function ensureDir() {
   if (!fs.existsSync(BACKUP_DIR)) {
     fs.mkdirSync(BACKUP_DIR, { recursive: true });
   }
+}
+
+function removeOldBackups() {
+  const cutoff = Date.now() - BACKUP_RETENTION_DAYS * 86400000;
+  fs.readdir(BACKUP_DIR, (err, files) => {
+    if (err) return;
+    files
+      .filter((f) => f.endsWith('.sql'))
+      .forEach((f) => {
+        const p = path.join(BACKUP_DIR, f);
+        fs.stat(p, (sErr, stat) => {
+          if (sErr) return;
+          if (stat.mtimeMs < cutoff) {
+            fs.unlink(p, () => {});
+          }
+        });
+      });
+  });
 }
 
 function listBackups(cb) {
@@ -108,6 +138,7 @@ function backupDatabase(db, cb) {
     if (code === 0) {
       console.log(`Database backup created: ${filePath}`);
       logBackup(db, 'backup', 'success', filePath);
+      removeOldBackups();
       if (cb) cb(null);
       runQueued();
     } else {
@@ -290,6 +321,8 @@ module.exports = {
   listBackups,
   getBackupDir,
   setBackupDir,
+  getBackupRetention,
+  setBackupRetention,
   scheduleDailyBackup,
   applySchema,
   applyMigrations,

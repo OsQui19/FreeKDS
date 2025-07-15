@@ -1433,5 +1433,26 @@ module.exports = (db, io) => {
     }
   });
 
+  router.post("/admin/backups/set-retention", async (req, res) => {
+    const days = parseInt(req.body.days, 10);
+    if (!Number.isInteger(days) || days <= 0) {
+      return res.redirect("/admin?tab=backup");
+    }
+    try {
+      await db
+        .promise()
+        .query(
+          "INSERT INTO settings (setting_key, setting_value) VALUES ('backup_retention_days', ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)",
+          [days],
+        );
+      setBackupRetention(days);
+      settingsCache.loadSettings(db);
+      res.redirect("/admin/backups?msg=Retention+saved");
+    } catch (err) {
+      console.error("Error saving backup retention:", err);
+      res.status(500).send("DB Error");
+    }
+  });
+
   return router;
 };
