@@ -14,13 +14,7 @@ RUN apt-get update \
     && apt-get install -y netcat-openbsd default-mysql-client \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
-<<<<<<< ours
-COPY package*.json ./
-ENV NODE_ENV=production
-RUN npm ci --omit=dev
-COPY . .
-RUN npm run build
-=======
+
 COPY --chown=node:node package*.json ./
 COPY --chown=node:node server.js start.sh config.js dbsteps.txt ./
 COPY --chown=node:node controllers ./controllers
@@ -32,7 +26,6 @@ COPY --chown=node:node migrations ./migrations
 COPY --chown=node:node scripts ./scripts
 COPY --chown=node:node --from=builder /app/node_modules ./node_modules
 COPY --chown=node:node --from=builder /app/public/dist ./public/dist
->>>>>>> theirs
 RUN chmod +x start.sh
 # Ensure files are owned by the non-privileged user before dropping privileges
 RUN mkdir -p /app/logs && chown -R node:node /app
