@@ -43,6 +43,7 @@ const {
   restoreDatabase,
   backupDatabase,
   isBackupRunning,
+  getBackupStatus,
   deleteBackup,
   getBackupDir,
   setBackupDir,
@@ -1376,6 +1377,10 @@ module.exports = (db, io) => {
       }
     });
     res.json(alreadyRunning ? { queued: true } : { started: true });
+  });
+
+  router.get("/admin/backups/status", (req, res) => {
+    res.json(getBackupStatus());
   });
 
   router.get("/admin/backups/list", (req, res) => {

@@ -12,6 +12,10 @@ let BACKUP_RETENTION_DAYS = 30;
 let backupRunning = false;
 let backupQueued = false;
 
+function getBackupStatus() {
+  return { running: backupRunning, queued: backupQueued };
+}
+
 function isBackupRunning() {
   return backupRunning;
 }
@@ -331,6 +335,7 @@ module.exports = {
   restoreDatabase,
   listBackups,
   isBackupRunning,
+  getBackupStatus,
   getBackupDir,
   setBackupDir,
   getBackupRetention,

@@ -3,6 +3,26 @@ let currentDir = '/';
 let dirModal, dirList, dirPathEl, dirSelectBtn;
 
 let backupsCache = [];
+let statusPoll = null;
+
+async function checkBackupStatus() {
+  try {
+    const res = await fetch('/admin/backups/status');
+    const data = await res.json();
+    const btn = document.getElementById('createBackupBtn');
+    if (btn) btn.disabled = data.running;
+    if (data.running) {
+      if (!statusPoll) statusPoll = setInterval(checkBackupStatus, 5000);
+    } else if (statusPoll) {
+      clearInterval(statusPoll);
+      statusPoll = null;
+      loadBackups();
+      loadBackupLog();
+    }
+  } catch (err) {
+    console.error('Status check failed', err);
+  }
+}
 
 function renderLog(rows) {
   const tbody = document.querySelector('#backupLogTable tbody');
@@ -203,6 +223,7 @@ async function deleteBackup(file) {
 function initBackupTab() {
   loadBackups();
   loadBackupLog();
+  checkBackupStatus();
   const restoreBtn = document.getElementById('restoreSelectedBtn');
   const createBtn = document.getElementById('createBackupBtn');
   const uploadBtn = document.getElementById('restoreUploadedBtn');
@@ -229,8 +250,7 @@ function initBackupTab() {
         if (res.ok) {
           const msg = data.started ? 'Backup started' : data.queued ? 'Backup queued' : 'Backup started';
           showAlert(msg, 'success', document.getElementById('backupAlertContainer'));
-          loadBackups();
-          loadBackupLog();
+          checkBackupStatus();
         } else {
           showAlert('Backup failed', 'danger', document.getElementById('backupAlertContainer'));
         }
@@ -239,7 +259,7 @@ function initBackupTab() {
         showAlert('Backup failed', 'danger', document.getElementById('backupAlertContainer'));
       } finally {
         if (typeof hide === 'function') hide();
-        createBtn.disabled = false;
+        checkBackupStatus();
       }
     });
   }
