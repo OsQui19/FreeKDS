@@ -1,0 +1,1 @@
+ALTER TABLE orders ADD COLUMN updated_at TIMESTAMP NULL DEFAULT NULL AFTER created_at;

@@ -2,6 +2,13 @@ SET FOREIGN_KEY_CHECKS=0;
 CREATE DATABASE IF NOT EXISTS kds_db;
 USE kds_db;
 
+-- Track current schema version for migrations
+CREATE TABLE IF NOT EXISTS schema_version (
+  version INT NOT NULL PRIMARY KEY
+);
+INSERT INTO schema_version (version)
+  SELECT 2 WHERE NOT EXISTS (SELECT 1 FROM schema_version);
+
 -- Stations table: each station has a type and optional order_type_filter (unchanged)
 CREATE TABLE stations (
   id              INT PRIMARY KEY AUTO_INCREMENT,
@@ -80,7 +87,8 @@ CREATE TABLE orders (
   allergy      BOOLEAN DEFAULT FALSE,
   is_urgent    BOOLEAN DEFAULT FALSE,
   status       VARCHAR(10) DEFAULT 'active',  -- 'active' or 'completed'
-  created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at   TIMESTAMP NULL DEFAULT NULL
 );
 
 -- Order Items table: line items for each order, linking to menu_items.

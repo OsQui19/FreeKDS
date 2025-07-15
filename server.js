@@ -15,6 +15,7 @@ const {
   scheduleDailyBackup,
   setBackupDir,
   applySchema,
+  applyMigrations,
 } = require("./controllers/dbBackup");
 const { logSecurityEvent } = require("./controllers/securityLog");
 const accessControl = require("./controllers/accessControl");
@@ -69,6 +70,9 @@ db.getConnection((err, connection) => {
     try {
       await new Promise((resolve, reject) =>
         applySchema((e) => (e ? reject(e) : resolve()))
+      );
+      await new Promise((resolve, reject) =>
+        applyMigrations(db, (e) => (e ? reject(e) : resolve()))
       );
       await accessControl.ensureDefaults(db);
       await Promise.all([

@@ -3,6 +3,7 @@ const path = require("path");
 const fs = require("fs");
 const config = require("../config");
 const SCHEMA_PATH = path.join(__dirname, "../schema.sql");
+const MIGRATIONS_DIR = path.join(__dirname, "../migrations");
 
 let BACKUP_DIR = config.backupDir;
 
@@ -164,6 +165,37 @@ function applySchema(cb) {
   });
 }
 
+function applyMigrations(db, cb) {
+  fs.readdir(MIGRATIONS_DIR, async (err, files) => {
+    if (err) {
+      if (err.code === "ENOENT") return cb && cb(null);
+      return cb && cb(err);
+    }
+    try {
+      const [rows] = await db
+        .promise()
+        .query("SELECT version FROM schema_version LIMIT 1");
+      let current = rows.length ? rows[0].version : 1;
+      const sqlFiles = files
+        .filter((f) => f.endsWith(".sql"))
+        .sort();
+      for (const f of sqlFiles) {
+        const num = parseInt(f.replace(/[^0-9]/g, ""), 10);
+        if (!num || num <= current) continue;
+        const sql = fs.readFileSync(path.join(MIGRATIONS_DIR, f), "utf8");
+        await db.promise().query(sql);
+        await db
+          .promise()
+          .query("UPDATE schema_version SET version=?", [num]);
+        current = num;
+      }
+      if (cb) cb(null);
+    } catch (e) {
+      if (cb) cb(e);
+    }
+  });
+}
+
 function restoreDatabase(db, file, cb) {
   if (typeof file === 'function') {
     cb = file;
@@ -204,7 +236,7 @@ function restoreDatabase(db, file, cb) {
       logBackup(db, 'restore', 'success', path.basename(file));
       applySchema((err) => {
         if (err) return cb && cb(err);
-        if (cb) cb(null);
+        applyMigrations(db, cb);
       });
     } else {
       const err = new Error(`mysql exited with code ${code}`);
@@ -223,4 +255,5 @@ module.exports = {
   setBackupDir,
   scheduleDailyBackup,
   applySchema,
+  applyMigrations,
 };
