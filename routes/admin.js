@@ -53,7 +53,14 @@ module.exports = (db, io) => {
   router.use((req, res, next) => {
     if (!req.path.startsWith("/admin")) return next();
     if (req.session.pinOnly) {
-      logSecurityEvent(db, "unauthorized", req.session.user && req.session.user.id, req.originalUrl, false, req.ip);
+      logSecurityEvent(
+        db,
+        "unauthorized",
+        req.session.user && req.session.user.id,
+        req.originalUrl,
+        false,
+        req.ip,
+      );
       return res.status(403).send("Forbidden");
     }
     if (!req.session.user) return next();
@@ -74,17 +81,38 @@ module.exports = (db, io) => {
     if (comp) {
       const c = comp[1];
       if (!roleHasAccess(role, c)) {
-        logSecurityEvent(db, "unauthorized", req.session.user.id, req.originalUrl, false, req.ip);
+        logSecurityEvent(
+          db,
+          "unauthorized",
+          req.session.user.id,
+          req.originalUrl,
+          false,
+          req.ip,
+        );
         return res.status(403).send("Forbidden");
       }
     } else if (req.path === "/admin" || req.path === "/admin/") {
       const allowed = getRolePermissions(role);
       if (!allowed.length && !hasLevel(role, topRole)) {
-        logSecurityEvent(db, "unauthorized", req.session.user.id, req.originalUrl, false, req.ip);
+        logSecurityEvent(
+          db,
+          "unauthorized",
+          req.session.user.id,
+          req.originalUrl,
+          false,
+          req.ip,
+        );
         return res.status(403).send("Forbidden");
       }
     } else if (!hasLevel(role, topRole)) {
-      logSecurityEvent(db, "unauthorized", req.session.user.id, req.originalUrl, false, req.ip);
+      logSecurityEvent(
+        db,
+        "unauthorized",
+        req.session.user.id,
+        req.originalUrl,
+        false,
+        req.ip,
+      );
       return res.status(403).send("Forbidden");
     }
     next();
@@ -284,7 +312,9 @@ module.exports = (db, io) => {
                   try {
                     const [rows] = await db
                       .promise()
-                      .query("SELECT name FROM stations WHERE id=?", [stationId]);
+                      .query("SELECT name FROM stations WHERE id=?", [
+                        stationId,
+                      ]);
                     const stationName = rows[0] ? rows[0].name : "";
                     return res.json({
                       item: {
@@ -337,33 +367,40 @@ module.exports = (db, io) => {
             const newItemId = result.insertId;
             updateItemGroups(db, newItemId, selectedGroups, () => {
               updateItemModifiers(db, newItemId, selectedMods, () => {
-                updateItemIngredients(db, newItemId, itemIngredients, async () => {
-                  if (wantsJSON) {
-                    try {
-                      const [rows] = await db
-                        .promise()
-                        .query("SELECT name FROM stations WHERE id=?", [stationId]);
-                      const stationName = rows[0] ? rows[0].name : "";
-                      return res.json({
-                        item: {
-                          id: newItemId,
-                          name,
-                          price,
-                          station_id: stationId,
-                          station_name: stationName,
-                          category_id: categoryId,
-                          recipe,
-                          image_url: imageUrl,
-                          modifierNamesStr: "",
-                        },
-                      });
-                    } catch (err2) {
-                      console.error("Error returning item json:", err2);
-                      return res.status(500).json({ error: "DB Error" });
+                updateItemIngredients(
+                  db,
+                  newItemId,
+                  itemIngredients,
+                  async () => {
+                    if (wantsJSON) {
+                      try {
+                        const [rows] = await db
+                          .promise()
+                          .query("SELECT name FROM stations WHERE id=?", [
+                            stationId,
+                          ]);
+                        const stationName = rows[0] ? rows[0].name : "";
+                        return res.json({
+                          item: {
+                            id: newItemId,
+                            name,
+                            price,
+                            station_id: stationId,
+                            station_name: stationName,
+                            category_id: categoryId,
+                            recipe,
+                            image_url: imageUrl,
+                            modifierNamesStr: "",
+                          },
+                        });
+                      } catch (err2) {
+                        console.error("Error returning item json:", err2);
+                        return res.status(500).json({ error: "DB Error" });
+                      }
                     }
-                  }
-                  return res.redirect("/admin?tab=menu&msg=Item+saved");
-                });
+                    return res.redirect("/admin?tab=menu&msg=Item+saved");
+                  },
+                );
               });
             });
           },
@@ -375,19 +412,23 @@ module.exports = (db, io) => {
   router.post("/admin/items/delete", (req, res) => {
     const itemId = req.body.id;
     if (!itemId) return res.redirect("/admin?tab=menu");
-    db.query("SELECT name FROM menu_items WHERE id=?", [itemId], (err, rows) => {
-      const itemName = !err && rows && rows[0] ? rows[0].name : "Item";
-      db.query("DELETE FROM menu_items WHERE id=?", [itemId], (err2) => {
-        if (err2) {
-          console.error("Error deleting item:", err2);
-        }
-        return res.redirect(
-          `/admin?tab=menu&msg=Item+deleted&detail=${encodeURIComponent(
-            itemName + " removed"
-          )}`
-        );
-      });
-    });
+    db.query(
+      "SELECT name FROM menu_items WHERE id=?",
+      [itemId],
+      (err, rows) => {
+        const itemName = !err && rows && rows[0] ? rows[0].name : "Item";
+        db.query("DELETE FROM menu_items WHERE id=?", [itemId], (err2) => {
+          if (err2) {
+            console.error("Error deleting item:", err2);
+          }
+          return res.redirect(
+            `/admin?tab=menu&msg=Item+deleted&detail=${encodeURIComponent(
+              itemName + " removed",
+            )}`,
+          );
+        });
+      },
+    );
   });
 
   router.post("/admin/categories", (req, res) => {
@@ -564,16 +605,14 @@ module.exports = (db, io) => {
 
   router.get("/admin/ingredients/list", async (req, res) => {
     try {
-      const [ingredients] = await db
-        .promise()
-        .query(
-          `SELECT ing.id, ing.name, ing.quantity, ing.unit_id,
+      const [ingredients] = await db.promise().query(
+        `SELECT ing.id, ing.name, ing.quantity, ing.unit_id,
                   u.abbreviation AS unit, ing.sku, ing.cost, ing.is_public
              FROM ingredients ing
              LEFT JOIN units u ON ing.unit_id = u.id
             WHERE ing.is_public=1
              ORDER BY ing.name`,
-        );
+      );
       res.json({ ingredients });
     } catch (err) {
       console.error("Error fetching ingredient list:", err);
@@ -978,7 +1017,6 @@ module.exports = (db, io) => {
     });
   });
 
-
   // Purchase orders
   router.get("/admin/purchase-orders", (req, res) => {
     res.redirect("/admin?tab=purchase-orders");
@@ -1268,21 +1306,17 @@ module.exports = (db, io) => {
     });
   });
 
-  router.post(
-    "/admin/backups/upload",
-    upload.single("backup"),
-    (req, res) => {
-      if (!req.file) return res.redirect("/admin?tab=backup");
-      restoreDatabase(req.file.path, (err) => {
-        fs.unlink(req.file.path, () => {});
-        if (err) {
-          console.error("Restore error:", err);
-          return res.status(500).send("DB Error");
-        }
-        res.redirect("/admin/backups?msg=Restore+complete");
-      });
-    },
-  );
+  router.post("/admin/backups/upload", upload.single("backup"), (req, res) => {
+    if (!req.file) return res.redirect("/admin?tab=backup");
+    restoreDatabase(req.file.path, (err) => {
+      fs.unlink(req.file.path, () => {});
+      if (err) {
+        console.error("Restore error:", err);
+        return res.status(500).send("DB Error");
+      }
+      res.redirect("/admin/backups?msg=Restore+complete");
+    });
+  });
 
   router.get("/admin/backups/download", (req, res) => {
     const file = req.query.file;
@@ -1297,7 +1331,14 @@ module.exports = (db, io) => {
   });
 
   router.get("/admin/backups/browse", (req, res) => {
-    const dir = path.resolve(req.query.dir || "/");
+    const root = path.resolve(getBackupDir());
+    const requested = req.query.dir || ".";
+    const dir = path.resolve(root, requested);
+
+    if (dir !== root && !dir.startsWith(root + path.sep)) {
+      return res.status(400).json({ error: "Invalid path" });
+    }
+
     fs.readdir(dir, { withFileTypes: true }, (err, items) => {
       if (err) {
         console.error("Error reading dir:", err);
