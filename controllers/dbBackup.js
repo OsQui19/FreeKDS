@@ -222,4 +222,5 @@ module.exports = {
   getBackupDir,
   setBackupDir,
   scheduleDailyBackup,
+  applySchema,
 };

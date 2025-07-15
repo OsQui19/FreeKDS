@@ -11,7 +11,11 @@ const rateLimit = require("express-rate-limit");
 const settingsCache = require("./controllers/settingsCache");
 const unitConversion = require("./controllers/unitConversion");
 const { scheduleDailyLog } = require("./controllers/dailyUsage");
-const { scheduleDailyBackup, setBackupDir } = require("./controllers/dbBackup");
+const {
+  scheduleDailyBackup,
+  setBackupDir,
+  applySchema,
+} = require("./controllers/dbBackup");
 const { logSecurityEvent } = require("./controllers/securityLog");
 const accessControl = require("./controllers/accessControl");
 const config = require("./config");
@@ -63,6 +67,9 @@ db.getConnection((err, connection) => {
 
   const init = async () => {
     try {
+      await new Promise((resolve, reject) =>
+        applySchema((e) => (e ? reject(e) : resolve()))
+      );
       await accessControl.ensureDefaults(db);
       await Promise.all([
         new Promise((resolve, reject) =>

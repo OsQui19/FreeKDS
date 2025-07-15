@@ -298,6 +298,15 @@ CREATE TABLE security_log (
 
 CREATE INDEX idx_security_log_created_at ON security_log(created_at);
 
+CREATE TABLE backup_log (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  action VARCHAR(20) NOT NULL,
+  result VARCHAR(20) NOT NULL,
+  message TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_backup_log_created_at ON backup_log(created_at);
+
 -- Performance indexes
 CREATE INDEX idx_orders_created_at ON orders(created_at);
 CREATE INDEX idx_inventory_log_created_at ON inventory_log(created_at);
