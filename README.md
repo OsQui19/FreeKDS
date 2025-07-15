@@ -15,6 +15,9 @@ This project is a simplified kitchen display system. Below are basic steps to ru
 Use `npm start` (or `./start.sh`) to start the server on `http://localhost:$PORT`.
 `COOKIE_SECURE` defaults to `false`, so HTTPS isn't required for local testing.
 
+## Testing
+Run `npm test` to execute the automated test suite.
+
 ## Security
 The app now uses [helmet](https://github.com/helmetjs/helmet) and basic rate limiting. Set a strong `sessionSecret` in `config.js` for secure sessions. Use the `secureCookie` flag to control whether session cookies require HTTPS: set it to `true` when deploying over HTTPS, or `false` for local HTTP testing. Rate limiting thresholds can be adjusted in the `rateLimit` section of `config.js` if your deployment requires higher traffic.
 
@@ -46,13 +49,14 @@ npm run backup
 ## Docker
 
 The project includes a `Dockerfile` and `docker-compose.yml` for containerised
-development. Build and start the stack with:
+development. Ensure Docker Desktop or the Docker daemon is running. Build and
+start the stack with:
 
 ```bash
-docker-compose up --build
+docker compose up --build  # `docker-compose` also works on older versions
 ```
 
-`docker-compose` starts two services:
+`docker compose` starts two services:
 
 - **app** – the Node.js server defined by the Dockerfile.
 - **mysql** – a MySQL 8 instance with persistent storage.
@@ -64,7 +68,7 @@ by exporting environment variables before running compose:
 export DB_USER=myuser
 export DB_PASSWORD=mypassword
 export DB_NAME=mydb
-docker-compose up
+docker compose up
 ```
 
 Alternatively edit `config.js` to change the default settings. On first start

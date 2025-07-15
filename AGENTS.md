@@ -13,7 +13,7 @@ This file explains how to set up and run the project for Codex or anyone else cl
 ## 2. Database setup
 1. Import the database schema:
    ```bash
-   mysql -u "$DB_USER" -p"$DB_PASS" < schema.sql
+   mysql -u "$DB_USER" -p"$DB_PASSWORD" < schema.sql
    ```
 2. (Optional) Populate seed data for testing:
    ```bash
@@ -34,4 +34,4 @@ The app will run on `http://localhost:$PORT`.
 
 ## 4. Notes
 - Configuration is stored in `config.js` and no environment variables are required.
-- There is **no automated test suite** included.
+- Run `npm test` to execute the automated test suite.
