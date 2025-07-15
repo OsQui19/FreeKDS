@@ -79,5 +79,10 @@ docker compose up
 Alternatively edit `config.js` to change the default settings. On first start
 the MySQL container automatically initializes the schema using `schema.sql`.
 
+The Dockerfile installs system packages, including the MySQL client, as the
+`root` user. After the files are copied and permissions adjusted, it switches to
+the unprivileged `node` user so the application runs without full container
+privileges.
+
 ## Reporting / Tracking
 Inventory usage is logged daily via `controllers/dailyUsage.js`. Security events are recorded to the `security_log` table.
