@@ -19,7 +19,8 @@ This project is a simplified kitchen display system. Below are basic steps to ru
 2. Run `npm install` to install dependencies.
 3. Update `config.js` with your database credentials and session settings.
 4. Import `schema.sql` into your MySQL server.
-5. Session data is stored in MySQL using
+5. (Optional) Set `GITHUB_REPO` in `config.js` to enable GitHub update checks.
+6. Session data is stored in MySQL using
    [`express-mysql-session`](https://www.npmjs.com/package/express-mysql-session).
    The required table is created automatically on first run.
 

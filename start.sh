@@ -1,9 +1,4 @@
 #!/bin/sh
-# Install dependencies if node_modules is missing
-
-if [ ! -d node_modules ]; then
-  npm install
-fi
 
 # Ensure log directory exists
 LOG_DIR="${LOG_DIR:-./logs}"

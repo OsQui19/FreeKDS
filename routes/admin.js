@@ -34,6 +34,10 @@ const os = require("os");
 const multer = require("multer");
 const { execSync } = require("child_process");
 const upload = multer({ dest: os.tmpdir() });
+const config = require("../config");
+const RELEASE_CACHE_TTL = 60 * 60 * 1000; // 1 hour
+let releaseCache = null;
+let releaseCacheTime = 0;
 const {
   listBackups,
   restoreDatabase,
@@ -1294,6 +1298,32 @@ module.exports = (db, io) => {
       res.json({ commit, date, log });
     } catch (err) {
       logger.error("Error reading git info:", err);
+      res.status(500).json({ error: "Failed" });
+    }
+  });
+
+  router.get("/admin/updates/latest", async (req, res) => {
+    if (!config.githubRepo) {
+      return res.status(400).json({ error: "Repository not configured" });
+    }
+    if (releaseCache && Date.now() - releaseCacheTime < RELEASE_CACHE_TTL) {
+      return res.json(releaseCache);
+    }
+    try {
+      const url = `https://api.github.com/repos/${config.githubRepo}/releases/latest`;
+      const response = await fetch(url, { headers: { "User-Agent": "FreeKDS" } });
+      if (!response.ok) throw new Error(`Status ${response.status}`);
+      const data = await response.json();
+      releaseCache = {
+        tag_name: data.tag_name,
+        name: data.name,
+        body: data.body,
+        html_url: data.html_url,
+      };
+      releaseCacheTime = Date.now();
+      res.json(releaseCache);
+    } catch (err) {
+      logger.error("Error fetching release info:", err);
       res.status(500).json({ error: "Failed" });
     }
   });

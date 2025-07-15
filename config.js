@@ -18,4 +18,5 @@ module.exports = {
     windowMs: 60 * 1000,
     max: 1000,
   },
+  githubRepo: process.env.GITHUB_REPO || '',
 };
