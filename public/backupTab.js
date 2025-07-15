@@ -219,20 +219,16 @@ function initBackupTab() {
   if (createBtn) {
     createBtn.addEventListener('click', async () => {
       const hide = window.showSpinner ? window.showSpinner() : () => {};
+      createBtn.disabled = true;
       try {
-        const res = await fetch('/admin/backups/create', { method: 'POST' });
-        let msg = null;
-        if (res.headers.get('Location')) {
-          const loc = new URL(res.headers.get('Location'), window.location.origin);
-          msg = loc.searchParams.get('msg');
-        } else if (res.url) {
-          try {
-            msg = new URL(res.url).searchParams.get('msg');
-          } catch {}
-        }
+        const res = await fetch('/admin/backups/create', {
+          method: 'POST',
+          headers: { Accept: 'application/json' },
+        });
+        const data = await res.json().catch(() => ({}));
         if (res.ok) {
-          const text = msg ? decodeURIComponent(msg.replace(/\+/g, ' ')) : 'Backup created';
-          showAlert(text, 'success', document.getElementById('backupAlertContainer'));
+          const msg = data.started ? 'Backup started' : data.queued ? 'Backup queued' : 'Backup started';
+          showAlert(msg, 'success', document.getElementById('backupAlertContainer'));
           loadBackups();
           loadBackupLog();
         } else {
@@ -243,6 +239,7 @@ function initBackupTab() {
         showAlert('Backup failed', 'danger', document.getElementById('backupAlertContainer'));
       } finally {
         if (typeof hide === 'function') hide();
+        createBtn.disabled = false;
       }
     });
   }
