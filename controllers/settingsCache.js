@@ -1,9 +1,10 @@
+const logger = require('../utils/logger');
 let settings = {};
 
 function loadSettings(db, cb) {
   db.query("SELECT setting_key, setting_value FROM settings", (err, rows) => {
     if (err) {
-      console.error("Error loading settings:", err);
+      logger.error("Error loading settings:", err);
       if (cb) return cb(err);
       return;
     }

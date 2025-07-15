@@ -1,27 +1,38 @@
+const fs = require('fs');
 const path = require('path');
+const { createLogger, format, transports } = require('winston');
+const DailyRotateFile = require('winston-daily-rotate-file');
 
-function formatSource(stackLine) {
-  const match = stackLine.match(/\((.*):(\d+):(\d+)\)$/);
-  if (!match) return '';
-  const file = path.basename(match[1]);
-  const line = match[2];
-  return `${file}:${line}`;
+const logDir = process.env.LOG_DIR || path.join(__dirname, '..', 'logs');
+if (!fs.existsSync(logDir)) {
+  fs.mkdirSync(logDir, { recursive: true });
 }
 
-['log', 'warn', 'error'].forEach((level) => {
-  const orig = console[level];
-  console[level] = (...args) => {
-    const stack = new Error().stack.split('\n')[2] || '';
-    const src = formatSource(stack);
-    const ts = new Date().toISOString();
-    orig.call(console, `[${ts}]${src ? ` [${src}]` : ''}`, ...args);
-  };
+const logger = createLogger({
+  level: 'info',
+  format: format.combine(
+    format.timestamp(),
+    format.printf(({ timestamp, level, message, ...meta }) => {
+      const rest = Object.keys(meta).length ? ' ' + JSON.stringify(meta) : '';
+      return `${timestamp} [${level}] ${message}${rest}`;
+    })
+  ),
+  transports: [
+    new transports.Console(),
+    new DailyRotateFile({
+      filename: path.join(logDir, '%DATE%.log'),
+      datePattern: 'YYYY-MM-DD',
+      maxFiles: '14d',
+    }),
+  ],
 });
 
 process.on('unhandledRejection', (reason) => {
-  console.error('Unhandled promise rejection:', reason);
+  logger.error('Unhandled promise rejection', { reason });
 });
 
 process.on('uncaughtException', (err) => {
-  console.error('Uncaught exception:', err);
+  logger.error('Uncaught exception', err);
 });
+
+module.exports = logger;

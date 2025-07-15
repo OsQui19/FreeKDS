@@ -1,4 +1,4 @@
-require("./utils/logger");
+const logger = require("./utils/logger");
 const express = require("express");
 const mysql = require("mysql2");
 const path = require("path");
@@ -63,7 +63,7 @@ const db = mysql.createPool({
 const sessionStore = new MySQLStore({}, db);
 db.getConnection((err, connection) => {
   if (err) {
-    console.error("Database connection error:", err);
+    logger.error("Database connection error:", err);
     process.exit(1);
   }
   if (connection) connection.release();
@@ -96,10 +96,10 @@ db.getConnection((err, connection) => {
       setupSocketHandlers(io, db);
       const PORT = config.port;
       server.listen(PORT, () => {
-        console.log(`Server running on http://localhost:${PORT}`);
+        logger.info(`Server running on http://localhost:${PORT}`);
       });
     } catch (e) {
-      console.error("Startup error:", e);
+      logger.error("Startup error:", e);
       process.exit(1);
     }
   };
@@ -195,7 +195,7 @@ app.get('/', (req, res) => {
 });
 // Central error handler to report unexpected issues
 app.use((err, req, res, next) => {
-  console.error('Unhandled application error', err);
+  logger.error('Unhandled application error', err);
   res.status(500).send('Internal Server Error');
 });
 // setupSocketHandlers and server.listen are invoked after initialization

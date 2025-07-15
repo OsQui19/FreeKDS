@@ -1,4 +1,4 @@
-require('../utils/logger');
+const logger = require('../utils/logger');
 const mysql = require('mysql2');
 const bcrypt = require('bcrypt');
 const { ensureDefaults } = require('../controllers/accessControl');
@@ -23,11 +23,11 @@ async function main() {
     'INSERT INTO employees (username, password_hash, role) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE password_hash=VALUES(password_hash), role=VALUES(role)',
     [username, hash, role],
   );
-  console.log(`Admin user \`${username}\` is ready.`);
+  logger.info(`Admin user \`${username}\` is ready.`);
   await db.end();
 }
 
 main().catch((err) => {
-  console.error('Error creating admin user:', err);
+  logger.error('Error creating admin user:', err);
   process.exit(1);
 });

@@ -13,7 +13,7 @@ RUN npm run build
 RUN chmod +x start.sh
 
 # Ensure files are owned by the non-privileged user before dropping privileges
-RUN chown -R node:node /app
+RUN mkdir -p /app/logs && chown -R node:node /app
 
 # Drop privileges when running the application
 USER node

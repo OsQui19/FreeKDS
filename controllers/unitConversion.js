@@ -1,10 +1,11 @@
+const logger = require('../utils/logger');
 const unitsById = {};
 const unitsByAbbr = {};
 
 function loadUnits(db, cb) {
   db.query("SELECT id, abbreviation, type, to_base FROM units", (err, rows) => {
     if (err) {
-      console.error("Error loading units:", err);
+      logger.error("Error loading units:", err);
       if (cb) cb(err);
       return;
     }

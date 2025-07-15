@@ -1,3 +1,4 @@
+const logger = require('../utils/logger');
 const express = require("express");
 const {
   updateItemModifiers,
@@ -75,7 +76,7 @@ module.exports = (db, io) => {
       try {
         await logInventoryForOrder(conn, orderId, items);
       } catch (err5) {
-        console.error("Inventory log error:", err5);
+        logger.error("Inventory log error:", err5);
         await conn.rollback();
         conn.release();
         return res.status(500).send("DB Error");
@@ -141,7 +142,7 @@ module.exports = (db, io) => {
       res.json({ success: true, orderId });
     } catch (err) {
       if (conn) await conn.rollback();
-      console.error("Error inserting order:", err);
+      logger.error("Error inserting order:", err);
       res.status(500).send("DB Error");
     } finally {
       if (conn) conn.release();
@@ -158,7 +159,7 @@ module.exports = (db, io) => {
       stationId,
       (err, orders) => {
         if (err) {
-          console.error("Error fetching bumped orders:", err);
+          logger.error("Error fetching bumped orders:", err);
           return res.status(500).send("DB Error");
         }
         res.json({ orders });
@@ -177,7 +178,7 @@ module.exports = (db, io) => {
     const param = id ? id : name;
     db.query(sql, [param], (err, rows) => {
       if (err) {
-        console.error("Error fetching recipe:", err);
+        logger.error("Error fetching recipe:", err);
         return res.status(500).send("DB Error");
       }
       if (rows.length) {
@@ -193,7 +194,7 @@ module.exports = (db, io) => {
       const units = await getUnits(db);
       res.json({ units });
     } catch (err) {
-      console.error("Error fetching units:", err);
+      logger.error("Error fetching units:", err);
       res.status(500).send("DB Error");
     }
   });
@@ -214,7 +215,7 @@ module.exports = (db, io) => {
       unitConversion.loadUnits(db);
       res.json({ success: true, id });
     } catch (err) {
-      console.error("Error inserting unit:", err);
+      logger.error("Error inserting unit:", err);
       res.status(500).send("DB Error");
     }
   });
@@ -243,7 +244,7 @@ module.exports = (db, io) => {
       }));
       res.json({ employees });
     } catch (err) {
-      console.error("Error fetching employees:", err);
+      logger.error("Error fetching employees:", err);
       res.status(500).send("DB Error");
     }
   });
@@ -333,7 +334,7 @@ module.exports = (db, io) => {
 
       res.json({ success: true });
     } catch (err) {
-      console.error("Error saving employees:", err);
+      logger.error("Error saving employees:", err);
       res.status(500).send("DB Error");
     }
   });
@@ -387,7 +388,7 @@ module.exports = (db, io) => {
       }
       res.json({ schedule: rows });
     } catch (err) {
-      console.error("Error fetching schedule:", err);
+      logger.error("Error fetching schedule:", err);
       res.status(500).send("DB Error");
     }
   });
@@ -451,7 +452,7 @@ module.exports = (db, io) => {
       res.json({ success: true });
     } catch (err) {
       if (conn) await conn.rollback();
-      console.error("Error saving schedule:", err);
+      logger.error("Error saving schedule:", err);
       res.status(500).send("DB Error");
     } finally {
       if (conn) conn.release();
@@ -463,7 +464,7 @@ module.exports = (db, io) => {
       const roles = getHierarchy();
       res.json({ hierarchy: roles });
     } catch (err) {
-      console.error("Error fetching hierarchy:", err);
+      logger.error("Error fetching hierarchy:", err);
       res.status(500).send("DB Error");
     }
   });
@@ -481,7 +482,7 @@ module.exports = (db, io) => {
       );
       res.json({ success: true });
     } catch (err) {
-      console.error("Error saving hierarchy:", err);
+      logger.error("Error saving hierarchy:", err);
       res.status(500).send("DB Error");
     }
   });
@@ -491,7 +492,7 @@ module.exports = (db, io) => {
       const perms = accessControl.getPermissions();
       res.json({ permissions: perms });
     } catch (err) {
-      console.error("Error fetching permissions:", err);
+      logger.error("Error fetching permissions:", err);
       res.status(500).send("DB Error");
     }
   });
@@ -512,7 +513,7 @@ module.exports = (db, io) => {
         );
       res.json({ records: rows });
     } catch (err) {
-      console.error("Error fetching time clock:", err);
+      logger.error("Error fetching time clock:", err);
       res.status(500).send("DB Error");
     }
   });
@@ -539,7 +540,7 @@ module.exports = (db, io) => {
       if (rows.length) io.emit("timeUpdated", rows[0]);
       res.json({ success: true, record: rows[0] || null });
     } catch (err) {
-      console.error("Error updating time clock:", err);
+      logger.error("Error updating time clock:", err);
       res.status(500).send("DB Error");
     }
   });
@@ -559,7 +560,7 @@ module.exports = (db, io) => {
         );
       res.json({ payroll: rows });
     } catch (err) {
-      console.error("Error fetching payroll data:", err);
+      logger.error("Error fetching payroll data:", err);
       res.status(500).send("DB Error");
     }
   });
@@ -579,7 +580,7 @@ module.exports = (db, io) => {
       );
       res.json({ success: true });
     } catch (err) {
-      console.error("Error saving permissions:", err);
+      logger.error("Error saving permissions:", err);
       res.status(500).send("DB Error");
     }
   });

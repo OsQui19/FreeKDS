@@ -1,8 +1,13 @@
 #!/bin/sh
 # Install dependencies if node_modules is missing
+
 if [ ! -d node_modules ]; then
   npm install
 fi
+
+# Ensure log directory exists
+LOG_DIR="${LOG_DIR:-./logs}"
+mkdir -p "$LOG_DIR"
 
 # If a DB host is provided, wait for the database port to be reachable
 if [ -n "$DB_HOST" ]; then

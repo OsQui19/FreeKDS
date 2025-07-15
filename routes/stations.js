@@ -1,3 +1,4 @@
+const logger = require('../utils/logger');
 const express = require("express");
 const {
   getBumpedOrders,
@@ -31,7 +32,7 @@ module.exports = (db) => {
       const rows = await getStations(db);
       res.render("stations", { stations: rows });
     } catch (err) {
-      console.error("Error fetching stations:", err);
+      logger.error("Error fetching stations:", err);
       res.status(500).send("DB Error");
     }
   });
@@ -45,7 +46,7 @@ module.exports = (db) => {
       [stationId],
       (err, stRows) => {
         if (err || stRows.length === 0) {
-          console.error("Error fetching station:", err);
+          logger.error("Error fetching station:", err);
           return res.status(404).send("Station not found");
         }
         const station = stRows[0];
@@ -81,7 +82,7 @@ module.exports = (db) => {
                      ORDER BY o.id, oi.id`;
         db.query(orderSql, orderParams, (err3, rows) => {
           if (err3) {
-            console.error("Error fetching orders:", err3);
+            logger.error("Error fetching orders:", err3);
             return res.status(500).send("DB Error");
           }
           const ordersMap = {};
@@ -109,7 +110,7 @@ module.exports = (db) => {
           });
           const orders = Object.values(ordersMap);
           getBumpedOrders(db, stationId, (errB, bumpedOrders) => {
-            if (errB) console.error("Error fetching bumped orders:", errB);
+            if (errB) logger.error("Error fetching bumped orders:", errB);
             getStations(db)
               .then((stationRows) => {
                 res.render("station", {
@@ -121,7 +122,7 @@ module.exports = (db) => {
                 });
               })
               .catch((err4) => {
-                console.error("Error fetching stations list:", err4);
+                logger.error("Error fetching stations list:", err4);
                 res.status(500).send("DB Error");
               });
           });
@@ -139,7 +140,7 @@ module.exports = (db) => {
       [stationId],
       (err, stRows) => {
         if (err || stRows.length === 0) {
-          console.error("Error fetching station:", err);
+          logger.error("Error fetching station:", err);
           return res.status(404).send("Station not found");
         }
         const station = stRows[0];
@@ -150,7 +151,7 @@ module.exports = (db) => {
           [stationId],
           (err3, itemRows) => {
             if (err3) {
-              console.error("Error fetching recipes:", err3);
+              logger.error("Error fetching recipes:", err3);
               return res.status(500).send("DB Error");
             }
             res.render("wiki", { station, items: itemRows, settings });
@@ -172,27 +173,27 @@ module.exports = (db) => {
       .then((cats) => {
         db.query(sqlItems, (err2, items) => {
           if (err2) {
-            console.error(err2);
+            logger.error(err2);
             return res.status(500).send("DB Error");
           }
           db.query(sqlItemMods, (err3, itemMods) => {
             if (err3) {
-              console.error(err3);
+              logger.error(err3);
               return res.status(500).send("DB Error");
             }
             db.query(sqlItemGroups, (errG, itemGroups) => {
               if (errG) {
-                console.error(errG);
+                logger.error(errG);
                 return res.status(500).send("DB Error");
               }
               db.query(sqlMods, (err4, mods) => {
                 if (err4) {
-                  console.error(err4);
+                  logger.error(err4);
                   return res.status(500).send("DB Error");
                 }
                 db.query(sqlGroups, (err5, groups) => {
                   if (err5) {
-                    console.error(err5);
+                    logger.error(err5);
                     return res.status(500).send("DB Error");
                   }
                   const modMap = {};
@@ -254,7 +255,7 @@ module.exports = (db) => {
         });
       })
       .catch((err) => {
-        console.error("Error fetching categories:", err);
+        logger.error("Error fetching categories:", err);
         res.status(500).send("DB Error");
       });
   });

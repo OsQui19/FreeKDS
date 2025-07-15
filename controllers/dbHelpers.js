@@ -1,3 +1,4 @@
+const logger = require('../utils/logger');
 const { convert } = require("./unitConversion");
 
 function updateItemModifiers(db, itemId, modifierRows, callback) {
@@ -10,7 +11,7 @@ function updateItemModifiers(db, itemId, modifierRows, callback) {
     [itemId],
     (err) => {
       if (err) {
-        console.error(err);
+        logger.error(err);
       }
       if (rows.length === 0) return callback();
       const values = rows.map((m) => [
@@ -23,7 +24,7 @@ function updateItemModifiers(db, itemId, modifierRows, callback) {
         [values],
         (err2) => {
           if (err2) {
-            console.error(err2);
+            logger.error(err2);
           }
           callback();
         },
@@ -41,7 +42,7 @@ function updateItemGroups(db, itemId, groupIds, callback) {
     [itemId],
     (err) => {
       if (err) {
-        console.error(err);
+        logger.error(err);
       }
       if (rows.length === 0) return callback && callback();
       db.query(
@@ -49,7 +50,7 @@ function updateItemGroups(db, itemId, groupIds, callback) {
         [rows],
         (err2) => {
           if (err2) {
-            console.error(err2);
+            logger.error(err2);
           }
           if (callback) callback();
         },
@@ -313,14 +314,14 @@ function updateItemIngredients(db, itemId, ingList, callback) {
     [itemId],
     (err) => {
       if (err) {
-        console.error(err);
+        logger.error(err);
       }
       if (rows.length === 0) return callback && callback();
       db.query(
         "INSERT INTO item_ingredients (menu_item_id, ingredient_id, amount, unit_id) VALUES ?",
         [rows],
         (err2) => {
-          if (err2) console.error(err2);
+          if (err2) logger.error(err2);
           if (callback) callback();
         },
       );

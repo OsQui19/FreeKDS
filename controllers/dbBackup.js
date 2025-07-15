@@ -1,3 +1,4 @@
+const logger = require('../utils/logger');
 const { spawn } = require("child_process");
 const path = require("path");
 const fs = require("fs");
@@ -17,7 +18,7 @@ function logBackup(db, action, result, message) {
     'INSERT INTO backup_log (action, result, message) VALUES (?, ?, ?)',
     [action, result, message],
     (err) => {
-      if (err) console.error('Backup log error:', err);
+      if (err) logger.error('Backup log error:', err);
     },
   );
 }
@@ -113,17 +114,17 @@ function backupDatabase(db, cb) {
   });
   const outStream = fs.createWriteStream(filePath);
   outStream.on("error", (err) => {
-    console.error("Write stream error during DB backup:", err);
+    logger.error("Write stream error during DB backup:", err);
     if (cb) cb(err);
   });
   dump.stdout.pipe(outStream);
 
   dump.stderr.on("data", (data) => {
-    console.error(`mysqldump error: ${data}`);
+    logger.error(`mysqldump error: ${data}`);
   });
 
   dump.on("error", (err) => {
-    console.error("Failed to start mysqldump:", err);
+    logger.error("Failed to start mysqldump:", err);
     if (cb) cb(err);
   });
 
@@ -136,19 +137,19 @@ function backupDatabase(db, cb) {
       }
     };
     if (code === 0) {
-      console.log(`Database backup created: ${filePath}`);
+      logger.info(`Database backup created: ${filePath}`);
       logBackup(db, 'backup', 'success', filePath);
       removeOldBackups();
       if (cb) cb(null);
       runQueued();
     } else {
       const err = new Error(`mysqldump exited with code ${code}`);
-      console.error("Error during DB backup:", err);
+      logger.error("Error during DB backup:", err);
       logBackup(db, 'backup', 'error', err.message);
       fs.unlink(filePath, (delErr) => {
         if (delErr) {
           delErr.deleteFailed = true;
-          console.error("Failed to delete incomplete backup:", delErr);
+          logger.error("Failed to delete incomplete backup:", delErr);
           if (cb) cb(delErr);
         } else if (cb) cb(err);
         runQueued();
@@ -186,16 +187,16 @@ function applySchema(cb) {
   fs.createReadStream(SCHEMA_PATH).pipe(proc.stdin);
 
   proc.stderr.on("data", (data) => {
-    console.error(`mysql schema error: ${data}`);
+    logger.error(`mysql schema error: ${data}`);
   });
   proc.on("error", (err) => {
-    console.error("Failed to apply schema:", err);
+    logger.error("Failed to apply schema:", err);
     if (cb) cb(err);
   });
   proc.on("close", (code) => {
     if (code === 0) return cb && cb(null);
     const err = new Error(`mysql exited with code ${code}`);
-    console.error("Error applying schema:", err);
+    logger.error("Error applying schema:", err);
     if (cb) cb(err);
   });
 }
@@ -253,23 +254,23 @@ function restoreDatabase(db, file, cb) {
   });
   const inStream = fs.createReadStream(file);
   inStream.on("error", (err) => {
-    console.error("Read stream error during DB restore:", err);
+    logger.error("Read stream error during DB restore:", err);
     if (cb) cb(err);
   });
   inStream.pipe(mysqlProc.stdin);
 
   mysqlProc.stderr.on("data", (data) => {
-    console.error(`mysql error: ${data}`);
+    logger.error(`mysql error: ${data}`);
   });
 
   mysqlProc.on("error", (err) => {
-    console.error("Failed to start mysql:", err);
+    logger.error("Failed to start mysql:", err);
     if (cb) cb(err);
   });
 
   mysqlProc.on("close", (code) => {
     if (code === 0) {
-      console.log(`Database restored from ${file}`);
+      logger.info(`Database restored from ${file}`);
       logBackup(db, 'restore', 'success', path.basename(file));
       applySchema((err) => {
         if (err) return cb && cb(err);
@@ -277,7 +278,7 @@ function restoreDatabase(db, file, cb) {
       });
     } else {
       const err = new Error(`mysql exited with code ${code}`);
-      console.error("Error restoring DB:", err);
+      logger.error("Error restoring DB:", err);
       logBackup(db, 'restore', 'error', err.message);
       if (cb) cb(err);
     }

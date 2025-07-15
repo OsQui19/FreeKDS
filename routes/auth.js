@@ -1,3 +1,4 @@
+const logger = require('../utils/logger');
 const express = require('express');
 const bcrypt = require('bcrypt');
 const { logSecurityEvent } = require('../controllers/securityLog');
@@ -61,13 +62,13 @@ module.exports = (db, io) => {
           );
         if (cRows.length) clockedIn = true;
       } catch (err2) {
-        console.error('Clock status error', err2);
+        logger.error('Clock status error', err2);
       }
       if (hasLevel(role, topRole) || clockedIn)
         return res.redirect(dashboardForRole(role));
       return res.redirect('/clock/dashboard');
     } catch (err) {
-      console.error('Login error', err);
+      logger.error('Login error', err);
       await logSecurityEvent(db, 'login', username, '/login', false, req.ip);
       res.redirect('/login');
     }
@@ -103,12 +104,12 @@ module.exports = (db, io) => {
           );
         if (cRows.length) clockedIn = true;
       } catch (err2) {
-        console.error('Clock status error', err2);
+        logger.error('Clock status error', err2);
       }
       if (clockedIn) return res.redirect(dashboardForRole(role));
       return res.redirect('/clock/dashboard');
     } catch (err) {
-      console.error('Clock login error', err);
+      logger.error('Clock login error', err);
       res.redirect('/clock');
     }
   });
@@ -125,7 +126,7 @@ module.exports = (db, io) => {
         );
       if (rows.length) clockedIn = true;
     } catch (err) {
-      console.error('Clock status check error', err);
+      logger.error('Clock status check error', err);
     }
     res.render('clock-dashboard', {
       employee: req.session.clockUser,
@@ -155,7 +156,7 @@ module.exports = (db, io) => {
         if (recRows.length) io.emit('timeUpdated', recRows[0]);
       }
     } catch (err) {
-      console.error('Clock in error', err);
+      logger.error('Clock in error', err);
     }
     res.redirect(dashboardForRole(req.session.clockUser.role));
   });
@@ -186,7 +187,7 @@ module.exports = (db, io) => {
         if (recRows.length) io.emit('timeUpdated', recRows[0]);
       }
     } catch (err) {
-      console.error('Clock out error', err);
+      logger.error('Clock out error', err);
     }
     req.session.clockUser = null;
     if (req.session.pinOnly) {

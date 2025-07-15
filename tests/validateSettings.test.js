@@ -1,3 +1,4 @@
+const logger = require('../utils/logger');
 const { expect } = require('chai');
 const { validateSettings } = require('../utils/validateSettings');
 

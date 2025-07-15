@@ -8,3 +8,4 @@ public/dist/
 .env
 backup
 backups/*.sql
+logs/

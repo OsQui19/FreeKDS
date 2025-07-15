@@ -1,4 +1,5 @@
-require("../utils/logger");
+const logger = require('../utils/logger');
+
 const mysql = require("mysql2/promise");
 const config = require("../config");
 
@@ -36,7 +37,7 @@ async function main() {
     try {
       await db.query(`TRUNCATE TABLE \`${t}\``);
     } catch (err) {
-      console.error(`Unable to truncate ${t}:`, err.message);
+      logger.error(`Unable to truncate ${t}:`, err.message);
     }
   }
   await db.query("SET FOREIGN_KEY_CHECKS=1");
@@ -204,10 +205,10 @@ async function main() {
     }
   }
 
-  console.log("Seed data inserted successfully.");
+  logger.info("Seed data inserted successfully.");
   await db.end();
 }
 
 main().catch((err) => {
-  console.error("Error running seed script:", err);
+  logger.error("Error running seed script:", err);
 });

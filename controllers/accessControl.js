@@ -1,3 +1,4 @@
+const logger = require('../utils/logger');
 const DEFAULT_HIERARCHY = ["FOH", "BOH", "management"];
 
 const MODULE_GROUPS = [
@@ -87,7 +88,7 @@ function loadPermissions(db, cb) {
               permissions = norm;
             }
           } catch (e) {
-            console.error(
+            logger.error(
               'Error parsing role_permissions from settings table:',
               e.message,
             );

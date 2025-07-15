@@ -1,3 +1,4 @@
+const logger = require('../utils/logger');
 module.exports = function (io, db) {
   const stationTypes = {};
   io.on("connection", (socket) => {
@@ -18,13 +19,13 @@ module.exports = function (io, db) {
             stationTypes[socket.stationId] = socket.stationType;
             socket.join(`station-${socket.stationId}`);
             if (socket.stationType === "expo") socket.join("expo");
-            console.log(
+            logger.info(
               "Registered station",
               socket.stationId,
               socket.stationType,
             );
           } else {
-            console.log("Failed to register station", socket.stationId, err);
+            logger.info("Failed to register station", socket.stationId, err);
           }
         },
       );
@@ -39,10 +40,10 @@ module.exports = function (io, db) {
     socket.on("bumpOrder", ({ orderId }) => {
       if (!orderId) return;
       if (!socket.stationType) {
-        console.log("bumpOrder from unregistered socket", socket.stationId);
+        logger.info("bumpOrder from unregistered socket", socket.stationId);
         return;
       }
-      console.log("bumpOrder", {
+      logger.info("bumpOrder", {
         orderId,
         stationId: socket.stationId,
         type: socket.stationType,
@@ -105,7 +106,7 @@ module.exports = function (io, db) {
                         ORDER BY oi.id`;
         db.query(fetchSql, [orderId], (err, rows) => {
           if (err) {
-            console.error("Error fetching items for recall:", err);
+            logger.error("Error fetching items for recall:", err);
             return;
           }
           if (rows.length === 0) return;
@@ -171,7 +172,7 @@ module.exports = function (io, db) {
                    WHERE oi.order_id=?`;
       db.query(sql, [orderId], (err, rows) => {
         if (err) {
-          console.error("Error fetching stations for urgent:", err);
+          logger.error("Error fetching stations for urgent:", err);
           return;
         }
         const stationIds = rows.map((r) => r.station_id);

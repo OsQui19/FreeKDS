@@ -1,6 +1,7 @@
+const logger = require('../utils/logger');
 const logSecurityEvent = async (db, event, username, path, success, ip) => {
   const outcome = success ? 'success' : 'failure';
-  console.warn(`[SECURITY] ${event} ${outcome} user=${username || 'unknown'} path=${path} ip=${ip}`);
+  logger.warn(`[SECURITY] ${event} ${outcome} user=${username || 'unknown'} path=${path} ip=${ip}`);
   try {
     await db
       .promise()
@@ -9,7 +10,7 @@ const logSecurityEvent = async (db, event, username, path, success, ip) => {
         [event, username, path, success ? 1 : 0, ip],
       );
   } catch (err) {
-    console.error('Security log error', err);
+    logger.error('Security log error', err);
   }
 };
 

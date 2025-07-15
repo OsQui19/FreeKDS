@@ -1,10 +1,10 @@
-require('../utils/logger');
+const logger = require('../utils/logger');
 const path = require('path');
 const { restoreDatabase } = require('../controllers/dbBackup');
 
 const file = process.argv[2];
 if (!file) {
-  console.error('Usage: node scripts/restore.js <backup-file.sql>');
+  logger.error('Usage: node scripts/restore.js <backup-file.sql>');
   process.exit(1);
 }
 const fullPath = path.resolve(file);

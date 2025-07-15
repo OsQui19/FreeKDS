@@ -1,3 +1,4 @@
+const logger = require('../utils/logger');
 const express = require("express");
 const {
   updateItemModifiers,
@@ -184,7 +185,7 @@ module.exports = (db, io) => {
         modules: ALL_MODULES,
       });
     } catch (err) {
-      console.error("Error fetching admin page data:", err);
+      logger.error("Error fetching admin page data:", err);
       res.status(500).send("DB Error");
     }
   });
@@ -247,7 +248,7 @@ module.exports = (db, io) => {
           }
         }
       } catch (err) {
-        console.error("Error verifying ingredient units:", err);
+        logger.error("Error verifying ingredient units:", err);
         return res.status(500).send("DB Error");
       }
     }
@@ -281,7 +282,7 @@ module.exports = (db, io) => {
           return res.redirect("/admin?tab=menu&msg=Invalid+modifier+selection");
         }
       } catch (err) {
-        console.error("Error verifying modifiers:", err);
+        logger.error("Error verifying modifiers:", err);
         return res.status(500).send("DB Error");
       }
     }
@@ -306,7 +307,7 @@ module.exports = (db, io) => {
         [name, price, stationId, categoryId, imageUrl, recipe, id],
         (err) => {
           if (err) {
-            console.error(err);
+            logger.error(err);
           }
           updateItemGroups(db, id, selectedGroups, () => {
             updateItemModifiers(db, id, selectedMods, () => {
@@ -333,7 +334,7 @@ module.exports = (db, io) => {
                       },
                     });
                   } catch (err2) {
-                    console.error("Error returning item json:", err2);
+                    logger.error("Error returning item json:", err2);
                     return res.status(500).json({ error: "DB Error" });
                   }
                 }
@@ -353,7 +354,7 @@ module.exports = (db, io) => {
         "SELECT IFNULL(MAX(sort_order), -1) AS maxOrder FROM menu_items WHERE category_id=?";
       db.query(sortSql, [categoryId], (err, results) => {
         if (err) {
-          console.error(err);
+          logger.error(err);
           results = [{ maxOrder: -1 }];
         }
         const nextOrder = (results[0].maxOrder || 0) + 1;
@@ -364,7 +365,7 @@ module.exports = (db, io) => {
           [name, price, stationId, categoryId, imageUrl, recipe, nextOrder],
           (err, result) => {
             if (err) {
-              console.error(err);
+              logger.error(err);
               return res.redirect("/admin?tab=menu");
             }
             const newItemId = result.insertId;
@@ -397,7 +398,7 @@ module.exports = (db, io) => {
                           },
                         });
                       } catch (err2) {
-                        console.error("Error returning item json:", err2);
+                        logger.error("Error returning item json:", err2);
                         return res.status(500).json({ error: "DB Error" });
                       }
                     }
@@ -422,7 +423,7 @@ module.exports = (db, io) => {
         const itemName = !err && rows && rows[0] ? rows[0].name : "Item";
         db.query("DELETE FROM menu_items WHERE id=?", [itemId], (err2) => {
           if (err2) {
-            console.error("Error deleting item:", err2);
+            logger.error("Error deleting item:", err2);
           }
           return res.redirect(
             `/admin?tab=menu&msg=Item+deleted&detail=${encodeURIComponent(
@@ -441,7 +442,7 @@ module.exports = (db, io) => {
     if (id) {
       db.query("UPDATE categories SET name=? WHERE id=?", [name, id], (err) => {
         if (err) {
-          console.error(err);
+          logger.error(err);
         }
         return res.redirect("/admin?tab=menu&msg=Category+saved");
       });
@@ -450,7 +451,7 @@ module.exports = (db, io) => {
         "SELECT IFNULL(MAX(sort_order), -1) AS maxOrder FROM categories";
       db.query(sortSql, (err, results) => {
         if (err) {
-          console.error(err);
+          logger.error(err);
           results = [{ maxOrder: -1 }];
         }
         const nextOrder = (results[0].maxOrder || 0) + 1;
@@ -459,7 +460,7 @@ module.exports = (db, io) => {
           [name, nextOrder],
           (err2) => {
             if (err2) {
-              console.error(err2);
+              logger.error(err2);
             }
             return res.redirect("/admin?tab=menu&msg=Category+saved");
           },
@@ -476,16 +477,16 @@ module.exports = (db, io) => {
       [categoryId],
       (err, results) => {
         if (err) {
-          console.error(err);
+          logger.error(err);
           return res.redirect("/admin?tab=menu");
         }
         if (results[0].count > 0) {
-          console.error("Cannot delete category with existing items.");
+          logger.error("Cannot delete category with existing items.");
           return res.redirect("/admin?tab=menu");
         }
         db.query("DELETE FROM categories WHERE id=?", [categoryId], (err2) => {
           if (err2) {
-            console.error("Error deleting category:", err2);
+            logger.error("Error deleting category:", err2);
           }
           return res.redirect("/admin?tab=menu&msg=Category+deleted");
         });
@@ -501,7 +502,7 @@ module.exports = (db, io) => {
         "UPDATE categories SET sort_order=? WHERE id=?",
         [index, catId],
         (err) => {
-          if (err) console.error("Error updating category order:", err);
+          if (err) logger.error("Error updating category order:", err);
         },
       );
     });
@@ -517,7 +518,7 @@ module.exports = (db, io) => {
         "UPDATE menu_items SET sort_order=?, category_id=? WHERE id=?",
         [index, categoryId, itemId],
         (err) => {
-          if (err) console.error("Error updating item order:", err);
+          if (err) logger.error("Error updating item order:", err);
         },
       );
     });
@@ -550,14 +551,14 @@ module.exports = (db, io) => {
         "DELETE FROM ingredient_tags WHERE ingredient_id=?",
         [ingId],
         (err) => {
-          if (err) console.error(err);
+          if (err) logger.error(err);
           if (tagIds.length === 0) return cb();
           const values = tagIds.map((tid) => [ingId, tid]);
           db.query(
             "INSERT INTO ingredient_tags (ingredient_id, tag_id) VALUES ?",
             [values],
             (err2) => {
-              if (err2) console.error(err2);
+              if (err2) logger.error(err2);
               cb();
             },
           );
@@ -569,7 +570,7 @@ module.exports = (db, io) => {
         "UPDATE ingredients SET name=?, quantity=?, unit_id=?, category_id=?, sku=?, cost=?, is_public=? WHERE id=?",
         [name, qty, unit, categoryId, sku, cost, isPublic, id],
         (err) => {
-          if (err) console.error("Error updating ingredient:", err);
+          if (err) logger.error("Error updating ingredient:", err);
           saveTags(id, () => {
             res.redirect("/admin?tab=inventory&msg=Ingredient+saved");
           });
@@ -581,7 +582,7 @@ module.exports = (db, io) => {
         [name, qty, unit, categoryId, sku, cost, isPublic],
         (err, result) => {
           if (err) {
-            console.error("Error inserting ingredient:", err);
+            logger.error("Error inserting ingredient:", err);
             return res.redirect("/admin?tab=inventory");
           }
           saveTags(result.insertId, () => {
@@ -597,7 +598,7 @@ module.exports = (db, io) => {
     if (!id) return res.redirect("/admin?tab=inventory");
     db.query("DELETE FROM ingredients WHERE id=?", [id], (err) => {
       if (err) {
-        console.error("Error deleting ingredient:", err);
+        logger.error("Error deleting ingredient:", err);
         return res.redirect(
           "/admin?tab=inventory&error=Unable+to+delete+ingredient",
         );
@@ -618,7 +619,7 @@ module.exports = (db, io) => {
       );
       res.json({ ingredients });
     } catch (err) {
-      console.error("Error fetching ingredient list:", err);
+      logger.error("Error fetching ingredient list:", err);
       res.status(500).json({ error: "DB Error" });
     }
   });
@@ -631,7 +632,7 @@ module.exports = (db, io) => {
         "UPDATE item_categories SET name=?, parent_id=? WHERE id=?",
         [name, parent_id || null, id],
         (err) => {
-          if (err) console.error("Error updating item category:", err);
+          if (err) logger.error("Error updating item category:", err);
           res.redirect("/admin?tab=inventory&msg=Category+saved");
         },
       );
@@ -640,7 +641,7 @@ module.exports = (db, io) => {
         "INSERT INTO item_categories (name, parent_id) VALUES (?, ?)",
         [name, parent_id || null],
         (err) => {
-          if (err) console.error("Error inserting item category:", err);
+          if (err) logger.error("Error inserting item category:", err);
           res.redirect("/admin?tab=inventory&msg=Category+saved");
         },
       );
@@ -651,7 +652,7 @@ module.exports = (db, io) => {
     const { id } = req.body;
     if (!id) return res.redirect("/admin?tab=inventory");
     db.query("DELETE FROM item_categories WHERE id=?", [id], (err) => {
-      if (err) console.error("Error deleting item category:", err);
+      if (err) logger.error("Error deleting item category:", err);
       res.redirect("/admin?tab=inventory&msg=Category+deleted");
     });
   });
@@ -661,12 +662,12 @@ module.exports = (db, io) => {
     if (!name) return res.redirect("/admin?tab=inventory");
     if (id) {
       db.query("UPDATE tags SET name=? WHERE id=?", [name, id], (err) => {
-        if (err) console.error("Error updating tag:", err);
+        if (err) logger.error("Error updating tag:", err);
         res.redirect("/admin?tab=inventory&msg=Tag+saved");
       });
     } else {
       db.query("INSERT INTO tags (name) VALUES (?)", [name], (err) => {
-        if (err) console.error("Error inserting tag:", err);
+        if (err) logger.error("Error inserting tag:", err);
         res.redirect("/admin?tab=inventory&msg=Tag+saved");
       });
     }
@@ -676,7 +677,7 @@ module.exports = (db, io) => {
     const { id } = req.body;
     if (!id) return res.redirect("/admin?tab=inventory");
     db.query("DELETE FROM tags WHERE id=?", [id], (err) => {
-      if (err) console.error("Error deleting tag:", err);
+      if (err) logger.error("Error deleting tag:", err);
       res.redirect("/admin?tab=inventory&msg=Tag+deleted");
     });
   });
@@ -704,7 +705,7 @@ module.exports = (db, io) => {
       res.redirect("/admin?tab=inventory&msg=Transaction+recorded");
     } catch (err) {
       if (conn) await conn.rollback();
-      console.error("Error recording transaction:", err);
+      logger.error("Error recording transaction:", err);
       res.status(500).send("DB Error");
     } finally {
       if (conn) conn.release();
@@ -718,7 +719,7 @@ module.exports = (db, io) => {
       const usage = await fetchIngredientUsage(db, start, end);
       res.json({ sales, usage });
     } catch (err) {
-      console.error("Error fetching inventory stats:", err);
+      logger.error("Error fetching inventory stats:", err);
       res.status(500).json({ error: "DB Error" });
     }
   });
@@ -734,7 +735,7 @@ module.exports = (db, io) => {
       const avgTimes = await fetchAverageBumpTimes(db, start, end);
       res.json({ sales, usage, topItems, categorySales, lowStock, avgTimes });
     } catch (err) {
-      console.error("Error fetching reports data:", err);
+      logger.error("Error fetching reports data:", err);
       res.status(500).json({ error: "DB Error" });
     }
   });
@@ -761,7 +762,7 @@ module.exports = (db, io) => {
         .query(sql, [fmt(startDate), fmt(endDate)]);
       res.json({ logs });
     } catch (err) {
-      console.error("Error fetching inventory logs:", err);
+      logger.error("Error fetching inventory logs:", err);
       res.status(500).json({ error: "DB Error" });
     }
   });
@@ -787,7 +788,7 @@ module.exports = (db, io) => {
       }
       res.redirect("/admin?tab=inventory&msg=Usage+log+created");
     } catch (err) {
-      console.error("Error creating usage log:", err);
+      logger.error("Error creating usage log:", err);
       res.status(500).send("DB Error");
     }
   });
@@ -807,7 +808,7 @@ module.exports = (db, io) => {
       [ingredientId],
       (err, rows) => {
         if (err || rows.length === 0) {
-          console.error("Invalid ingredient for modifier");
+          logger.error("Invalid ingredient for modifier");
           return res.redirect("/admin?tab=menu&openMods=1");
         }
         const ingName = rows[0].name;
@@ -819,7 +820,7 @@ module.exports = (db, io) => {
             [...params, id],
             (err2) => {
               if (err2) {
-                console.error(err2);
+                logger.error(err2);
               }
               return res.redirect(
                 "/admin?tab=menu&msg=Modifier+saved&openMods=1",
@@ -832,7 +833,7 @@ module.exports = (db, io) => {
             params,
             (err2) => {
               if (err2) {
-                console.error(err2);
+                logger.error(err2);
               }
               return res.redirect(
                 "/admin?tab=menu&msg=Modifier+saved&openMods=1",
@@ -849,7 +850,7 @@ module.exports = (db, io) => {
     if (!modId) return res.redirect("/admin?tab=menu&openMods=1");
     db.query("DELETE FROM modifiers WHERE id=?", [modId], (err) => {
       if (err) {
-        console.error("Error deleting modifier:", err);
+        logger.error("Error deleting modifier:", err);
       }
       return res.redirect("/admin?tab=menu&msg=Modifier+deleted&openMods=1");
     });
@@ -865,7 +866,7 @@ module.exports = (db, io) => {
         [name, id],
         (err) => {
           if (err) {
-            console.error(err);
+            logger.error(err);
           }
           res.redirect("/admin?tab=menu&msg=Group+saved");
         },
@@ -876,7 +877,7 @@ module.exports = (db, io) => {
         [name],
         (err) => {
           if (err) {
-            console.error(err);
+            logger.error(err);
           }
           res.redirect("/admin?tab=menu&msg=Group+saved");
         },
@@ -889,7 +890,7 @@ module.exports = (db, io) => {
     if (!id) return res.redirect("/admin?tab=menu");
     db.query("DELETE FROM modifier_groups WHERE id=?", [id], (err) => {
       if (err) {
-        console.error("Error deleting modifier group:", err);
+        logger.error("Error deleting modifier group:", err);
       }
       res.redirect("/admin?tab=menu&msg=Group+deleted");
     });
@@ -915,7 +916,7 @@ module.exports = (db, io) => {
         [name, type, filter, bg, primary, font],
         async (err, result) => {
           if (err) {
-            console.error("Error inserting station:", err);
+            logger.error("Error inserting station:", err);
             if (wantsJSON) return res.status(500).json({ error: "DB Error" });
           }
           if (wantsJSON) {
@@ -958,7 +959,7 @@ module.exports = (db, io) => {
         [name, type, filter, bg, primary, font, id],
         (err) => {
           if (err) {
-            console.error("Error updating station:", err);
+            logger.error("Error updating station:", err);
             if (wantsJSON) return res.status(500).json({ error: "DB Error" });
           }
           if (wantsJSON) {
@@ -986,7 +987,7 @@ module.exports = (db, io) => {
     const id = req.body.id;
     if (!id) return res.redirect("/admin?tab=stations");
     db.query("DELETE FROM stations WHERE id=?", [id], (err) => {
-      if (err) console.error("Error deleting station:", err);
+      if (err) logger.error("Error deleting station:", err);
       res.redirect("/admin?tab=stations&msg=Station+deleted");
     });
   });
@@ -1011,7 +1012,7 @@ module.exports = (db, io) => {
       const sql =
         "INSERT INTO settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)";
       db.query(sql, [key, value], (err) => {
-        if (err) console.error("Error saving setting:", err);
+        if (err) logger.error("Error saving setting:", err);
         if (--remaining === 0) {
           settingsCache.loadSettings(db);
           res.redirect("/admin?tab=theme&msg=Settings+saved");
@@ -1060,7 +1061,7 @@ module.exports = (db, io) => {
         ]);
       res.redirect(`/admin/purchase-orders/${orderId}?msg=Order+received`);
     } catch (err) {
-      console.error("Error receiving order:", err);
+      logger.error("Error receiving order:", err);
       res.status(500).send("DB Error");
     }
   });
@@ -1080,7 +1081,7 @@ module.exports = (db, io) => {
         `/admin/purchase-orders/${purchase_order_id}?msg=Item+added`,
       );
     } catch (err) {
-      console.error("Error adding order item:", err);
+      logger.error("Error adding order item:", err);
       res.status(500).send("DB Error");
     }
   });
@@ -1094,7 +1095,7 @@ module.exports = (db, io) => {
         .query("DELETE FROM purchase_order_items WHERE id=?", [id]);
       res.redirect(`/admin/purchase-orders/${order_id}?msg=Item+deleted`);
     } catch (err) {
-      console.error("Error deleting order item:", err);
+      logger.error("Error deleting order item:", err);
       res.status(500).send("DB Error");
     }
   });
@@ -1108,7 +1109,7 @@ module.exports = (db, io) => {
       "INSERT INTO purchase_orders (supplier_id, location_id, order_date) VALUES (?, ?, ?)",
       [supplier, location, date],
       (err) => {
-        if (err) console.error("Error inserting purchase order:", err);
+        if (err) logger.error("Error inserting purchase order:", err);
         res.redirect("/admin/purchase-orders?msg=Order+created");
       },
     );
@@ -1138,7 +1139,7 @@ module.exports = (db, io) => {
         settings: res.locals.settings || {},
       });
     } catch (err) {
-      console.error("Error fetching order detail:", err);
+      logger.error("Error fetching order detail:", err);
       res.status(500).send("DB Error");
     }
   });
@@ -1168,7 +1169,7 @@ module.exports = (db, io) => {
       }
       res.redirect("/admin/suppliers?msg=Supplier+saved");
     } catch (err) {
-      console.error("Error saving supplier:", err);
+      logger.error("Error saving supplier:", err);
       res.status(500).send("DB Error");
     }
   });
@@ -1180,7 +1181,7 @@ module.exports = (db, io) => {
       res.redirect(`/admin/purchase-orders/${id}?msg=Order+received`);
       io.emit("reportsUpdated");
     } catch (err) {
-      console.error("Error receiving order:", err);
+      logger.error("Error receiving order:", err);
       res.status(500).send("DB Error");
     }
   });
@@ -1191,7 +1192,7 @@ module.exports = (db, io) => {
       await db.promise().query("DELETE FROM suppliers WHERE id=?", [id]);
       res.redirect("/admin/suppliers?msg=Supplier+deleted");
     } catch (err) {
-      console.error("Error deleting supplier:", err);
+      logger.error("Error deleting supplier:", err);
       res.status(500).send("DB Error");
     }
   });
@@ -1200,7 +1201,7 @@ module.exports = (db, io) => {
     const id = req.body.id;
     if (!id) return res.redirect("/admin/purchase-orders");
     db.query("DELETE FROM purchase_orders WHERE id=?", [id], (err) => {
-      if (err) console.error("Error deleting order:", err);
+      if (err) logger.error("Error deleting order:", err);
       res.redirect("/admin/purchase-orders?msg=Order+deleted");
     });
   });
@@ -1216,7 +1217,7 @@ module.exports = (db, io) => {
       "INSERT INTO purchase_order_items (purchase_order_id, ingredient_id, quantity, unit_id) VALUES (?, ?, ?, ?)",
       [orderId, ingredient, qty, unitId],
       (err) => {
-        if (err) console.error("Error inserting PO item:", err);
+        if (err) logger.error("Error inserting PO item:", err);
         res.redirect(`/admin/purchase-orders/${orderId}`);
       },
     );
@@ -1227,7 +1228,7 @@ module.exports = (db, io) => {
     const orderId = req.body.order_id;
     if (!id) return res.redirect("/admin/purchase-orders");
     db.query("DELETE FROM purchase_order_items WHERE id=?", [id], (err) => {
-      if (err) console.error("Error deleting PO item:", err);
+      if (err) logger.error("Error deleting PO item:", err);
       res.redirect(`/admin/purchase-orders/${orderId}`);
     });
   });
@@ -1253,7 +1254,7 @@ module.exports = (db, io) => {
       }
       res.redirect("/admin/locations?msg=Location+saved");
     } catch (err) {
-      console.error("Error saving location:", err);
+      logger.error("Error saving location:", err);
       res.status(500).send("DB Error");
     }
   });
@@ -1267,7 +1268,7 @@ module.exports = (db, io) => {
         .query("DELETE FROM inventory_locations WHERE id=?", [id]);
       res.redirect("/admin/locations?msg=Location+deleted");
     } catch (err) {
-      console.error("Error deleting location:", err);
+      logger.error("Error deleting location:", err);
       res.status(500).send("DB Error");
     }
   });
@@ -1292,7 +1293,7 @@ module.exports = (db, io) => {
         .split("\n");
       res.json({ commit, date, log });
     } catch (err) {
-      console.error("Error reading git info:", err);
+      logger.error("Error reading git info:", err);
       res.status(500).json({ error: "Failed" });
     }
   });
@@ -1303,7 +1304,7 @@ module.exports = (db, io) => {
         if (err.message === "Backup already running") {
           return res.redirect("/admin/backups?msg=Backup+queued");
         }
-        console.error("Backup error:", err);
+        logger.error("Backup error:", err);
         return res.status(500).send("DB Error");
       }
       res.redirect("/admin/backups?msg=Backup+created");
@@ -1313,7 +1314,7 @@ module.exports = (db, io) => {
   router.get("/admin/backups/list", (req, res) => {
     listBackups((err, files) => {
       if (err) {
-        console.error("Error listing backups:", err);
+        logger.error("Error listing backups:", err);
         return res.status(500).json({ error: "Failed" });
       }
       res.json({ backups: files });
@@ -1329,7 +1330,7 @@ module.exports = (db, io) => {
         );
       res.json({ log });
     } catch (err) {
-      console.error("Error fetching backup log:", err);
+      logger.error("Error fetching backup log:", err);
       res.status(500).json({ error: "Failed" });
     }
   });
@@ -1340,7 +1341,7 @@ module.exports = (db, io) => {
     const full = path.join(getBackupDir(), path.basename(file));
     restoreDatabase(db, full, (err) => {
       if (err) {
-        console.error("Restore error:", err);
+        logger.error("Restore error:", err);
         return res.status(500).send("DB Error");
       }
       res.redirect("/admin/backups?msg=Restore+complete");
@@ -1361,7 +1362,7 @@ module.exports = (db, io) => {
     restoreDatabase(db, req.file.path, (err) => {
       cleanup();
       if (err) {
-        console.error("Restore error:", err);
+        logger.error("Restore error:", err);
         return res.status(500).send("DB Error");
       }
       res.redirect("/admin/backups?msg=Restore+complete");
@@ -1374,7 +1375,7 @@ module.exports = (db, io) => {
     const full = path.join(getBackupDir(), path.basename(file));
     res.download(full, file, (err) => {
       if (err) {
-        console.error("Download error:", err);
+        logger.error("Download error:", err);
         if (!res.headersSent) res.status(500).send("Server Error");
       }
     });
@@ -1388,7 +1389,7 @@ module.exports = (db, io) => {
         if (err.message === "Invalid path") {
           return res.status(400).send("Invalid path");
         }
-        console.error("Delete error:", err);
+        logger.error("Delete error:", err);
         return res.status(500).send("Server Error");
       }
       res.redirect("/admin/backups?msg=Backup+deleted");
@@ -1406,7 +1407,7 @@ module.exports = (db, io) => {
 
     fs.readdir(dir, { withFileTypes: true }, (err, items) => {
       if (err) {
-        console.error("Error reading dir:", err);
+        logger.error("Error reading dir:", err);
         return res.status(500).json({ error: "Failed" });
       }
       const dirs = items.filter((i) => i.isDirectory()).map((i) => i.name);
@@ -1428,7 +1429,7 @@ module.exports = (db, io) => {
       settingsCache.loadSettings(db);
       res.redirect("/admin/backups?msg=Location+saved");
     } catch (err) {
-      console.error("Error saving backup dir:", err);
+      logger.error("Error saving backup dir:", err);
       res.status(500).send("DB Error");
     }
   });

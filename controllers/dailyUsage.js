@@ -1,3 +1,4 @@
+const logger = require('../utils/logger');
 async function recordDailyUsage(db) {
   try {
     const [rows] = await db.promise().query(
@@ -15,7 +16,7 @@ async function recordDailyUsage(db) {
       );
     }
   } catch (err) {
-    console.error("Daily usage log error:", err);
+    logger.error("Daily usage log error:", err);
   }
 }
 
