@@ -1,10 +1,19 @@
 <div id="backupTab" class="container admin-container">
   <h1 class="admin-section-title">Database Backups</h1>
+  <form id="backupDirForm" class="mb-2 d-flex flex-wrap gap-2 align-items-end" method="POST" action="/admin/backups/set-dir">
+    <label for="backupDirInput" class="form-label mb-0">Backup Folder:</label>
+    <input id="backupDirInput" name="dir" type="text" class="form-control form-control-sm" style="min-width:200px" value="<%= settings.backup_dir || '' %>">
+    <button type="submit" class="btn btn-sm btn-secondary">Save Location</button>
+  </form>
   <div class="mb-2 d-flex flex-wrap gap-2 align-items-end">
     <button id="createBackupBtn" class="btn btn-sm btn-primary">Create Backup</button>
     <div class="d-flex gap-2">
       <select id="restoreFileSelect" class="form-select form-select-sm"></select>
       <button id="restoreSelectedBtn" class="btn btn-sm btn-outline-primary">Restore Selected</button>
+    </div>
+    <div class="d-flex gap-2">
+      <input type="file" id="restoreFileInput" accept=".sql" class="form-control form-control-sm" />
+      <button id="restoreUploadedBtn" type="button" class="btn btn-sm btn-outline-primary">Restore File</button>
     </div>
   </div>
   <div id="backupAlertContainer"></div>

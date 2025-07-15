@@ -1,4 +1,4 @@
-import { showAlert } from '/adminUtils.js';
+import { showAlert, handleForm } from '/adminUtils.js';
 
 let backupsCache = [];
 
@@ -18,12 +18,20 @@ function renderRows(backups) {
   <td>${b.name}</td>\
   <td>${new Date(b.mtime).toLocaleString()}</td>\
   <td>${fmtSize(b.size)}</td>\
-  <td><button class="btn btn-sm btn-outline-primary restore-backup" data-file="${b.name}">Restore</button></td>\
+  <td>\
+    <button class="btn btn-sm btn-outline-secondary download-backup" data-file="${b.name}">Download</button>\
+    <button class="btn btn-sm btn-outline-primary ms-1 restore-backup" data-file="${b.name}">Restore</button>\
+  </td>\
 </tr>`
     )
     .join('');
   tbody.querySelectorAll('.restore-backup').forEach((btn) => {
     btn.addEventListener('click', () => restoreBackup(btn.dataset.file));
+  });
+  tbody.querySelectorAll('.download-backup').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      window.location.href = `/admin/backups/download?file=${encodeURIComponent(btn.dataset.file)}`;
+    });
   });
 
   const select = document.getElementById('restoreFileSelect');
@@ -74,6 +82,9 @@ function initBackupTab() {
   loadBackups();
   const restoreBtn = document.getElementById('restoreSelectedBtn');
   const createBtn = document.getElementById('createBackupBtn');
+  const uploadBtn = document.getElementById('restoreUploadedBtn');
+  const uploadInput = document.getElementById('restoreFileInput');
+  const dirForm = document.getElementById('backupDirForm');
   if (restoreBtn) {
     restoreBtn.addEventListener('click', () => {
       const select = document.getElementById('restoreFileSelect');
@@ -97,6 +108,35 @@ function initBackupTab() {
       } finally {
         if (typeof hide === 'function') hide();
       }
+    });
+  }
+  if (uploadBtn && uploadInput) {
+    uploadBtn.addEventListener('click', async () => {
+      if (!uploadInput.files || !uploadInput.files[0]) return;
+      if (!confirm('Restore this backup? This will overwrite current data.')) return;
+      const formData = new FormData();
+      formData.append('backup', uploadInput.files[0]);
+      const hide = window.showSpinner ? window.showSpinner() : () => {};
+      try {
+        const res = await fetch('/admin/backups/upload', { method: 'POST', body: formData });
+        if (res.ok) {
+          showAlert('Restore complete', 'success', document.getElementById('backupAlertContainer'));
+        } else {
+          showAlert('Restore failed', 'danger', document.getElementById('backupAlertContainer'));
+        }
+      } catch (err) {
+        console.error(err);
+        showAlert('Restore failed', 'danger', document.getElementById('backupAlertContainer'));
+      } finally {
+        if (typeof hide === 'function') hide();
+        uploadInput.value = '';
+      }
+    });
+  }
+  if (dirForm) {
+    handleForm(dirForm, () => loadBackups(), {
+      alertContainer: document.getElementById('backupAlertContainer'),
+      followRedirect: true,
     });
   }
 }

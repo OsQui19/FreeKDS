@@ -11,7 +11,7 @@ const rateLimit = require("express-rate-limit");
 const settingsCache = require("./controllers/settingsCache");
 const unitConversion = require("./controllers/unitConversion");
 const { scheduleDailyLog } = require("./controllers/dailyUsage");
-const { scheduleDailyBackup } = require("./controllers/dbBackup");
+const { scheduleDailyBackup, setBackupDir } = require("./controllers/dbBackup");
 const { logSecurityEvent } = require("./controllers/securityLog");
 const accessControl = require("./controllers/accessControl");
 const config = require("./config");
@@ -74,6 +74,8 @@ db.getConnection((err, connection) => {
         accessControl.loadHierarchy(db),
         accessControl.loadPermissions(db),
       ]);
+      const settings = settingsCache.getSettings();
+      if (settings.backup_dir) setBackupDir(settings.backup_dir);
       scheduleDailyLog(db);
       scheduleDailyBackup();
       setupSocketHandlers(io, db);

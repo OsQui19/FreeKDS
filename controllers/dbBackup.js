@@ -4,7 +4,15 @@ const fs = require("fs");
 const config = require("../config");
 const SCHEMA_PATH = path.join(__dirname, "../schema.sql");
 
-const BACKUP_DIR = config.backupDir;
+let BACKUP_DIR = config.backupDir;
+
+function setBackupDir(dir) {
+  BACKUP_DIR = dir;
+}
+
+function getBackupDir() {
+  return BACKUP_DIR;
+}
 
 function ensureDir() {
   if (!fs.existsSync(BACKUP_DIR)) {
@@ -150,6 +158,7 @@ module.exports = {
   backupDatabase,
   restoreDatabase,
   listBackups,
-  BACKUP_DIR,
+  getBackupDir,
+  setBackupDir,
   scheduleDailyBackup,
 };

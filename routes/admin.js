@@ -28,10 +28,16 @@ const { convert } = require("../controllers/unitConversion");
 const { logSecurityEvent } = require("../controllers/securityLog");
 const { validateSettings } = require("../utils/validateSettings");
 const path = require("path");
+const fs = require("fs");
+const os = require("os");
+const multer = require("multer");
+const upload = multer({ dest: os.tmpdir() });
 const {
   listBackups,
   restoreDatabase,
-  BACKUP_DIR,
+  backupDatabase,
+  getBackupDir,
+  setBackupDir,
 } = require("../controllers/dbBackup");
 
 module.exports = (db, io) => {
@@ -1252,7 +1258,7 @@ module.exports = (db, io) => {
   router.post("/admin/backups/restore", (req, res) => {
     const file = req.body.file;
     if (!file) return res.redirect("/admin?tab=backup");
-    const full = path.join(BACKUP_DIR, path.basename(file));
+    const full = path.join(getBackupDir(), path.basename(file));
     restoreDatabase(full, (err) => {
       if (err) {
         console.error("Restore error:", err);
@@ -1260,6 +1266,53 @@ module.exports = (db, io) => {
       }
       res.redirect("/admin/backups?msg=Restore+complete");
     });
+  });
+
+  router.post(
+    "/admin/backups/upload",
+    upload.single("backup"),
+    (req, res) => {
+      if (!req.file) return res.redirect("/admin?tab=backup");
+      restoreDatabase(req.file.path, (err) => {
+        fs.unlink(req.file.path, () => {});
+        if (err) {
+          console.error("Restore error:", err);
+          return res.status(500).send("DB Error");
+        }
+        res.redirect("/admin/backups?msg=Restore+complete");
+      });
+    },
+  );
+
+  router.get("/admin/backups/download", (req, res) => {
+    const file = req.query.file;
+    if (!file) return res.status(400).send("No file");
+    const full = path.join(getBackupDir(), path.basename(file));
+    res.download(full, file, (err) => {
+      if (err) {
+        console.error("Download error:", err);
+        if (!res.headersSent) res.status(500).send("Server Error");
+      }
+    });
+  });
+
+  router.post("/admin/backups/set-dir", async (req, res) => {
+    const dir = (req.body.dir || "").trim();
+    if (!dir) return res.redirect("/admin?tab=backup");
+    try {
+      await db
+        .promise()
+        .query(
+          "INSERT INTO settings (setting_key, setting_value) VALUES ('backup_dir', ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)",
+          [dir],
+        );
+      setBackupDir(dir);
+      settingsCache.loadSettings(db);
+      res.redirect("/admin/backups?msg=Location+saved");
+    } catch (err) {
+      console.error("Error saving backup dir:", err);
+      res.status(500).send("DB Error");
+    }
   });
 
   return router;

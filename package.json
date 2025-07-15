@@ -28,7 +28,8 @@
     "react-dom": "^18.2.0",
     "socket.io": "^4.7.4",
     "@dnd-kit/core": "^6.0.7",
-    "@dnd-kit/sortable": "^7.0.2"
+    "@dnd-kit/sortable": "^7.0.2",
+    "multer": "^2.0.1"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.2.0",
