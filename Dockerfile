@@ -3,6 +3,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
+RUN chmod +x start.sh
 ENV PORT=3000
 EXPOSE 3000
-CMD ["node", "server.js"]
+CMD ["./start.sh"]
