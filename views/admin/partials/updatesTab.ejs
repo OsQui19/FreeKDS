@@ -10,12 +10,32 @@
         <button id="checkUpdatesBtn" class="btn btn-sm btn-secondary">Check for updates</button>
       </div>
       <pre id="releaseNotes" class="small"></pre>
-      <a id="downloadLink" class="btn btn-primary btn-sm mt-2 d-none" target="_blank" rel="noopener">Download</a>
+      <div class="d-flex gap-2">
+        <a id="downloadLink" class="btn btn-primary btn-sm mt-2 d-none" target="_blank" rel="noopener">Download</a>
+        <button id="applyUpdateBtn" class="btn btn-danger btn-sm mt-2">Apply update</button>
+      </div>
     </div>
   </div>
   <p>Current commit: <code id="gitCommit"></code></p>
   <p>Last updated: <span id="gitDate"></span></p>
   <h2 class="mt-3">Recent commits</h2>
   <ul id="gitLog" class="list-group"></ul>
+  <div class="modal fade" id="applyUpdateModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Apply Update</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          Apply the latest update? The system may restart.
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button id="confirmApplyUpdateBtn" type="button" class="btn btn-primary">Apply</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 <script defer src="/updatesTab.js"></script>

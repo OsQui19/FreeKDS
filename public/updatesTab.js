@@ -56,6 +56,32 @@ function initUpdatesTab() {
   loadLatestRelease();
   const btn = document.getElementById('checkUpdatesBtn');
   if (btn) btn.addEventListener('click', loadLatestRelease);
+  const applyBtn = document.getElementById('applyUpdateBtn');
+  const confirmBtn = document.getElementById('confirmApplyUpdateBtn');
+  const modalEl = document.getElementById('applyUpdateModal');
+  let applyModal = null;
+  if (modalEl && window.bootstrap) {
+    applyModal = new bootstrap.Modal(modalEl);
+  }
+  if (applyBtn && applyModal) {
+    applyBtn.addEventListener('click', () => applyModal.show());
+  }
+  if (confirmBtn && applyModal) {
+    confirmBtn.addEventListener('click', async () => {
+      confirmBtn.disabled = true;
+      try {
+        const res = await fetch('/admin/updates/apply', { method: 'POST' });
+        if (!res.ok) alert('Update failed');
+        else alert('Update applied');
+      } catch (err) {
+        console.error(err);
+        alert('Update failed');
+      } finally {
+        confirmBtn.disabled = false;
+        applyModal.hide();
+      }
+    });
+  }
 }
 
 if (document.readyState === 'loading') {

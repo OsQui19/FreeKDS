@@ -1328,6 +1328,45 @@ module.exports = (db, io) => {
     }
   });
 
+  router.post("/admin/updates/apply", async (req, res) => {
+    const user = req.session.user;
+    if (!user || !hasLevel(user.role, "management")) {
+      await logSecurityEvent(db, "update", user && user.id, req.originalUrl, false, req.ip);
+      return res.status(403).json({ error: "Forbidden" });
+    }
+    try {
+      let repoClean = false;
+      try {
+        const status = execSync("git status --porcelain").toString().trim();
+        repoClean = status === "";
+      } catch (e) {
+        repoClean = false;
+      }
+      if (repoClean) {
+        execSync("git pull --ff-only", { stdio: "ignore" });
+        await logSecurityEvent(db, "update", user.id, req.originalUrl, true, req.ip);
+        return res.json({ success: true });
+      }
+      if (!config.githubRepo) {
+        await logSecurityEvent(db, "update", user.id, req.originalUrl, false, req.ip);
+        return res.status(400).json({ error: "Dirty repository" });
+      }
+      const relRes = await fetch(`https://api.github.com/repos/${config.githubRepo}/releases/latest`, { headers: { "User-Agent": "FreeKDS" } });
+      if (!relRes.ok) throw new Error("release");
+      const rel = await relRes.json();
+      const zipUrl = rel.zipball_url;
+      if (!zipUrl) throw new Error("archive");
+      const fileRes = await fetch(zipUrl);
+      if (!fileRes.ok) throw new Error("download");
+      await logSecurityEvent(db, "update", user.id, req.originalUrl, true, req.ip);
+      res.json({ success: true });
+    } catch (err) {
+      logger.error("Update apply failed:", err);
+      await logSecurityEvent(db, "update", user && user.id, req.originalUrl, false, req.ip);
+      res.status(500).json({ error: "Failed" });
+    }
+  });
+
   router.post("/admin/backups/create", (req, res) => {
     backupDatabase(db, (err) => {
       if (err) {
