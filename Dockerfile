@@ -1,6 +1,6 @@
 FROM node:lts
 RUN apt-get update \
-    && apt-get install -y netcat-openbsd \
+    && apt-get install -y netcat-openbsd default-mysql-client \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY package*.json ./

@@ -61,13 +61,18 @@ docker compose up --build  # `docker-compose` also works on older versions
 - **app** – the Node.js server defined by the Dockerfile.
 - **mysql** – a MySQL 8 instance with persistent storage.
 
+The application container installs the MySQL client so commands like schema
+creation and backups work inside the container.
+
 Database credentials default to the values in `config.js`. You can override them
-by exporting environment variables before running compose:
+by exporting the `DB_USER`, `DB_PASSWORD`, `DB_NAME`, and `DB_PORT`
+environment variables before running compose:
 
 ```bash
 export DB_USER=myuser
 export DB_PASSWORD=mypassword
 export DB_NAME=mydb
+export DB_PORT=3306
 docker compose up
 ```
 
