@@ -162,6 +162,7 @@ async function restoreBackup(file) {
     });
     if (res.ok) {
       showAlert('Restore complete', 'success', document.getElementById('backupAlertContainer'));
+      loadBackupLog();
     } else {
       showAlert('Restore failed', 'danger', document.getElementById('backupAlertContainer'));
     }
@@ -233,6 +234,7 @@ function initBackupTab() {
           const text = msg ? decodeURIComponent(msg.replace(/\+/g, ' ')) : 'Backup created';
           showAlert(text, 'success', document.getElementById('backupAlertContainer'));
           loadBackups();
+          loadBackupLog();
         } else {
           showAlert('Backup failed', 'danger', document.getElementById('backupAlertContainer'));
         }
@@ -256,6 +258,7 @@ function initBackupTab() {
         const text = await res.text();
         if (res.ok) {
           showAlert('Restore complete', 'success', document.getElementById('backupAlertContainer'));
+          loadBackupLog();
         } else if (res.status === 400 && text.trim() === 'Invalid backup file') {
           showAlert('Invalid backup file', 'danger', document.getElementById('backupAlertContainer'));
         } else {
