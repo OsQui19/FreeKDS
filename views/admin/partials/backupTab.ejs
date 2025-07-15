@@ -2,7 +2,7 @@
   <h1 class="admin-section-title">Database Backups</h1>
   <form id="backupDirForm" class="mb-2 d-flex flex-wrap gap-2 align-items-end" method="POST" action="/admin/backups/set-dir">
     <label for="backupDirInput" class="form-label mb-0">Backup Folder:</label>
-    <input id="backupDirInput" name="dir" type="text" class="form-control form-control-sm" style="min-width:200px" value="<%= settings.backup_dir || '' %>">
+    <input id="backupDirInput" name="dir" type="text" class="form-control form-control-sm backup-dir-input" value="<%= settings.backup_dir || '' %>">
     <button id="browseDirBtn" type="button" class="btn btn-sm btn-outline-secondary">Browse…</button>
     <button type="submit" class="btn btn-sm btn-secondary">Save Location</button>
   </form>

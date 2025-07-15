@@ -861,4 +861,9 @@ body.admin-screen {
   outline-offset: -3px;
 }
 
+/* Backup tab */
+.backup-dir-input {
+  min-width: 200px;
+}
+
 
