@@ -42,6 +42,7 @@ const {
   listBackups,
   restoreDatabase,
   backupDatabase,
+  isBackupRunning,
   deleteBackup,
   getBackupDir,
   setBackupDir,
@@ -1368,16 +1369,13 @@ module.exports = (db, io) => {
   });
 
   router.post("/admin/backups/create", (req, res) => {
+    const alreadyRunning = isBackupRunning();
     backupDatabase(db, (err) => {
-      if (err) {
-        if (err.message === "Backup already running") {
-          return res.redirect("/admin/backups?msg=Backup+queued");
-        }
+      if (err && err.message !== "Backup already running") {
         logger.error("Backup error:", err);
-        return res.status(500).send("DB Error");
       }
-      res.redirect("/admin/backups?msg=Backup+created");
     });
+    res.json(alreadyRunning ? { queued: true } : { started: true });
   });
 
   router.get("/admin/backups/list", (req, res) => {

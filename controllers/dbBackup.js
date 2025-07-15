@@ -12,6 +12,10 @@ let BACKUP_RETENTION_DAYS = 30;
 let backupRunning = false;
 let backupQueued = false;
 
+function isBackupRunning() {
+  return backupRunning;
+}
+
 function logBackup(db, action, result, message) {
   if (!db) return;
   db.query(
@@ -326,6 +330,7 @@ module.exports = {
   backupDatabase,
   restoreDatabase,
   listBackups,
+  isBackupRunning,
   getBackupDir,
   setBackupDir,
   getBackupRetention,
