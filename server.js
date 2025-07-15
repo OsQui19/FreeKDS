@@ -77,7 +77,7 @@ db.getConnection((err, connection) => {
       const settings = settingsCache.getSettings();
       if (settings.backup_dir) setBackupDir(settings.backup_dir);
       scheduleDailyLog(db);
-      scheduleDailyBackup();
+      scheduleDailyBackup(db);
       setupSocketHandlers(io, db);
       const PORT = config.port;
       server.listen(PORT, () => {

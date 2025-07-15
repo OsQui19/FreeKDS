@@ -4,6 +4,34 @@ let dirModal, dirList, dirPathEl, dirSelectBtn;
 
 let backupsCache = [];
 
+function renderLog(rows) {
+  const tbody = document.querySelector('#backupLogTable tbody');
+  if (!tbody) return;
+  tbody.innerHTML = rows
+    .map(
+      (r) => `\
+<tr>\
+  <td>${new Date(r.created_at).toLocaleString()}</td>\
+  <td>${r.action}</td>\
+  <td>${r.result}</td>\
+  <td>${r.message || ''}</td>\
+</tr>`,
+    )
+    .join('');
+}
+
+async function loadBackupLog() {
+  try {
+    const res = await fetch('/admin/backups/log');
+    const data = await res.json();
+    if (Array.isArray(data.log)) {
+      renderLog(data.log);
+    }
+  } catch (err) {
+    console.error('Failed to load backup log', err);
+  }
+}
+
 async function loadDirectory(dir) {
   try {
     const res = await fetch(`/admin/backups/browse?dir=${encodeURIComponent(dir)}`);
@@ -133,6 +161,7 @@ async function restoreBackup(file) {
 
 function initBackupTab() {
   loadBackups();
+  loadBackupLog();
   const restoreBtn = document.getElementById('restoreSelectedBtn');
   const createBtn = document.getElementById('createBackupBtn');
   const uploadBtn = document.getElementById('restoreUploadedBtn');

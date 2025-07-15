@@ -1274,7 +1274,7 @@ module.exports = (db, io) => {
   });
 
   router.post("/admin/backups/create", (req, res) => {
-    backupDatabase((err) => {
+    backupDatabase(db, (err) => {
       if (err) {
         if (err.message === "Backup already running") {
           return res.redirect("/admin/backups?msg=Backup+queued");
@@ -1296,11 +1296,25 @@ module.exports = (db, io) => {
     });
   });
 
+  router.get("/admin/backups/log", async (req, res) => {
+    try {
+      const [log] = await db
+        .promise()
+        .query(
+          "SELECT action, result, message, created_at FROM backup_log ORDER BY id DESC LIMIT 50",
+        );
+      res.json({ log });
+    } catch (err) {
+      console.error("Error fetching backup log:", err);
+      res.status(500).json({ error: "Failed" });
+    }
+  });
+
   router.post("/admin/backups/restore", (req, res) => {
     const file = req.body.file;
     if (!file) return res.redirect("/admin?tab=backup");
     const full = path.join(getBackupDir(), path.basename(file));
-    restoreDatabase(full, (err) => {
+    restoreDatabase(db, full, (err) => {
       if (err) {
         console.error("Restore error:", err);
         return res.status(500).send("DB Error");
@@ -1320,7 +1334,7 @@ module.exports = (db, io) => {
       cleanup();
       return res.status(400).send("Invalid backup file");
     }
-    restoreDatabase(req.file.path, (err) => {
+    restoreDatabase(db, req.file.path, (err) => {
       cleanup();
       if (err) {
         console.error("Restore error:", err);

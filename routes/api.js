@@ -93,7 +93,7 @@ module.exports = (db, io) => {
 
       const [rows] = await conn.query(fetchSql, [orderId]);
       await conn.commit();
-      backupDatabase();
+      backupDatabase(db);
 
       const stationMap = {};
       rows.forEach((r) => {

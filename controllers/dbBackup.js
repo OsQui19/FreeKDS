@@ -9,6 +9,17 @@ let BACKUP_DIR = config.backupDir;
 let backupRunning = false;
 let backupQueued = false;
 
+function logBackup(db, action, result, message) {
+  if (!db) return;
+  db.query(
+    'INSERT INTO backup_log (action, result, message) VALUES (?, ?, ?)',
+    [action, result, message],
+    (err) => {
+      if (err) console.error('Backup log error:', err);
+    },
+  );
+}
+
 function setBackupDir(dir) {
   BACKUP_DIR = dir;
 }
@@ -38,7 +49,11 @@ function listBackups(cb) {
   });
 }
 
-function backupDatabase(cb) {
+function backupDatabase(db, cb) {
+  if (typeof db === 'function') {
+    cb = db;
+    db = null;
+  }
   if (backupRunning) {
     backupQueued = true;
     const err = new Error("Backup already running");
@@ -81,29 +96,49 @@ function backupDatabase(cb) {
 
   dump.on("close", (code) => {
     backupRunning = false;
+    const runQueued = () => {
+      if (backupQueued) {
+        backupQueued = false;
+        backupDatabase();
+      }
+    };
     if (code === 0) {
       console.log(`Database backup created: ${filePath}`);
+      logBackup(db, 'backup', 'success', filePath);
       if (cb) cb(null);
+      runQueued();
     } else {
       const err = new Error(`mysqldump exited with code ${code}`);
       console.error("Error during DB backup:", err);
+<<<<<<< ours
+      logBackup(db, 'backup', 'error', err.message);
       if (cb) cb(err);
     }
     if (backupQueued) {
       backupQueued = false;
-      backupDatabase();
+      backupDatabase(db);
+=======
+      fs.unlink(filePath, (delErr) => {
+        if (delErr) {
+          delErr.deleteFailed = true;
+          console.error("Failed to delete incomplete backup:", delErr);
+          if (cb) cb(delErr);
+        } else if (cb) cb(err);
+        runQueued();
+      });
+>>>>>>> theirs
     }
   });
 }
 
-function scheduleDailyBackup() {
+function scheduleDailyBackup(db) {
   const now = new Date();
   const next = new Date(now);
   next.setHours(3, 0, 0, 0);
   if (next <= now) next.setDate(next.getDate() + 1);
   setTimeout(() => {
-    backupDatabase();
-    scheduleDailyBackup();
+    backupDatabase(db);
+    scheduleDailyBackup(db);
   }, next - now);
 }
 
@@ -137,7 +172,12 @@ function applySchema(cb) {
   });
 }
 
-function restoreDatabase(file, cb) {
+function restoreDatabase(db, file, cb) {
+  if (typeof file === 'function') {
+    cb = file;
+    file = db;
+    db = null;
+  }
   const args = [
     "--force",
     "-h",
@@ -169,6 +209,7 @@ function restoreDatabase(file, cb) {
   mysqlProc.on("close", (code) => {
     if (code === 0) {
       console.log(`Database restored from ${file}`);
+      logBackup(db, 'restore', 'success', path.basename(file));
       applySchema((err) => {
         if (err) return cb && cb(err);
         if (cb) cb(null);
@@ -176,6 +217,7 @@ function restoreDatabase(file, cb) {
     } else {
       const err = new Error(`mysql exited with code ${code}`);
       console.error("Error restoring DB:", err);
+      logBackup(db, 'restore', 'error', err.message);
       if (cb) cb(err);
     }
   });
