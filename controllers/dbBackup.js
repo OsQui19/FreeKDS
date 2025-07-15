@@ -100,7 +100,7 @@ function backupDatabase(db, cb) {
     const runQueued = () => {
       if (backupQueued) {
         backupQueued = false;
-        backupDatabase();
+        backupDatabase(db);
       }
     };
     if (code === 0) {
