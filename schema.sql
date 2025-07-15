@@ -10,7 +10,7 @@ INSERT INTO schema_version (version)
   SELECT 2 WHERE NOT EXISTS (SELECT 1 FROM schema_version);
 
 -- Stations table: each station has a type and optional order_type_filter (unchanged)
-CREATE TABLE stations (
+CREATE TABLE IF NOT EXISTS stations (
   id              INT PRIMARY KEY AUTO_INCREMENT,
   name            VARCHAR(100) NOT NULL,
   type            VARCHAR(20) NOT NULL,            -- e.g. 'expo' or 'prep'
@@ -21,14 +21,14 @@ CREATE TABLE stations (
 );
 
 -- Categories table: groups menu items into categories (e.g., Wraps, Bowls, Drinks).
-CREATE TABLE categories (
+CREATE TABLE IF NOT EXISTS categories (
   id         INT PRIMARY KEY AUTO_INCREMENT,
   name       VARCHAR(100) NOT NULL,
   sort_order INT DEFAULT 0                        -- display order of categories (lower numbers shown first)
 );
 
 -- Menu Items table: now includes category, price, image, and supports ordering within category.
-CREATE TABLE menu_items (
+CREATE TABLE IF NOT EXISTS menu_items (
   id          INT PRIMARY KEY AUTO_INCREMENT,
   name        VARCHAR(100) NOT NULL,
   category_id INT NOT NULL,                       -- category grouping (foreign key to categories)
@@ -43,11 +43,11 @@ CREATE TABLE menu_items (
 );
 
 -- Modifiers table: defines optional add-ons or extras (e.g., sauces, proteins) that can be attached to menu items.
-CREATE TABLE modifier_groups (
+CREATE TABLE IF NOT EXISTS modifier_groups (
   id   INT PRIMARY KEY AUTO_INCREMENT,
   name VARCHAR(100) NOT NULL
 );
-CREATE TABLE modifiers (
+CREATE TABLE IF NOT EXISTS modifiers (
   id         INT PRIMARY KEY AUTO_INCREMENT,
   name       VARCHAR(100) NOT NULL,
   price      DECIMAL(10,2) NOT NULL DEFAULT 0.00,       -- extra charge for this modifier (0.00 if no extra cost)
@@ -59,7 +59,7 @@ CREATE TABLE modifiers (
 );
 
 -- Linking table for menu items and their available modifiers.
-CREATE TABLE item_modifiers (
+CREATE TABLE IF NOT EXISTS item_modifiers (
   menu_item_id INT NOT NULL,
   modifier_id  INT NOT NULL,
   replaces_ingredient_id INT DEFAULT NULL,
@@ -70,7 +70,7 @@ CREATE TABLE item_modifiers (
 );
 
 -- Linking table assigning modifier groups to menu items
-CREATE TABLE item_modifier_groups (
+CREATE TABLE IF NOT EXISTS item_modifier_groups (
   menu_item_id INT NOT NULL,
   group_id INT NOT NULL,
   PRIMARY KEY (menu_item_id, group_id),
@@ -79,7 +79,7 @@ CREATE TABLE item_modifier_groups (
 );
 
 -- Orders table: one record per order (ticket).
-CREATE TABLE orders (
+CREATE TABLE IF NOT EXISTS orders (
   id           INT PRIMARY KEY AUTO_INCREMENT,
   order_number VARCHAR(50),             -- external reference or number (could be table number or online order ID)
   order_type   VARCHAR(20),             -- e.g. 'DINE-IN', 'TO-GO', 'CATERING'
@@ -92,7 +92,7 @@ CREATE TABLE orders (
 );
 
 -- Order Items table: line items for each order, linking to menu_items.
-CREATE TABLE order_items (
+CREATE TABLE IF NOT EXISTS order_items (
   id            INT PRIMARY KEY AUTO_INCREMENT,
   order_id      INT NOT NULL,
   menu_item_id  INT NOT NULL,
@@ -104,7 +104,7 @@ CREATE TABLE order_items (
   -- Note: If a menu_item is deleted, this FK (without ON DELETE CASCADE) will prevent deletion if referenced by orders.
 );
 -- Chosen modifiers for each order item (customisations)
-CREATE TABLE order_item_modifiers (
+CREATE TABLE IF NOT EXISTS order_item_modifiers (
   order_item_id INT NOT NULL,
   modifier_id   INT NOT NULL,
   PRIMARY KEY (order_item_id, modifier_id),
@@ -113,11 +113,11 @@ CREATE TABLE order_item_modifiers (
 );
 -- Settings table: key-value store for configuration
 -- (brand name, theme colors, employee data, etc.)
-CREATE TABLE settings (
+CREATE TABLE IF NOT EXISTS settings (
   setting_key   VARCHAR(50) PRIMARY KEY,
   setting_value TEXT
 );
-CREATE TABLE bumped_orders (
+CREATE TABLE IF NOT EXISTS bumped_orders (
   order_id INT NOT NULL,
   station_id INT NOT NULL,
   order_number VARCHAR(50),
@@ -127,7 +127,7 @@ CREATE TABLE bumped_orders (
   FOREIGN KEY (station_id) REFERENCES stations(id)
 );
 -- Measurement units table
-CREATE TABLE units (
+CREATE TABLE IF NOT EXISTS units (
   id INT PRIMARY KEY AUTO_INCREMENT,
   name VARCHAR(50) NOT NULL,
   abbreviation VARCHAR(10) NOT NULL,
@@ -136,7 +136,7 @@ CREATE TABLE units (
 );
 
 -- Item categories for ingredients
-CREATE TABLE item_categories (
+CREATE TABLE IF NOT EXISTS item_categories (
   id INT PRIMARY KEY AUTO_INCREMENT,
   name VARCHAR(100) NOT NULL,
   parent_id INT DEFAULT NULL,
@@ -156,7 +156,7 @@ INSERT INTO units (name, abbreviation, type, to_base) VALUES
   ('each', 'ea', 'count', 1);
 
 -- Ingredients table for inventory tracking
-CREATE TABLE ingredients (
+CREATE TABLE IF NOT EXISTS ingredients (
   id INT PRIMARY KEY AUTO_INCREMENT,
   name VARCHAR(100) NOT NULL,
   quantity DECIMAL(10,2) NOT NULL DEFAULT 0.00,
@@ -170,12 +170,12 @@ CREATE TABLE ingredients (
   UNIQUE KEY uniq_ingredient_name (name)
 );
 
-CREATE TABLE tags (
+CREATE TABLE IF NOT EXISTS tags (
   id INT PRIMARY KEY AUTO_INCREMENT,
   name VARCHAR(100) NOT NULL
 );
 
-CREATE TABLE ingredient_tags (
+CREATE TABLE IF NOT EXISTS ingredient_tags (
   ingredient_id INT NOT NULL,
   tag_id INT NOT NULL,
   PRIMARY KEY (ingredient_id, tag_id),
@@ -184,7 +184,7 @@ CREATE TABLE ingredient_tags (
 );
 
 -- Per-item ingredients
-CREATE TABLE item_ingredients (
+CREATE TABLE IF NOT EXISTS item_ingredients (
   menu_item_id INT NOT NULL,
   ingredient_id INT NOT NULL,
   amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
@@ -196,7 +196,7 @@ CREATE TABLE item_ingredients (
 );
 
 -- Log of inventory deductions per order
-CREATE TABLE inventory_log (
+CREATE TABLE IF NOT EXISTS inventory_log (
   id INT PRIMARY KEY AUTO_INCREMENT,
   order_id INT NOT NULL,
   menu_item_id INT NOT NULL,
@@ -207,7 +207,7 @@ CREATE TABLE inventory_log (
   FOREIGN KEY (menu_item_id) REFERENCES menu_items(id),
   FOREIGN KEY (ingredient_id) REFERENCES ingredients(id)
 );
-CREATE TABLE inventory_transactions (
+CREATE TABLE IF NOT EXISTS inventory_transactions (
   id INT PRIMARY KEY AUTO_INCREMENT,
   ingredient_id INT NOT NULL,
   type VARCHAR(20) NOT NULL,
@@ -215,7 +215,7 @@ CREATE TABLE inventory_transactions (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (ingredient_id) REFERENCES ingredients(id)
 );
-CREATE TABLE daily_usage_log (
+CREATE TABLE IF NOT EXISTS daily_usage_log (
   id INT PRIMARY KEY AUTO_INCREMENT,
   start_date DATE NOT NULL,
   end_date DATE NOT NULL,
@@ -227,20 +227,20 @@ CREATE TABLE daily_usage_log (
 );
 
 -- Suppliers for purchasing
-CREATE TABLE suppliers (
+CREATE TABLE IF NOT EXISTS suppliers (
   id INT PRIMARY KEY AUTO_INCREMENT,
   name VARCHAR(100) NOT NULL,
   contact_info VARCHAR(255) DEFAULT NULL
 );
 
 -- Inventory locations for multi-store tracking
-CREATE TABLE inventory_locations (
+CREATE TABLE IF NOT EXISTS inventory_locations (
   id INT PRIMARY KEY AUTO_INCREMENT,
   name VARCHAR(100) NOT NULL
 );
 
 -- Purchase orders
-CREATE TABLE purchase_orders (
+CREATE TABLE IF NOT EXISTS purchase_orders (
   id INT PRIMARY KEY AUTO_INCREMENT,
   supplier_id INT NOT NULL,
   location_id INT DEFAULT NULL,
@@ -250,7 +250,7 @@ CREATE TABLE purchase_orders (
   FOREIGN KEY (location_id) REFERENCES inventory_locations(id)
 );
 
-CREATE TABLE purchase_order_items (
+CREATE TABLE IF NOT EXISTS purchase_order_items (
   id INT PRIMARY KEY AUTO_INCREMENT,
   purchase_order_id INT NOT NULL,
   ingredient_id INT NOT NULL,
@@ -261,7 +261,7 @@ CREATE TABLE purchase_order_items (
   FOREIGN KEY (unit_id) REFERENCES units(id)
 );
 
-CREATE TABLE employees (
+CREATE TABLE IF NOT EXISTS employees (
   id INT PRIMARY KEY AUTO_INCREMENT,
   first_name VARCHAR(50) DEFAULT NULL,
   last_name VARCHAR(50) DEFAULT NULL,
@@ -276,7 +276,7 @@ CREATE TABLE employees (
   wage_rate DECIMAL(10,2) DEFAULT NULL
 );
 
-CREATE TABLE time_clock (
+CREATE TABLE IF NOT EXISTS time_clock (
   id INT PRIMARY KEY AUTO_INCREMENT,
   employee_id INT NOT NULL,
   clock_in DATETIME NOT NULL,
@@ -284,7 +284,7 @@ CREATE TABLE time_clock (
   FOREIGN KEY (employee_id) REFERENCES employees(id)
 );
 
-CREATE TABLE employee_schedule (
+CREATE TABLE IF NOT EXISTS employee_schedule (
   id INT PRIMARY KEY AUTO_INCREMENT,
   employee_id INT NOT NULL,
   start_time DATETIME NOT NULL,
@@ -292,9 +292,18 @@ CREATE TABLE employee_schedule (
   week_key VARCHAR(10) NOT NULL,
   FOREIGN KEY (employee_id) REFERENCES employees(id)
 );
-CREATE INDEX idx_employee_schedule_week ON employee_schedule(week_key);
+SET @iexists := (SELECT COUNT(*) FROM information_schema.statistics
+  WHERE table_schema = DATABASE()
+    AND table_name = 'employee_schedule'
+    AND index_name = 'idx_employee_schedule_week');
+SET @sql := IF(@iexists = 0,
+  'CREATE INDEX idx_employee_schedule_week ON employee_schedule(week_key)',
+  'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
-CREATE TABLE security_log (
+CREATE TABLE IF NOT EXISTS security_log (
   id INT PRIMARY KEY AUTO_INCREMENT,
   username VARCHAR(50) DEFAULT NULL,
   ip_address VARCHAR(45) NOT NULL,
@@ -304,19 +313,64 @@ CREATE TABLE security_log (
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_security_log_created_at ON security_log(created_at);
+SET @iexists := (SELECT COUNT(*) FROM information_schema.statistics
+  WHERE table_schema = DATABASE()
+    AND table_name = 'security_log'
+    AND index_name = 'idx_security_log_created_at');
+SET @sql := IF(@iexists = 0,
+  'CREATE INDEX idx_security_log_created_at ON security_log(created_at)',
+  'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
-CREATE TABLE backup_log (
+CREATE TABLE IF NOT EXISTS backup_log (
   id INT PRIMARY KEY AUTO_INCREMENT,
   action VARCHAR(20) NOT NULL,
   result VARCHAR(20) NOT NULL,
   message TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-CREATE INDEX idx_backup_log_created_at ON backup_log(created_at);
+SET @iexists := (SELECT COUNT(*) FROM information_schema.statistics
+  WHERE table_schema = DATABASE()
+    AND table_name = 'backup_log'
+    AND index_name = 'idx_backup_log_created_at');
+SET @sql := IF(@iexists = 0,
+  'CREATE INDEX idx_backup_log_created_at ON backup_log(created_at)',
+  'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 -- Performance indexes
-CREATE INDEX idx_orders_created_at ON orders(created_at);
-CREATE INDEX idx_inventory_log_created_at ON inventory_log(created_at);
-CREATE INDEX idx_inventory_transactions_created_at ON inventory_transactions(created_at);
+SET @iexists := (SELECT COUNT(*) FROM information_schema.statistics
+  WHERE table_schema = DATABASE()
+    AND table_name = 'orders'
+    AND index_name = 'idx_orders_created_at');
+SET @sql := IF(@iexists = 0,
+  'CREATE INDEX idx_orders_created_at ON orders(created_at)',
+  'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+SET @iexists := (SELECT COUNT(*) FROM information_schema.statistics
+  WHERE table_schema = DATABASE()
+    AND table_name = 'inventory_log'
+    AND index_name = 'idx_inventory_log_created_at');
+SET @sql := IF(@iexists = 0,
+  'CREATE INDEX idx_inventory_log_created_at ON inventory_log(created_at)',
+  'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+SET @iexists := (SELECT COUNT(*) FROM information_schema.statistics
+  WHERE table_schema = DATABASE()
+    AND table_name = 'inventory_transactions'
+    AND index_name = 'idx_inventory_transactions_created_at');
+SET @sql := IF(@iexists = 0,
+  'CREATE INDEX idx_inventory_transactions_created_at ON inventory_transactions(created_at)',
+  'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 SET FOREIGN_KEY_CHECKS=1;
