@@ -3,8 +3,27 @@
   <form id="backupDirForm" class="mb-2 d-flex flex-wrap gap-2 align-items-end" method="POST" action="/admin/backups/set-dir">
     <label for="backupDirInput" class="form-label mb-0">Backup Folder:</label>
     <input id="backupDirInput" name="dir" type="text" class="form-control form-control-sm" style="min-width:200px" value="<%= settings.backup_dir || '' %>">
+    <button id="browseDirBtn" type="button" class="btn btn-sm btn-outline-secondary">Browse…</button>
     <button type="submit" class="btn btn-sm btn-secondary">Save Location</button>
   </form>
+  <div class="modal fade" id="dirBrowserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Choose Folder</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div id="dirBrowserPath" class="small text-muted mb-2"></div>
+          <ul class="list-group" id="dirBrowserList"></ul>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button id="dirBrowserSelect" type="button" class="btn btn-primary">Select</button>
+        </div>
+      </div>
+    </div>
+  </div>
   <div class="mb-2 d-flex flex-wrap gap-2 align-items-end">
     <button id="createBackupBtn" class="btn btn-sm btn-primary">Create Backup</button>
     <div class="d-flex gap-2">

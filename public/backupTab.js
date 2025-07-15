@@ -1,6 +1,59 @@
 import { showAlert, handleForm } from '/adminUtils.js';
+let currentDir = '/';
+let dirModal, dirList, dirPathEl, dirSelectBtn;
 
 let backupsCache = [];
+
+async function loadDirectory(dir) {
+  try {
+    const res = await fetch(`/admin/backups/browse?dir=${encodeURIComponent(dir)}`);
+    const data = await res.json();
+    if (Array.isArray(data.dirs)) {
+      currentDir = data.dir || dir;
+      if (dirPathEl) dirPathEl.textContent = currentDir;
+      if (dirList) {
+        dirList.innerHTML = '';
+        if (data.parent) {
+          const li = document.createElement('li');
+          li.className = 'list-group-item';
+          li.innerHTML = '<button type="button" class="btn btn-sm w-100 text-start dir-link" data-dir="' + data.parent + '">..</button>';
+          dirList.appendChild(li);
+        }
+        data.dirs.forEach((d) => {
+          const li = document.createElement('li');
+          li.className = 'list-group-item';
+          li.innerHTML = '<button type="button" class="btn btn-sm w-100 text-start dir-link" data-dir="' + currentDir + '/' + d + '">' + d + '</button>';
+          dirList.appendChild(li);
+        });
+        dirList.querySelectorAll('.dir-link').forEach((btn) => {
+          btn.addEventListener('click', () => loadDirectory(btn.dataset.dir));
+        });
+      }
+    }
+  } catch (err) {
+    console.error('Browse failed', err);
+  }
+}
+
+function showDirectoryBrowser(start) {
+  if (!dirModal) {
+    const modalEl = document.getElementById('dirBrowserModal');
+    if (!modalEl) return;
+    dirModal = new bootstrap.Modal(modalEl);
+    dirList = modalEl.querySelector('#dirBrowserList');
+    dirPathEl = modalEl.querySelector('#dirBrowserPath');
+    dirSelectBtn = modalEl.querySelector('#dirBrowserSelect');
+    if (dirSelectBtn) {
+      dirSelectBtn.addEventListener('click', () => {
+        const input = document.getElementById('backupDirInput');
+        if (input) input.value = currentDir;
+        dirModal.hide();
+      });
+    }
+  }
+  loadDirectory(start || '/');
+  dirModal.show();
+}
 
 function fmtSize(bytes) {
   if (bytes >= 1048576) return (bytes / 1048576).toFixed(1) + ' MB';
@@ -85,6 +138,7 @@ function initBackupTab() {
   const uploadBtn = document.getElementById('restoreUploadedBtn');
   const uploadInput = document.getElementById('restoreFileInput');
   const dirForm = document.getElementById('backupDirForm');
+  const browseBtn = document.getElementById('browseDirBtn');
   if (restoreBtn) {
     restoreBtn.addEventListener('click', () => {
       const select = document.getElementById('restoreFileSelect');
@@ -137,6 +191,12 @@ function initBackupTab() {
     handleForm(dirForm, () => loadBackups(), {
       alertContainer: document.getElementById('backupAlertContainer'),
       followRedirect: true,
+    });
+  }
+  if (browseBtn) {
+    browseBtn.addEventListener('click', () => {
+      const input = document.getElementById('backupDirInput');
+      showDirectoryBrowser(input ? input.value : '/');
     });
   }
 }

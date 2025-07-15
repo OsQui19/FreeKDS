@@ -1296,6 +1296,18 @@ module.exports = (db, io) => {
     });
   });
 
+  router.get("/admin/backups/browse", (req, res) => {
+    const dir = path.resolve(req.query.dir || "/");
+    fs.readdir(dir, { withFileTypes: true }, (err, items) => {
+      if (err) {
+        console.error("Error reading dir:", err);
+        return res.status(500).json({ error: "Failed" });
+      }
+      const dirs = items.filter((i) => i.isDirectory()).map((i) => i.name);
+      res.json({ dir, parent: path.dirname(dir), dirs });
+    });
+  });
+
   router.post("/admin/backups/set-dir", async (req, res) => {
     const dir = (req.body.dir || "").trim();
     if (!dir) return res.redirect("/admin?tab=backup");
