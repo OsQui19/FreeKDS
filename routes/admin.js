@@ -4,6 +4,7 @@ const {
   updateItemModifiers,
   updateItemGroups,
   getMenuData,
+  getCategories,
   getStations,
   getIngredients,
   getUnits,
@@ -1557,6 +1558,110 @@ module.exports = (db, io) => {
       console.error("Error saving backup retention:", err);
       res.status(500).send("DB Error");
     }
+  });
+
+  router.get("/foh/order", (req, res) => {
+    if (!req.session.user || !roleHasAccess(req.session.user.role, "order")) {
+      return res.status(403).send("Forbidden");
+    }
+    const table = req.query.table || "";
+    const sqlItems =
+      "SELECT id, name, price, image_url, category_id, is_available, stock FROM menu_items ORDER BY category_id, sort_order, id";
+    const sqlItemMods = "SELECT * FROM item_modifiers";
+    const sqlItemGroups = "SELECT * FROM item_modifier_groups";
+    const sqlMods = "SELECT id, name, group_id FROM modifiers";
+    const sqlGroups = "SELECT id, name FROM modifier_groups";
+    getCategories(db)
+      .then((cats) => {
+        db.query(sqlItems, (err2, items) => {
+          if (err2) {
+            logger.error(err2);
+            return res.status(500).send("DB Error");
+          }
+          db.query(sqlItemMods, (err3, itemMods) => {
+            if (err3) {
+              logger.error(err3);
+              return res.status(500).send("DB Error");
+            }
+            db.query(sqlItemGroups, (errG, itemGroups) => {
+              if (errG) {
+                logger.error(errG);
+                return res.status(500).send("DB Error");
+              }
+              db.query(sqlMods, (err4, mods) => {
+                if (err4) {
+                  logger.error(err4);
+                  return res.status(500).send("DB Error");
+                }
+                db.query(sqlGroups, (err5, groups) => {
+                  if (err5) {
+                    logger.error(err5);
+                    return res.status(500).send("DB Error");
+                  }
+                  const modMap = {};
+                  mods.forEach((m) => {
+                    modMap[m.id] = {
+                      id: m.id,
+                      name: m.name,
+                      group_id: m.group_id,
+                    };
+                  });
+                  const itemGroupsMap = {};
+                  itemGroups.forEach((g) => {
+                    if (!itemGroupsMap[g.menu_item_id])
+                      itemGroupsMap[g.menu_item_id] = [];
+                    itemGroupsMap[g.menu_item_id].push(g.group_id);
+                  });
+                  const itemModsMap = {};
+                  itemMods.forEach((im) => {
+                    const grp = modMap[im.modifier_id]
+                      ? modMap[im.modifier_id].group_id
+                      : null;
+                    const allowed = itemGroupsMap[im.menu_item_id] || [];
+                    if (grp && !allowed.includes(grp)) return;
+                    if (!itemModsMap[im.menu_item_id])
+                      itemModsMap[im.menu_item_id] = [];
+                    if (modMap[im.modifier_id])
+                      itemModsMap[im.menu_item_id].push(modMap[im.modifier_id]);
+                  });
+                  const catMap = cats.map((c) => ({
+                    id: c.id,
+                    name: c.name,
+                    items: [],
+                  }));
+                  const idx = {};
+                  catMap.forEach((c) => {
+                    idx[c.id] = c;
+                  });
+                  items.forEach((it) => {
+                    if (idx[it.category_id]) {
+                      idx[it.category_id].items.push({
+                        id: it.id,
+                        name: it.name,
+                        price: it.price,
+                        image_url: it.image_url,
+                        modifiers: itemModsMap[it.id] || [],
+                        stock: it.stock,
+                        is_available: it.is_available,
+                      });
+                    }
+                  });
+                  res.render("order-foh", {
+                    categories: catMap,
+                    table,
+                    settings: res.locals.settings,
+                    modGroups: groups,
+                  });
+                });
+              });
+            });
+          });
+        });
+      })
+      .catch((err) => {
+        logger.error(err);
+        res.status(500).send("DB Error");
+      });
   });
 
   return router;

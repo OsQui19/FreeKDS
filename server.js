@@ -143,6 +143,10 @@ app.use((req, res, next) => {
     "/clock.js",
     "/clock/dashboard",
     "/favicon.ico",
+    "/order",
+    "/order.js",
+    "/order.css",
+    "/bootstrap-vars.css",
   ];
   if (
     req.session.user ||

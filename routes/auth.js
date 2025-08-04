@@ -11,7 +11,7 @@ const {
 function dashboardForRole(role) {
   const r = normalizeRole(role);
   if (r === 'boh') return '/stations';
-  if (r === 'foh') return '/order';
+  if (r === 'foh') return '/foh/order';
   return '/admin';
 }
 
