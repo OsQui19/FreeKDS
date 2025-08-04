@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Place Order</title>
+  <link href="/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="/base.css">
+  <link rel="stylesheet" href="/bootstrap-vars.css">
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/order.css">
+  <%- include('partials/theme-vars') %>
+</head>
+<body class="menu-layout-<%= settings.menu_layout === 'list' ? 'list' : 'grid' %>">
+<header class="menu-header">
+  <div class="d-flex flex-column">
+    <span class="brand-name fw-bold"><%= settings.brand_name || '' %></span>
+    <h1 class="menu-title m-0">Menu</h1>
+  </div>
+  <div class="header-controls">
+    <div class="mt-1 order-type-select">
+      <label for="orderType" class="fw-bold me-2">Order Type:</label>
+      <select id="orderType" class="form-select d-inline-block w-auto">
+        <option value="DINE-IN">DINE-IN</option>
+        <option value="TO-GO">TO-GO</option>
+        <option value="CATERING">CATERING</option>
+      </select>
+    </div>
+    <%- include('partials/nav-buttons') %>
+  </div>
+  <nav id="categoryNav">
+    <% categories.forEach(cat => { %>
+      <a href="#cat-<%= cat.id %>"><%= cat.name %></a>
+    <% }) %>
+  </nav>
+</header>
+<main id="menu" class="menu-content container py-3">
+  <% categories.forEach(cat => { %>
+    <div class="category" id="cat-<%= cat.id %>">
+      <h2><%= cat.name %></h2>
+      <div class="item-grid">
+      <% cat.items.forEach(item => { %>
+        <div
+          class="item-card"
+          data-id="<%= item.id %>"
+          data-price="<%= Number(item.price).toFixed(2) %>"
+          data-qty="<%= item.available_qty != null ? item.available_qty : '' %>"
+          data-eighty-six="false"
+        >
+          <img src="<%= item.image_url || '/no-image-150.png' %>" alt="<%= item.name %>">
+          <span class="item-name"><%= item.name %></span>
+          <span class="item-price">$<%= Number(item.price).toFixed(2) %></span>
+          <span class="item-qty"><%= item.available_qty != null ? 'Qty: ' + item.available_qty : '' %></span>
+          <button class="btn btn-primary" data-id="<%= item.id %>"><i class="bi bi-plus-lg"></i></button>
+        </div>
+      <% }) %>
+      </div>
+    </div>
+  <% }) %>
+</main>
+<div class="cart" id="cart">
+  <h3>Your Order</h3>
+  <ul id="cartItems"></ul>
+  <div id="cartTotal" class="cart-total">$0.00</div>
+  <button id="submitBtn" class="btn btn-success" disabled>Submit Order</button>
+</div>
+  <div id="modModal" class="modal" tabindex="-1" aria-labelledby="modTitle">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content modal-small bg-white text-dark">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modTitle"></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-3">
+          <div id="modOptions"></div>
+          <div class="mb-2">
+            <label for="modInstructions" class="form-label">Special Instructions:</label>
+            <textarea id="modInstructions" rows="2" class="form-control"></textarea>
+          </div>
+          <div class="mb-2 form-check">
+            <input type="checkbox" id="modAllergy" class="form-check-input">
+            <label for="modAllergy" class="form-check-label">Allergy</label>
+          </div>
+          <div class="mb-2 d-none" id="modAllergyDetailDiv">
+            <label for="modAllergyDetail" class="form-label">Allergy Details:</label>
+            <input type="text" id="modAllergyDetail" class="form-control" placeholder="e.g. peanuts, dairy">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="modConfirm" class="btn btn-success">Add Item</button>
+          <button id="modCancel" class="btn btn-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="orderToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="toast-body" id="orderToastBody"></div>
+    </div>
+  </div>
+  <div id="editModal" class="modal" tabindex="-1" aria-labelledby="editTitle">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content modal-small bg-white text-dark">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editTitle"></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-2">
+            <label for="editPrice" class="form-label">Price</label>
+            <input type="number" step="0.01" id="editPrice" class="form-control">
+          </div>
+          <div class="mb-2">
+            <label for="editQty" class="form-label">Available Qty</label>
+            <input type="number" id="editQty" class="form-control">
+          </div>
+          <div class="form-check mb-2">
+            <input type="checkbox" id="edit86" class="form-check-input">
+            <label for="edit86" class="form-check-label">86 Item</label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="editSave" class="btn btn-success">Save</button>
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script
+    defer
+    src="/order.js"
+    data-table="<%= table %>"
+    data-categories='<%- JSON.stringify(categories) %>'
+    data-mod-groups='<%- JSON.stringify(modGroups || []) %>'
+  ></script>
+  <script defer src="/order-foh.js"></script>
+</body>
+</html>
