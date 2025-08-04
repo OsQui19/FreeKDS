@@ -59,6 +59,33 @@ function updateItemGroups(db, itemId, groupIds, callback) {
   );
 }
 
+async function updateMenuItem(db, itemId, fields) {
+  const sets = [];
+  const params = [];
+  if (fields && typeof fields === "object") {
+    if (fields.price !== undefined) {
+      sets.push("price=?");
+      params.push(fields.price);
+    }
+    if (fields.stock_count !== undefined) {
+      sets.push("stock_count=?");
+      params.push(fields.stock_count);
+    }
+    if (fields.is_available !== undefined) {
+      sets.push("is_available=?");
+      params.push(fields.is_available ? 1 : 0);
+    }
+  }
+  if (!sets.length) return;
+  params.push(itemId);
+  try {
+    await db.promise().query(`UPDATE menu_items SET ${sets.join(", ")} WHERE id=?`, params);
+  } catch (err) {
+    logger.error("Error updating menu item:", err);
+    throw err;
+  }
+}
+
 function getBumpedOrders(db, stationId, callback, limit = 20) {
   const infoSql = `SELECT bo.order_id,
                           COALESCE(bo.order_number, o.order_number) AS order_number,
@@ -448,6 +475,7 @@ async function receivePurchaseOrder(db, orderId) {
 module.exports = {
   updateItemModifiers,
   updateItemGroups,
+  updateMenuItem,
   getBumpedOrders,
   getMenuData,
   getStations,

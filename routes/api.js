@@ -6,6 +6,7 @@ const {
   logInventoryForOrder,
   insertUnit,
   getUnits,
+  updateMenuItem,
 } = require("../controllers/dbHelpers");
 const { backupDatabase } = require("../controllers/dbBackup");
 const unitConversion = require("../controllers/unitConversion");
@@ -502,6 +503,29 @@ module.exports = (db, io) => {
       modules: accessControl.ALL_MODULES,
       groups: accessControl.MODULE_GROUPS,
     });
+  });
+
+  router.put("/api/menu-items/:id", async (req, res) => {
+    if (!req.session.user) return res.status(401).send("Unauthorized");
+    if (!accessControl.roleHasAccess(req.session.user.role, "menu")) {
+      return res.status(403).send("Forbidden");
+    }
+    const id = parseInt(req.params.id, 10);
+    if (!id) return res.status(400).send("Invalid id");
+    const { price, stock_count, available, available_qty, is_available } = req.body;
+    const stock = stock_count ?? available_qty;
+    const avail = available ?? is_available;
+    try {
+      await updateMenuItem(db, id, {
+        price: price !== undefined ? Number(price) : undefined,
+        stock_count: stock !== undefined ? parseInt(stock, 10) : undefined,
+        is_available: avail !== undefined ? (avail ? 1 : 0) : undefined,
+      });
+      res.json({ success: true });
+    } catch (err) {
+      logger.error("Error updating menu item:", err);
+      res.status(500).send("DB Error");
+    }
   });
 
   router.get("/api/time-clock", async (req, res) => {
