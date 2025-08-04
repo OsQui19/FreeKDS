@@ -212,6 +212,14 @@ module.exports = (db, io) => {
       req.body.image_url && req.body.image_url.trim() !== ""
         ? req.body.image_url.trim()
         : null;
+    const isAvailable =
+      req.body.is_available !== undefined
+        ? parseInt(req.body.is_available, 10) ? 1 : 0
+        : 1;
+    const stock =
+      req.body.stock !== undefined && req.body.stock !== ""
+        ? parseInt(req.body.stock, 10)
+        : null;
     let itemIngredients = [];
     if (req.body.ingredient_ids && req.body.ingredient_amounts) {
       const ids = Array.isArray(req.body.ingredient_ids)
@@ -306,11 +314,21 @@ module.exports = (db, io) => {
     }
     if (id) {
       const updateSql = `UPDATE menu_items
-                       SET name=?, price=?, station_id=?, category_id=?, image_url=?, recipe=?
+                       SET name=?, price=?, station_id=?, category_id=?, image_url=?, recipe=?, is_available=?, stock=?
                        WHERE id=?`;
       db.query(
         updateSql,
-        [name, price, stationId, categoryId, imageUrl, recipe, id],
+        [
+          name,
+          price,
+          stationId,
+          categoryId,
+          imageUrl,
+          recipe,
+          isAvailable,
+          stock,
+          id,
+        ],
         (err) => {
           if (err) {
             logger.error(err);
@@ -336,6 +354,8 @@ module.exports = (db, io) => {
                         category_id: categoryId,
                         recipe,
                         image_url: imageUrl,
+                        is_available: isAvailable,
+                        stock,
                         modifierNamesStr: "",
                       },
                     });
@@ -364,11 +384,21 @@ module.exports = (db, io) => {
           results = [{ maxOrder: -1 }];
         }
         const nextOrder = (results[0].maxOrder || 0) + 1;
-        const insertSql = `INSERT INTO menu_items (name, price, station_id, category_id, image_url, recipe, sort_order)
-                         VALUES (?, ?, ?, ?, ?, ?, ?)`;
+        const insertSql = `INSERT INTO menu_items (name, price, station_id, category_id, image_url, recipe, sort_order, is_available, stock)
+                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
         db.query(
           insertSql,
-          [name, price, stationId, categoryId, imageUrl, recipe, nextOrder],
+          [
+            name,
+            price,
+            stationId,
+            categoryId,
+            imageUrl,
+            recipe,
+            nextOrder,
+            isAvailable,
+            stock,
+          ],
           (err, result) => {
             if (err) {
               logger.error(err);
@@ -390,19 +420,21 @@ module.exports = (db, io) => {
                             stationId,
                           ]);
                         const stationName = rows[0] ? rows[0].name : "";
-                        return res.json({
-                          item: {
-                            id: newItemId,
-                            name,
-                            price,
-                            station_id: stationId,
-                            station_name: stationName,
-                            category_id: categoryId,
-                            recipe,
-                            image_url: imageUrl,
-                            modifierNamesStr: "",
-                          },
-                        });
+                    return res.json({
+                      item: {
+                        id: newItemId,
+                        name,
+                        price,
+                        station_id: stationId,
+                        station_name: stationName,
+                        category_id: categoryId,
+                        recipe,
+                        image_url: imageUrl,
+                        is_available: isAvailable,
+                        stock,
+                        modifierNamesStr: "",
+                      },
+                    });
                       } catch (err2) {
                         logger.error("Error returning item json:", err2);
                         return res.status(500).json({ error: "DB Error" });

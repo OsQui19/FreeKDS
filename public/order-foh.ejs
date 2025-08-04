@@ -45,13 +45,13 @@
           class="item-card"
           data-id="<%= item.id %>"
           data-price="<%= Number(item.price).toFixed(2) %>"
-          data-qty="<%= item.available_qty != null ? item.available_qty : '' %>"
-          data-eighty-six="false"
+          data-qty="<%= item.stock != null ? item.stock : '' %>"
+          data-eighty-six="<%= item.is_available ? 'false' : 'true' %>"
         >
           <img src="<%= item.image_url || '/no-image-150.png' %>" alt="<%= item.name %>">
           <span class="item-name"><%= item.name %></span>
           <span class="item-price">$<%= Number(item.price).toFixed(2) %></span>
-          <span class="item-qty"><%= item.available_qty != null ? 'Qty: ' + item.available_qty : '' %></span>
+          <span class="item-qty"><%= item.stock != null ? 'Qty: ' + item.stock : '' %></span>
           <button class="btn btn-primary" data-id="<%= item.id %>"><i class="bi bi-plus-lg"></i></button>
         </div>
       <% }) %>

@@ -164,7 +164,7 @@ module.exports = (db) => {
   router.get("/order", (req, res) => {
     const table = req.query.table || "";
     const sqlItems =
-      "SELECT id, name, price, image_url, category_id FROM menu_items ORDER BY category_id, sort_order, id";
+      "SELECT id, name, price, image_url, category_id, is_available, stock FROM menu_items ORDER BY category_id, sort_order, id";
     const sqlItemMods = "SELECT * FROM item_modifiers";
     const sqlItemGroups = "SELECT * FROM item_modifier_groups";
     const sqlMods = "SELECT id, name, group_id FROM modifiers";
@@ -232,13 +232,19 @@ module.exports = (db) => {
                     idx[c.id] = c;
                   });
                   items.forEach((it) => {
-                    if (idx[it.category_id]) {
+                    if (
+                      idx[it.category_id] &&
+                      it.is_available &&
+                      (it.stock === null || it.stock > 0)
+                    ) {
                       idx[it.category_id].items.push({
                         id: it.id,
                         name: it.name,
                         price: it.price,
                         image_url: it.image_url,
                         modifiers: itemModsMap[it.id] || [],
+                        stock: it.stock,
+                        is_available: it.is_available,
                       });
                     }
                   });

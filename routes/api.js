@@ -512,13 +512,20 @@ module.exports = (db, io) => {
     }
     const id = parseInt(req.params.id, 10);
     if (!id) return res.status(400).send("Invalid id");
-    const { price, stock_count, available, available_qty, is_available } = req.body;
-    const stock = stock_count ?? available_qty;
-    const avail = available ?? is_available;
+    const {
+      price,
+      stock,
+      stock_count,
+      available,
+      available_qty,
+      is_available,
+    } = req.body;
+    const stockVal = stock ?? stock_count ?? available_qty;
+    const avail = is_available ?? available;
     try {
       await updateMenuItem(db, id, {
         price: price !== undefined ? Number(price) : undefined,
-        stock_count: stock !== undefined ? parseInt(stock, 10) : undefined,
+        stock: stockVal !== undefined ? parseInt(stockVal, 10) : undefined,
         is_available: avail !== undefined ? (avail ? 1 : 0) : undefined,
       });
       res.json({ success: true });

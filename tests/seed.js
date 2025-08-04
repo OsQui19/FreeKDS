@@ -80,6 +80,8 @@ async function main() {
       price: 10.99,
       recipe: "Patty, bun, lettuce, tomato",
       order: 0,
+      is_available: 1,
+      stock: 10,
     },
     {
       name: "Veggie Burger",
@@ -88,6 +90,8 @@ async function main() {
       price: 9.99,
       recipe: "Veggie patty, bun, lettuce, tomato",
       order: 1,
+      is_available: 1,
+      stock: 8,
     },
     {
       name: "Caesar Salad",
@@ -96,6 +100,8 @@ async function main() {
       price: 8.99,
       recipe: "Romaine, dressing, croutons",
       order: 0,
+      is_available: 1,
+      stock: 5,
     },
     {
       name: "Lemonade",
@@ -104,11 +110,13 @@ async function main() {
       price: 2.5,
       recipe: "Fresh lemons and sugar",
       order: 0,
+      is_available: 1,
+      stock: 20,
     },
   ];
   for (const it of items) {
     await db.query(
-      "INSERT INTO menu_items (name, category_id, station_id, price, recipe, sort_order) VALUES (?, ?, ?, ?, ?, ?)",
+      "INSERT INTO menu_items (name, category_id, station_id, price, recipe, sort_order, is_available, stock) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
       [
         it.name,
         catMap[it.category],
@@ -116,6 +124,8 @@ async function main() {
         it.price,
         it.recipe,
         it.order,
+        it.is_available,
+        it.stock,
       ],
     );
   }

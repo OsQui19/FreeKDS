@@ -67,8 +67,11 @@ async function updateMenuItem(db, itemId, fields) {
       sets.push("price=?");
       params.push(fields.price);
     }
-    if (fields.stock_count !== undefined) {
-      sets.push("stock_count=?");
+    if (fields.stock !== undefined) {
+      sets.push("stock=?");
+      params.push(fields.stock);
+    } else if (fields.stock_count !== undefined) {
+      sets.push("stock=?");
       params.push(fields.stock_count);
     }
     if (fields.is_available !== undefined) {
@@ -150,6 +153,7 @@ async function getMenuData(db) {
     db.promise().query("SELECT * FROM stations ORDER BY name"),
     db.promise().query(`SELECT i.id, i.name, i.price, i.recipe, i.image_url,
                                i.station_id, i.category_id, i.sort_order,
+                               i.is_available, i.stock,
                                s.name AS station_name
                         FROM menu_items i
                         JOIN stations s ON i.station_id = s.id
