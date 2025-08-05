@@ -509,7 +509,11 @@ module.exports = (db, io) => {
 
   router.put("/api/menu-items/:id", async (req, res) => {
     if (!req.session.user) return res.status(401).send("Unauthorized");
-    if (!accessControl.roleHasAccess(req.session.user.role, "menu")) {
+    const role = req.session.user.role;
+    const canEditMenu = accessControl.roleHasAccess(role, "menu");
+    const canEightySix =
+      canEditMenu || accessControl.roleHasAccess(role, "order");
+    if (!canEightySix) {
       return res.status(403).send("Forbidden");
     }
     const id = parseInt(req.params.id, 10);
@@ -524,13 +528,19 @@ module.exports = (db, io) => {
     } = req.body;
     const stockVal = stock ?? stock_count ?? available_qty;
     const avail = is_available ?? available;
+    const updateFields = {};
+    if (canEditMenu && price !== undefined)
+      updateFields.price = Number(price);
+    if (stockVal !== undefined)
+      updateFields.stock = parseInt(stockVal, 10);
+    if (avail !== undefined)
+      updateFields.is_available = avail ? 1 : 0;
     try {
-      await updateMenuItem(db, id, {
-        price: price !== undefined ? Number(price) : undefined,
-        stock: stockVal !== undefined ? parseInt(stockVal, 10) : undefined,
-        is_available: avail !== undefined ? (avail ? 1 : 0) : undefined,
-      });
-      if ((stockVal !== undefined && parseInt(stockVal, 10) <= 0) || (avail !== undefined && !avail)) {
+      await updateMenuItem(db, id, updateFields);
+      if (
+        (updateFields.stock !== undefined && updateFields.stock <= 0) ||
+        (updateFields.is_available !== undefined && !updateFields.is_available)
+      ) {
         io.emit("menuItemsUpdated");
       }
       res.json({ success: true });
