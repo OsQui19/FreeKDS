@@ -36,6 +36,16 @@ body {
 .menu-header .nav-buttons {
   position: static;
 }
+.view-toggle .btn {
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  background: var(--bs-secondary, #6c757d);
+  color: #fff;
+  border: none;
+}
+.view-toggle .btn.active {
+  background: var(--bs-primary, #4a90e2);
+}
 
 #categoryNav {
   display: flex;
