@@ -25,12 +25,18 @@
       <i class="bi bi-gear-fill me-1" aria-hidden="true"></i>Admin
     </a>
   <% } %>
-  <a href="/clock/dashboard" class="btn btn-secondary btn-sm" aria-label="Clock">
-    <i class="bi bi-clock-fill me-1" aria-hidden="true"></i>Clock
-  </a>
-  <form action="/logout" method="post" class="m-0">
-    <button type="submit" class="btn btn-danger btn-sm" aria-label="Log Out">
-      <i class="bi bi-box-arrow-right me-1" aria-hidden="true"></i>Log Out
-    </button>
-  </form>
+  <% if (user) { %>
+    <a href="/clock/dashboard" class="btn btn-secondary btn-sm" aria-label="Clock">
+      <i class="bi bi-clock-fill me-1" aria-hidden="true"></i>Clock
+    </a>
+    <form action="/logout" method="post" class="m-0">
+      <button type="submit" class="btn btn-danger btn-sm" aria-label="Log Out">
+        <i class="bi bi-box-arrow-right me-1" aria-hidden="true"></i>Log Out
+      </button>
+    </form>
+  <% } else { %>
+    <a href="/login" class="btn btn-secondary btn-sm" aria-label="Log In">
+      <i class="bi bi-box-arrow-in-right me-1" aria-hidden="true"></i>Log In
+    </a>
+  <% } %>
 </div>
