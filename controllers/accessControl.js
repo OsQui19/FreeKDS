@@ -195,27 +195,41 @@ function getPermissions() {
 }
 
 function getRolePermissions(role) {
-  let topRole = getHierarchy().slice(-1)[0];
-  if (!topRole) topRole = 'management';
+  const roles = getHierarchy();
+  const topRole = roles.slice(-1)[0] || 'management';
   const norm = normalizeRole(role);
+  const level = roles.findIndex((r) => normalizeRole(r) === norm);
+  if (level < 0) return [];
+
+  const collected = new Set();
+  for (let i = 0; i <= level; i += 1) {
+    const r = roles[i];
+    const key = Object.keys(permissions).find(
+      (k) => normalizeRole(k) === normalizeRole(r),
+    );
+    if (key && Array.isArray(permissions[key])) {
+      permissions[key].forEach((m) => {
+        const nm = normalizeModuleName(m);
+        if (nm) collected.add(nm);
+      });
+    }
+  }
+
   const topNorm = normalizeRole(topRole);
-  const key = Object.keys(permissions).find(
-    (k) => normalizeRole(k) === norm,
+  const topKey = Object.keys(permissions).find(
+    (k) => normalizeRole(k) === topNorm,
   );
-  if (norm === topNorm && (!key || !Array.isArray(permissions[key]))) {
+  if (norm === topNorm && (!topKey || !Array.isArray(permissions[topKey]))) {
     return ALL_MODULES.map((m) => normalizeModuleName(m));
   }
-  return key && Array.isArray(permissions[key])
-    ? permissions[key].map((m) => normalizeModuleName(m))
-    : [];
+
+  return Array.from(collected);
 }
 
 function roleHasAccess(role, component) {
   const comp = normalizeModuleName(component);
   if (!comp) return false;
   const allowed = getRolePermissions(role);
-  const topRole = getHierarchy().slice(-1)[0];
-  if (hasLevel(role, topRole)) return true;
   return allowed.includes(comp);
 }
 
