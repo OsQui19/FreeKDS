@@ -115,12 +115,9 @@
             <label for="editQty" class="form-label">Available Qty</label>
             <input type="number" id="editQty" class="form-control">
           </div>
-          <div class="form-check mb-2">
-            <input type="checkbox" id="edit86" class="form-check-input">
-            <label for="edit86" class="form-check-label">86 Item</label>
-          </div>
         </div>
         <div class="modal-footer">
+          <button id="edit86Btn" class="btn btn-danger me-auto">86 Item</button>
           <button id="editSave" class="btn btn-success">Save</button>
           <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
         </div>
@@ -128,6 +125,7 @@
     </div>
   </div>
   <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
   <script
     defer
     src="/order.js"

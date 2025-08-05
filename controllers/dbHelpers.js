@@ -68,11 +68,19 @@ async function updateMenuItem(db, itemId, fields) {
       params.push(fields.price);
     }
     if (fields.stock !== undefined) {
+      const stockVal = parseInt(fields.stock, 10);
       sets.push("stock=?");
-      params.push(fields.stock);
+      params.push(stockVal);
+      if (stockVal <= 0 && fields.is_available === undefined) {
+        sets.push("is_available=0");
+      }
     } else if (fields.stock_count !== undefined) {
+      const stockVal = parseInt(fields.stock_count, 10);
       sets.push("stock=?");
-      params.push(fields.stock_count);
+      params.push(stockVal);
+      if (stockVal <= 0 && fields.is_available === undefined) {
+        sets.push("is_available=0");
+      }
     }
     if (fields.is_available !== undefined) {
       sets.push("is_available=?");
@@ -362,6 +370,7 @@ function updateItemIngredients(db, itemId, ingList, callback) {
 
 async function logInventoryForOrder(db, orderId, items) {
   const conn = typeof db.promise === "function" ? db.promise() : db;
+  const outOfStock = new Set();
   for (const it of items) {
     const [ings] = await conn.query(
       `SELECT ii.ingredient_id, ii.amount, ii.unit_id AS item_unit_id, ing.unit_id AS ing_unit_id
@@ -416,7 +425,24 @@ async function logInventoryForOrder(db, orderId, items) {
           [orderId, it.menu_item_id, modRow.ingredient_id, used],
         );
     }
+
+    // update menu item stock and availability
+    const [stockRows] = await conn.query(
+      "SELECT stock FROM menu_items WHERE id=? FOR UPDATE",
+      [it.menu_item_id],
+    );
+    if (stockRows.length && stockRows[0].stock !== null) {
+      let newStock = parseInt(stockRows[0].stock, 10) - (it.quantity || 0);
+      if (newStock <= 0) {
+        newStock = 0;
+        await conn.query("UPDATE menu_items SET stock=?, is_available=0 WHERE id=?", [newStock, it.menu_item_id]);
+        outOfStock.add(it.menu_item_id);
+      } else {
+        await conn.query("UPDATE menu_items SET stock=? WHERE id=?", [newStock, it.menu_item_id]);
+      }
+    }
   }
+  return Array.from(outOfStock);
 }
 
 async function getSuppliers(db) {

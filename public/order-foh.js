@@ -8,7 +8,7 @@
   const editTitle = document.getElementById('editTitle');
   const priceInput = document.getElementById('editPrice');
   const qtyInput = document.getElementById('editQty');
-  const edit86 = document.getElementById('edit86');
+  const eightySixBtn = document.getElementById('edit86Btn');
   const saveBtn = document.getElementById('editSave');
   let currentCard = null;
 
@@ -18,7 +18,7 @@
     if (nameEl) editTitle.textContent = `Edit ${nameEl.textContent}`;
     priceInput.value = card.dataset.price || '';
     qtyInput.value = card.dataset.qty || '';
-    edit86.checked = card.dataset.eightySix === 'true';
+    if (eightySixBtn) eightySixBtn.disabled = card.dataset.eightySix === 'true';
     editModal.show();
   }
 
@@ -39,16 +39,33 @@
     if (!currentCard) return;
     const price = parseFloat(priceInput.value) || 0;
     const qty = parseInt(qtyInput.value, 10) || 0;
-    const is86 = edit86.checked;
     currentCard.dataset.price = price.toFixed(2);
     currentCard.dataset.qty = qty;
-    currentCard.dataset.eightySix = is86 ? 'true' : 'false';
     const id = currentCard.dataset.id;
     if (itemMap[id]) itemMap[id].price = price;
     refreshDisplay(currentCard);
     currentCard = null;
     editModal.hide();
   });
+
+  if (eightySixBtn) {
+    eightySixBtn.addEventListener('click', () => {
+      if (!currentCard) return;
+      const id = currentCard.dataset.id;
+      fetch(`/api/menu-items/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_available: 0 }),
+      })
+        .then(() => {
+          currentCard.dataset.eightySix = 'true';
+          refreshDisplay(currentCard);
+          currentCard = null;
+          editModal.hide();
+        })
+        .catch((err) => console.error('Failed to 86 item', err));
+    });
+  }
 
   function setupLongPress(card) {
     let timer = null;

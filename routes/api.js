@@ -74,8 +74,9 @@ module.exports = (db, io) => {
         );
       }
 
+      let outOfStock = [];
       try {
-        await logInventoryForOrder(conn, orderId, items);
+        outOfStock = await logInventoryForOrder(conn, orderId, items);
       } catch (err5) {
         logger.error("Inventory log error:", err5);
         await conn.rollback();
@@ -96,6 +97,7 @@ module.exports = (db, io) => {
       const [rows] = await conn.query(fetchSql, [orderId]);
       await conn.commit();
       backupDatabase(db);
+      if (outOfStock.length) io.emit("menuItemsUpdated");
 
       const stationMap = {};
       rows.forEach((r) => {
@@ -528,6 +530,9 @@ module.exports = (db, io) => {
         stock: stockVal !== undefined ? parseInt(stockVal, 10) : undefined,
         is_available: avail !== undefined ? (avail ? 1 : 0) : undefined,
       });
+      if ((stockVal !== undefined && parseInt(stockVal, 10) <= 0) || (avail !== undefined && !avail)) {
+        io.emit("menuItemsUpdated");
+      }
       res.json({ success: true });
     } catch (err) {
       logger.error("Error updating menu item:", err);

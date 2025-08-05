@@ -219,3 +219,10 @@ submitBtn.addEventListener("click", () => {
     });
 });
 renderCart();
+
+const socket = window.io ? io() : null;
+if (socket) {
+  socket.on('menuItemsUpdated', () => {
+    window.location.reload();
+  });
+}
