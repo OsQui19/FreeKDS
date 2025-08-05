@@ -27,11 +27,13 @@
         <option value="CATERING">CATERING</option>
       </select>
     </div>
-    <div class="view-toggle d-flex gap-2">
-      <a href="/order" class="btn btn-secondary btn-sm active" aria-current="page" aria-label="Customer View">Customer</a>
-      <a href="/foh/order" class="btn btn-secondary btn-sm" aria-label="FOH View">FOH</a>
-    </div>
-    <%- include('partials/nav-buttons') %>
+    <% if (typeof hasAccess === 'function' && hasAccess('order')) { %>
+      <div class="view-toggle d-flex gap-2">
+        <a href="/order" class="btn btn-secondary btn-sm active" aria-current="page" aria-label="Customer View">Customer</a>
+        <a href="/foh/order" class="btn btn-secondary btn-sm" aria-label="FOH View">FOH</a>
+      </div>
+      <%- include('partials/nav-buttons') %>
+    <% } %>
   </div>
   <nav id="categoryNav">
     <% categories.forEach(cat => { %>
