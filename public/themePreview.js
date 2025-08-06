@@ -83,6 +83,21 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   };
 
+  const swatchContainer = document.getElementById("color-suggestions");
+  if (swatchContainer) {
+    swatchContainer.addEventListener("click", (e) => {
+      const swatch = e.target.closest("[data-color]");
+      if (!swatch) return;
+      const targetId = swatch.dataset.target;
+      const input = document.getElementById(targetId);
+      if (input) {
+        input.value = swatch.dataset.color;
+        saveToStorage();
+        update();
+      }
+    });
+  }
+
   form.addEventListener("input", () => {
     saveToStorage();
     update();

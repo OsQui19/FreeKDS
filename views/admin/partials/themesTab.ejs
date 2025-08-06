@@ -28,6 +28,7 @@
       <label for="theme-primary-color" class="col-sm-4 col-form-label">Primary Color:</label>
       <div class="col-sm-8">
         <input id="theme-primary-color" class="form-control" type="color" name="theme_primary_color" value="<%= settings.theme_primary_color || '#3366cc' %>">
+        <div id="color-suggestions" class="d-flex gap-2 mt-2"></div>
       </div>
     </div>
     <div class="row mb-3">
@@ -129,6 +130,8 @@
     </div>
   </div>
   </div>
+<script defer src="/vendor/tinycolor2/tinycolor-min.js"></script>
+<script defer src="/colorPalette.js"></script>
 <script defer src="/themeToggle.js"></script>
 <script defer src="/themePreview.js"></script>
 </div>
