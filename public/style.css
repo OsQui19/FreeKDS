@@ -54,6 +54,10 @@ body.station-screen {
 .brand-name {
   color: var(--primary-color);
 }
+
+.brand-logo {
+  max-height: 40px;
+}
 .top-bar .btn {
   padding: 6px 12px;
   font-size: 0.9rem;

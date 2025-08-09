@@ -32,4 +32,19 @@ describe('validateSettings', () => {
     expect(errors).to.include('ticket_layout');
     expect(errors).to.include('button_radius');
   });
+
+  it('accepts valid brand_logo URLs', () => {
+    const url = 'https://example.com/logo.png'\;
+    const { settings, errors } = validateSettings({ brand_logo: url });
+    expect(errors).to.have.lengthOf(0);
+    expect(settings.brand_logo).to.equal(url);
+  });
+
+  it('rejects invalid brand_logo values', () => {
+    const bad = validateSettings({ brand_logo: 'ftp://example.com/logo.png' });
+    expect(bad.errors).to.include('brand_logo');
+    const longUrl = 'http://example.com/' + 'a'.repeat(200);
+    const long = validateSettings({ brand_logo: longUrl });
+    expect(long.errors).to.include('brand_logo');
+  });
 });
