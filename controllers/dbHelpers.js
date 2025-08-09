@@ -67,15 +67,10 @@ async function updateMenuItem(db, itemId, fields) {
       sets.push("price=?");
       params.push(fields.price);
     }
-    if (fields.stock !== undefined) {
-      const stockVal = parseInt(fields.stock, 10);
-      sets.push("stock=?");
-      params.push(stockVal);
-      if (stockVal <= 0 && fields.is_available === undefined) {
-        sets.push("is_available=0");
-      }
-    } else if (fields.stock_count !== undefined) {
-      const stockVal = parseInt(fields.stock_count, 10);
+    const rawStock =
+      fields.stock ?? fields.stock_count ?? fields.available_qty;
+    if (rawStock !== undefined) {
+      const stockVal = parseInt(rawStock, 10);
       sets.push("stock=?");
       params.push(stockVal);
       if (stockVal <= 0 && fields.is_available === undefined) {

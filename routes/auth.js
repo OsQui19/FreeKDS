@@ -78,10 +78,14 @@ module.exports = (db, io) => {
     const { pin } = req.body;
     if (!pin) return res.redirect('/clock');
     try {
-      const [rows] = await db.promise().query('SELECT * FROM employees');
+      const [rows] = await db
+        .promise()
+        .query(
+          'SELECT id, username, role, pin_hash FROM employees WHERE pin_hash IS NOT NULL',
+        );
       let employee = null;
       for (const r of rows) {
-        if (r.pin_hash && (await bcrypt.compare(pin, r.pin_hash))) {
+        if (await bcrypt.compare(pin, r.pin_hash)) {
           employee = r;
           break;
         }

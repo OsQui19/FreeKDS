@@ -3,9 +3,16 @@ function formatDateTime(dt) {
   return dt.toISOString().slice(0, 19).replace('T', ' ');
 }
 
-async function fetchSalesTotals(db, start, end) {
+function parseDateRange(start, end) {
   const endDate = end ? new Date(end) : new Date();
-  const startDate = start ? new Date(start) : new Date(endDate.getTime() - 29 * 86400000);
+  const startDate = start
+    ? new Date(start)
+    : new Date(endDate.getTime() - 29 * 86400000);
+  return { startDate, endDate };
+}
+
+async function fetchSalesTotals(db, start, end) {
+  const { startDate, endDate } = parseDateRange(start, end);
   const salesSql = `SELECT DATE(o.created_at) AS date, SUM(mi.price * oi.quantity) AS total
                     FROM orders o
                     JOIN order_items oi ON o.id = oi.order_id
@@ -40,8 +47,7 @@ async function fetchSalesTotals(db, start, end) {
 }
 
 async function fetchIngredientUsage(db, start, end) {
-  const endDate = end ? new Date(end) : new Date();
-  const startDate = start ? new Date(start) : new Date(endDate.getTime() - 29 * 86400000);
+  const { startDate, endDate } = parseDateRange(start, end);
   const sql = `SELECT ing.name, SUM(l.amount) AS total
                FROM inventory_log l
                JOIN ingredients ing ON l.ingredient_id = ing.id
@@ -56,8 +62,7 @@ async function fetchIngredientUsage(db, start, end) {
 }
 
 async function fetchTopMenuItems(db, start, end, limit = 10) {
-  const endDate = end ? new Date(end) : new Date();
-  const startDate = start ? new Date(start) : new Date(endDate.getTime() - 29 * 86400000);
+  const { startDate, endDate } = parseDateRange(start, end);
   const sql = `SELECT mi.name, SUM(oi.quantity) AS qty,
                       SUM(mi.price * oi.quantity) AS revenue
                  FROM orders o
@@ -78,8 +83,7 @@ async function fetchTopMenuItems(db, start, end, limit = 10) {
 }
 
 async function fetchCategorySales(db, start, end) {
-  const endDate = end ? new Date(end) : new Date();
-  const startDate = start ? new Date(start) : new Date(endDate.getTime() - 29 * 86400000);
+  const { startDate, endDate } = parseDateRange(start, end);
   const sql = `SELECT c.name, SUM(mi.price * oi.quantity) AS total
                  FROM orders o
                  JOIN order_items oi ON o.id = oi.order_id
@@ -109,8 +113,7 @@ async function fetchLowStockIngredients(db, threshold = 5) {
 }
 
 async function fetchAverageBumpTimes(db, start, end) {
-  const endDate = end ? new Date(end) : new Date();
-  const startDate = start ? new Date(start) : new Date(endDate.getTime() - 29 * 86400000);
+  const { startDate, endDate } = parseDateRange(start, end);
   const sql = `SELECT s.id AS station_id, s.name,
                       AVG(TIMESTAMPDIFF(SECOND, o.created_at, bo.bumped_at)) AS avg_seconds
                  FROM bumped_orders bo
