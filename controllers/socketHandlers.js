@@ -1,6 +1,5 @@
 const logger = require('../utils/logger');
 module.exports = function (io, db) {
-  const stationTypes = {};
   io.on("connection", (socket) => {
     const registerStation = (stationId) => {
       socket.stationId = parseInt(stationId, 10);
@@ -16,7 +15,6 @@ module.exports = function (io, db) {
             } else {
               socket.stationType = rows[0].type;
             }
-            stationTypes[socket.stationId] = socket.stationType;
             socket.join(`station-${socket.stationId}`);
             if (socket.stationType === "expo") socket.join("expo");
             logger.info(
