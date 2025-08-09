@@ -1,0 +1,29 @@
+
+/* public/order.additions.css */
+.brand-logo { max-height: 50px; width: auto; }
+
+@media (max-width: 768px) {
+  #categoryNav {
+    overflow-x: auto;
+    white-space: nowrap;
+    padding-bottom: .25rem;
+  }
+  #categoryNav a { flex: 0 0 auto; }
+}
+
+@media (max-width: 767px) {
+  #cart {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: var(--bg-color, #fff);
+    z-index: 1050;
+    padding: 1rem;
+    overflow-y: auto;
+  }
+  #cart.open { display: block; }
+  #cart .btn-close {
+    position: absolute;
+    top: .5rem; right: .5rem;
+  }
+}

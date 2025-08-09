@@ -1,0 +1,33 @@
+<!-- adminLayout.ejs — optional wrapper for admin pages
+     Uses your existing header.ejs and sidenav.ejs. Drop-in:
+     res.render('adminLayout', { content: htmlString, ...locals })
+-->
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title><%= typeof pageTitle !== 'undefined' ? pageTitle + ' · ' : '' %>Admin</title>
+
+    <link href="/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="/base.css">
+    <link rel="stylesheet" href="/bootstrap-vars.css">
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/admin.css"><!-- this file -->
+    <%- include('../partials/theme-vars') %>
+  </head>
+  <body class="admin-screen">
+    <!-- Your header + sidenav partials -->
+    <%- include('header') %>
+    <%- include('sidenav', { allowedModules }) %>
+
+    <!-- Page content -->
+    <main class="container admin-container">
+      <%- typeof content !== 'undefined' ? content : '' %>
+    </main>
+
+    <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script defer src="/adminNav.js"></script>
+  </body>
+</html>
