@@ -15,7 +15,7 @@ const accessControl = require("../controllers/accessControl");
 module.exports = (db, io) => {
   const router = express.Router();
 
-  router.post("/api/orders", async (req, res) => {
+  router.post("/api/orders", async (req, res, next) => {
     const { order_number, order_type, items, special_instructions, allergy } =
       req.body;
     if (!Array.isArray(items) || items.length === 0) {
@@ -80,7 +80,7 @@ module.exports = (db, io) => {
         logger.error("Inventory log error:", err5);
         await conn.rollback();
         conn.release();
-        return res.status(500).send("DB Error");
+        return next(err5);
       }
 
       const fetchSql = `SELECT oi.id AS order_item_id, oi.quantity, mi.name, mi.station_id,
@@ -145,63 +145,64 @@ module.exports = (db, io) => {
     } catch (err) {
       if (conn) await conn.rollback();
       logger.error("Error inserting order:", err);
-      res.status(500).send("DB Error");
+      next(err);
     } finally {
       if (conn) conn.release();
     }
   });
-
-  router.get("/api/bumped_orders", (req, res) => {
-    const stationId = parseInt(req.query.station_id, 10);
-    const limit = parseInt(req.query.limit, 10) || 20;
-    if (isNaN(stationId))
-      return res.status(400).json({ error: "station_id required" });
-    getBumpedOrders(
-      db,
-      stationId,
-      (err, orders) => {
-        if (err) {
-          logger.error("Error fetching bumped orders:", err);
-          return res.status(500).send("DB Error");
-        }
-        res.json({ orders });
-      },
-      limit,
-    );
+  router.get("/api/bumped_orders", async (req, res, next) => {
+    try {
+      const stationId = parseInt(req.query.station_id, 10);
+      const limit = parseInt(req.query.limit, 10) || 20;
+      if (isNaN(stationId))
+        return res.status(400).json({ error: "station_id required" });
+      const orders = await new Promise((resolve, reject) =>
+        getBumpedOrders(
+          db,
+          stationId,
+          (err, o) => (err ? reject(err) : resolve(o)),
+          limit,
+        ),
+      );
+      res.json({ orders });
+    } catch (err) {
+      logger.error("Error fetching bumped orders:", err);
+      next(err);
+    }
   });
 
-  router.get("/api/recipe", (req, res) => {
-    const id = req.query.id;
-    const name = req.query.name;
-    if (!id && !name) return res.json({ recipe: null });
-    const sql = id
-      ? "SELECT recipe FROM menu_items WHERE id=? LIMIT 1"
-      : "SELECT recipe FROM menu_items WHERE name=? LIMIT 1";
-    const param = id ? id : name;
-    db.query(sql, [param], (err, rows) => {
-      if (err) {
-        logger.error("Error fetching recipe:", err);
-        return res.status(500).send("DB Error");
-      }
+  router.get("/api/recipe", async (req, res, next) => {
+    try {
+      const id = req.query.id;
+      const name = req.query.name;
+      if (!id && !name) return res.json({ recipe: null });
+      const sql = id
+        ? "SELECT recipe FROM menu_items WHERE id=? LIMIT 1"
+        : "SELECT recipe FROM menu_items WHERE name=? LIMIT 1";
+      const param = id ? id : name;
+      const [rows] = await db.promise().query(sql, [param]);
       if (rows.length) {
         res.json({ recipe: rows[0].recipe });
       } else {
         res.json({ recipe: null });
       }
-    });
+    } catch (err) {
+      logger.error("Error fetching recipe:", err);
+      next(err);
+    }
   });
 
-  router.get("/api/units", async (req, res) => {
+  router.get("/api/units", async (req, res, next) => {
     try {
       const units = await getUnits(db);
       res.json({ units });
     } catch (err) {
       logger.error("Error fetching units:", err);
-      res.status(500).send("DB Error");
+      next(err);
     }
   });
 
-  router.post("/api/units", async (req, res) => {
+  router.post("/api/units", async (req, res, next) => {
     const { name, abbreviation, type, to_base } = req.body;
     const toBase = parseFloat(to_base);
     if (!name || !abbreviation || !type || isNaN(toBase)) {
@@ -218,11 +219,11 @@ module.exports = (db, io) => {
       res.json({ success: true, id });
     } catch (err) {
       logger.error("Error inserting unit:", err);
-      res.status(500).send("DB Error");
+      next(err);
     }
   });
 
-  router.get("/api/employees", async (req, res) => {
+  router.get("/api/employees", async (req, res, next) => {
     try {
       const [empRows] = await db
         .promise()
@@ -247,7 +248,7 @@ module.exports = (db, io) => {
       res.json({ employees });
     } catch (err) {
       logger.error("Error fetching employees:", err);
-      res.status(500).send("DB Error");
+      next(err);
     }
   });
 
@@ -257,7 +258,7 @@ module.exports = (db, io) => {
     saveHierarchy,
   } = require("../controllers/accessControl");
 
-  router.post("/api/employees", async (req, res) => {
+  router.post("/api/employees", async (req, res, next) => {
     const topRole = getHierarchy().slice(-1)[0];
     if (!req.session.user || !hasLevel(req.session.user.role, topRole)) {
       return res.status(403).send("Forbidden");
@@ -337,11 +338,11 @@ module.exports = (db, io) => {
       res.json({ success: true });
     } catch (err) {
       logger.error("Error saving employees:", err);
-      res.status(500).send("DB Error");
+      next(err);
     }
   });
 
-  router.get("/api/schedule", async (req, res) => {
+  router.get("/api/schedule", async (req, res, next) => {
     try {
       let [rows] = await db
         .promise()
@@ -391,11 +392,11 @@ module.exports = (db, io) => {
       res.json({ schedule: rows });
     } catch (err) {
       logger.error("Error fetching schedule:", err);
-      res.status(500).send("DB Error");
+      next(err);
     }
   });
 
-  router.post("/api/schedule", async (req, res) => {
+  router.post("/api/schedule", async (req, res, next) => {
     if (!Array.isArray(req.body.schedule))
       return res.status(400).send("Invalid data");
 
@@ -455,23 +456,22 @@ module.exports = (db, io) => {
     } catch (err) {
       if (conn) await conn.rollback();
       logger.error("Error saving schedule:", err);
-      res.status(500).send("DB Error");
+      next(err);
     } finally {
       if (conn) conn.release();
     }
   });
-
-  router.get("/api/hierarchy", async (req, res) => {
+  router.get("/api/hierarchy", async (req, res, next) => {
     try {
       const roles = getHierarchy();
       res.json({ hierarchy: roles });
     } catch (err) {
       logger.error("Error fetching hierarchy:", err);
-      res.status(500).send("DB Error");
+      next(err);
     }
   });
 
-  router.post("/api/hierarchy", async (req, res) => {
+  router.post("/api/hierarchy", async (req, res, next) => {
     const roles = Array.isArray(req.body.hierarchy) ? req.body.hierarchy : null;
     if (!roles) return res.status(400).send("Invalid data");
     const topRole = getHierarchy().slice(-1)[0];
@@ -485,17 +485,17 @@ module.exports = (db, io) => {
       res.json({ success: true });
     } catch (err) {
       logger.error("Error saving hierarchy:", err);
-      res.status(500).send("DB Error");
+      next(err);
     }
   });
 
-  router.get("/api/permissions", async (req, res) => {
+  router.get("/api/permissions", async (req, res, next) => {
     try {
       const perms = accessControl.getPermissions();
       res.json({ permissions: perms });
     } catch (err) {
       logger.error("Error fetching permissions:", err);
-      res.status(500).send("DB Error");
+      next(err);
     }
   });
 
@@ -506,7 +506,7 @@ module.exports = (db, io) => {
     });
   });
 
-  router.put("/api/menu-items/:id", async (req, res) => {
+  router.put("/api/menu-items/:id", async (req, res, next) => {
     if (!req.session.user) return res.status(401).send("Unauthorized");
     const role = req.session.user.role;
     const canEditMenu = accessControl.roleHasAccess(role, "menu");
@@ -546,11 +546,11 @@ module.exports = (db, io) => {
       res.json({ success: true });
     } catch (err) {
       logger.error("Error updating menu item:", err);
-      res.status(500).send("DB Error");
+      next(err);
     }
   });
 
-  router.get("/api/time-clock", async (req, res) => {
+  router.get("/api/time-clock", async (req, res, next) => {
     try {
       const [rows] = await db
         .promise()
@@ -560,11 +560,11 @@ module.exports = (db, io) => {
       res.json({ records: rows });
     } catch (err) {
       logger.error("Error fetching time clock:", err);
-      res.status(500).send("DB Error");
+      next(err);
     }
   });
 
-  router.put("/api/time-clock/:id", async (req, res) => {
+  router.put("/api/time-clock/:id", async (req, res, next) => {
     const id = parseInt(req.params.id, 10);
     if (!id) return res.status(400).send("Invalid id");
     const start = new Date(req.body.clock_in);
@@ -595,11 +595,11 @@ module.exports = (db, io) => {
       res.json({ success: true, record: rows[0] || null });
     } catch (err) {
       logger.error("Error updating time clock:", err);
-      res.status(500).send("DB Error");
+      next(err);
     }
   });
 
-  router.get("/api/payroll", async (req, res) => {
+  router.get("/api/payroll", async (req, res, next) => {
     try {
       const [rows] = await db.promise().query(
         `SELECT e.username AS name,
@@ -613,11 +613,11 @@ module.exports = (db, io) => {
       res.json({ payroll: rows });
     } catch (err) {
       logger.error("Error fetching payroll data:", err);
-      res.status(500).send("DB Error");
+      next(err);
     }
   });
 
-  router.post("/api/permissions", async (req, res) => {
+  router.post("/api/permissions", async (req, res, next) => {
     if (!req.body.permissions || typeof req.body.permissions !== "object")
       return res.status(400).send("Invalid data");
     const topRole = getHierarchy().slice(-1)[0];
@@ -633,7 +633,7 @@ module.exports = (db, io) => {
       res.json({ success: true });
     } catch (err) {
       logger.error("Error saving permissions:", err);
-      res.status(500).send("DB Error");
+      next(err);
     }
   });
 
