@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="/bootstrap-vars.css">
   <link rel="stylesheet" href="/style.css">
   <link rel="stylesheet" href="/order.css">
+  <link rel="stylesheet" href="/public/css/personalize.css<%= typeof cacheBust !== 'undefined' ? ('?v=' + cacheBust) : '' %>">
   <%- include('partials/theme-vars') %>
 </head>
 <body class="menu-layout-<%= settings.menu_layout === 'list' ? 'list' : 'grid' %>">
@@ -102,6 +103,50 @@
       <div class="toast-body" id="orderToastBody"></div>
     </div>
   </div>
+<!-- floating toggle (admin/management only) -->
+<% if (user && user.role === 'management') { %>
+  <button id="personalizeToggle" class="btn btn-primary" type="button" aria-controls="personalizePanel" aria-expanded="false">
+    Personalize
+  </button>
+
+  <!-- Side Panel -->
+  <aside id="personalizePanel" class="personalize-panel" aria-hidden="true">
+    <header class="personalize-header">
+      <h2 class="h6 m-0">Personalize Display</h2>
+      <button type="button" class="btn btn-sm btn-outline-secondary" id="personalizeClose" aria-label="Close">✕</button>
+    </header>
+
+    <div class="personalize-body">
+      <label class="form-label">Density</label>
+      <select id="uiDensity" class="form-select">
+        <option value="comfortable">Comfortable</option>
+        <option value="compact">Compact</option>
+      </select>
+
+      <label class="form-label mt-3">Font size</label>
+      <select id="uiFontSize" class="form-select">
+        <option value="base">Base</option>
+        <option value="lg">Large</option>
+        <option value="xl">XL</option>
+      </select>
+
+      <div class="form-check mt-3">
+        <input class="form-check-input" type="checkbox" id="showTimers" checked>
+        <label class="form-check-label" for="showTimers">Show ticket timers</label>
+      </div>
+
+      <div class="form-check mt-2">
+        <input class="form-check-input" type="checkbox" id="soundAlerts" checked>
+        <label class="form-check-label" for="soundAlerts">Enable sound alerts</label>
+      </div>
+    </div>
+
+    <div class="personalize-actions">
+      <button class="btn btn-secondary" id="personalizeReset" type="button">Reset</button>
+      <button class="btn btn-primary" id="personalizeSave" type="button">Save</button>
+    </div>
+  </aside>
+<% } %>
   <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
   <script src="/socket.io/socket.io.js"></script>
   <script defer src="/order.js" data-table="<%= table %>" data-categories='<%- JSON.stringify(categories) %>' data-mod-groups='<%- JSON.stringify(modGroups || []) %>'></script>
