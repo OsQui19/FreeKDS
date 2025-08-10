@@ -2,7 +2,8 @@ services:
   app:
     build: .
     ports:
-      - "${PORT:-3000}:3000"
+      - "${APP_HOST_PORT:-3000}:3000"
+    restart: unless-stopped
     environment:
       PORT: ${PORT:-3000}
       DB_HOST: mysql
@@ -13,15 +14,21 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"\]
+      interval: 30s
+      timeout: 10s
+      retries: 3
   mysql:
     image: mysql:8
+    restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
       MYSQL_DATABASE: ${DB_NAME:-kds_db}
       MYSQL_USER: ${DB_USER:-freekds}
       MYSQL_PASSWORD: ${DB_PASSWORD:-yourpassword}
     ports:
-      - "${DB_PORT:-3306}:3306"
+      - "${DB_HOST_PORT:-3306}:3306"
     volumes:
       - db_data:/var/lib/mysql
       - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro

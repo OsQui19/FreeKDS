@@ -64,6 +64,7 @@ function createApp(db, io) {
       '/order.js',
       '/order.css',
       '/bootstrap-vars.css',
+      '/health',
     ];
     if (
       req.session.user ||
@@ -104,6 +105,9 @@ function createApp(db, io) {
   app.use(adminRoutes);
   app.use(stationRoutes);
   app.use(apiRoutes);
+  app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'ok' });
+  });
   app.get('/', (req, res) => {
     if (!req.session.user) return res.redirect('/clock');
     res.render('home');
