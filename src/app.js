@@ -114,7 +114,12 @@ function createApp(db, io) {
   });
   app.use((err, req, res, next) => {
     logger.error('Unhandled application error', err);
-    res.status(500).send('Internal Server Error');
+    if (res.headersSent) return next(err);
+    if (typeof res.status === 'function') {
+      res.status(500).send('Internal Server Error');
+    } else {
+      res.writeHead(500).end('Internal Server Error');
+    }
   });
   return app;
 }
