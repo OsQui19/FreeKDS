@@ -24,6 +24,7 @@ COPY --chown=node:node views ./views
 COPY --chown=node:node public ./public
 COPY --chown=node:node migrations ./migrations
 COPY --chown=node:node scripts ./scripts
+COPY --chown=node:node src ./src
 COPY --chown=node:node --from=builder /app/node_modules ./node_modules
 COPY --chown=node:node --from=builder /app/public/dist ./public/dist
 RUN chmod +x start.sh

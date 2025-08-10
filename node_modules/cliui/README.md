@@ -1,4 +1,6 @@
-# cliui
+# @isaacs/cliui
+
+Temporary fork of [cliui](http://npm.im/cliui).
 
 ![ci](https://github.com/yargs/cliui/workflows/ci/badge.svg)
 [![NPM version](https://img.shields.io/npm/v/cliui.svg)](https://www.npmjs.com/package/cliui)
