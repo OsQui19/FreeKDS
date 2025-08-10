@@ -11,10 +11,7 @@ const { backupDatabase } = require("../../controllers/dbBackup");
 const unitConversion = require("../../controllers/unitConversion");
 const bcrypt = require("bcrypt");
 const accessControl = require("../../controllers/accessControl");
-<<<<<<< ours
 const { pinLookup } = require("../../utils/pin");
-=======
->>>>>>> theirs
 
 module.exports = (db, io) => {
   const router = express.Router();

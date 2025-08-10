@@ -1,15 +1,65 @@
 const express = require("express");
 const logger = require("../../utils/logger");
-const backupsRoutes = require("./backups");
-const itemsRoutes = require("./inventory/items");
 const { exec } = require("child_process");
 const config = require("../../config");
+const accessControl = require("../../controllers/accessControl");
+const menuDb = require("../../controllers/db/menu");
+const inventoryDb = require("../../controllers/db/inventory");
+
+const backupsRoutes = require("./backups");
+const menuRoutes = require("./menu");
+const inventoryRoutes = require("./inventory");
 
 module.exports = (db, io) => {
   const router = express.Router();
 
   router.use("/", backupsRoutes(db));
-  router.use("/admin/ingredients", itemsRoutes(db));
+  router.use("/", menuRoutes(db));
+  router.use("/", inventoryRoutes(db));
+
+  router.get("/admin", async (req, res) => {
+    if (!req.session.user) {
+      return res.redirect("/login");
+    }
+    const allowedModules = accessControl.getRolePermissions(
+      req.session.user.role,
+    );
+    const viewData = { allowedModules, modules: accessControl.MODULE_GROUPS };
+    try {
+      if (allowedModules.includes("menu") || allowedModules.includes("stations")) {
+        const menuData = await menuDb.getMenuData(db);
+        Object.assign(viewData, menuData);
+      } else if (allowedModules.includes("stations")) {
+        const stations = await menuDb.getStations(db);
+        viewData.stations = stations;
+      }
+      if (allowedModules.includes("inventory")) {
+        const [units, itemCategories, tags, ingredients, suppliers, orders, locations] = await Promise.all([
+          inventoryDb.getUnits(db),
+          inventoryDb.getItemCategories(db),
+          inventoryDb.getTags(db),
+          inventoryDb.getIngredients(db),
+          inventoryDb.getSuppliers(db),
+          inventoryDb.getPurchaseOrders(db),
+          inventoryDb.getLocations(db),
+        ]);
+        Object.assign(viewData, {
+          units,
+          itemCategories,
+          tags,
+          ingredients,
+          suppliers,
+          orders,
+          locations,
+          summary: [],
+        });
+      }
+      res.render("admin/home", viewData);
+    } catch (err) {
+      logger.error("Error loading admin dashboard:", err);
+      res.status(500).send("Server Error");
+    }
+  });
 
   router.get("/admin/updates/latest", async (req, res) => {
     try {
