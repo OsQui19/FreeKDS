@@ -120,7 +120,7 @@ async function getMenuData(db) {
     modGroups,
     itemMods,
     itemGroups,
-    ingredients,
+    publicIngredients,
     itemIngs,
     units,
   ] = (await Promise.all(queries)).map((r) => r[0]);
@@ -207,7 +207,14 @@ async function getMenuData(db) {
     }
   });
 
-  return { categories, stations, mods, modGroups, ingredients, units };
+  return {
+    categories,
+    stations,
+    mods,
+    modGroups,
+    publicIngredients,
+    units,
+  };
 }
 
 async function getStations(db) {
