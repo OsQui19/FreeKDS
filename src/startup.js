@@ -21,12 +21,8 @@ async function startServer(server, db) {
   );
   await accessControl.ensureDefaults(db);
   await Promise.all([
-    new Promise((resolve, reject) =>
-      settingsCache.loadSettings(db, (e) => (e ? reject(e) : resolve()))
-    ),
-    new Promise((resolve, reject) =>
-      unitConversion.loadUnits(db, (e) => (e ? reject(e) : resolve()))
-    ),
+    settingsCache.loadSettings(db),
+    unitConversion.loadUnits(db),
     accessControl.loadHierarchy(db),
     accessControl.loadPermissions(db),
   ]);

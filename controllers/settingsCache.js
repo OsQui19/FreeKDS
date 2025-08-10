@@ -1,20 +1,23 @@
 const logger = require('../utils/logger');
+const { query } = require('../utils/db');
 let settings = {};
 
-function loadSettings(db, cb) {
-  db.query("SELECT setting_key, setting_value FROM settings", (err, rows) => {
-    if (err) {
-      logger.error("Error loading settings:", err);
-      if (cb) return cb(err);
-      return;
-    }
+async function loadSettings(db) {
+  try {
+    const [rows] = await query(
+      db,
+      'SELECT setting_key, setting_value FROM settings',
+    );
     const newSettings = {};
     rows.forEach((r) => {
       newSettings[r.setting_key] = r.setting_value;
     });
     settings = newSettings;
-    if (cb) cb(null, settings);
-  });
+    return settings;
+  } catch (err) {
+    logger.error('Error loading settings:', err);
+    throw err;
+  }
 }
 
 function getSettings() {

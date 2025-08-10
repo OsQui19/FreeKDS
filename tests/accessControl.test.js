@@ -7,20 +7,26 @@ const {
 } = require('../controllers/accessControl');
 
 describe('access control permissions', () => {
-  const dbStub = { query: (sql, params, cb) => { if (typeof cb === 'function') cb(null); } };
+  const dbStub = {
+    promise() {
+      return {
+        query: async () => [[], []],
+      };
+    },
+  };
 
-  beforeEach(() => {
-    saveHierarchy(dbStub, ['FOH', 'BOH', 'management']);
-    savePermissions(dbStub, {
+  beforeEach(async () => {
+    await saveHierarchy(dbStub, ['FOH', 'BOH', 'management']);
+    await savePermissions(dbStub, {
       management: ['menu', 'reports'],
       BOH: ['Stations', 'order'],
       FOH: ['order'],
     });
   });
 
-  after(() => {
-    saveHierarchy(dbStub, ['FOH', 'BOH', 'management']);
-    savePermissions(dbStub, {});
+  after(async () => {
+    await saveHierarchy(dbStub, ['FOH', 'BOH', 'management']);
+    await savePermissions(dbStub, {});
   });
 
   it('aggregates permissions from lower roles', () => {

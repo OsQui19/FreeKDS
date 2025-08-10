@@ -1,5 +1,6 @@
 const express = require("express");
 const logger = require("../../utils/logger");
+const { query } = require("../../utils/db");
 const {
   updateItemModifiers,
   updateItemGroups,
@@ -128,13 +129,12 @@ module.exports = (db) => {
       }
       return res.redirect("/admin?tab=menu&msg=Ingredients+required");
     }
-    if (id) {
-      const updateSql = `UPDATE menu_items
+    try {
+      if (id) {
+        const updateSql = `UPDATE menu_items
                        SET name=?, price=?, station_id=?, category_id=?, image_url=?, recipe=?, is_available=?, stock=?
                        WHERE id=?`;
-      db.query(
-        updateSql,
-        [
+        await query(db, updateSql, [
           name,
           price,
           stationId,
@@ -144,66 +144,32 @@ module.exports = (db) => {
           isAvailable,
           stock,
           id,
-        ],
-        (err) => {
-          if (err) logger.error("Error updating item:", err);
-          updateItemIngredients(db, id, itemIngredients, (err2) => {
-            if (err2) {
-              logger.error("Error updating ingredients:", err2);
-            }
-            updateItemGroups(db, id, selectedGroups, (err3) => {
-              if (err3) {
-                logger.error("Error updating groups:", err3);
-              }
-              updateItemModifiers(db, id, selectedMods, (err4) => {
-                if (err4) {
-                  logger.error("Error updating modifiers:", err4);
-                }
-                return res.redirect("/admin?tab=menu&msg=Item+saved");
-              });
-            });
-          });
-        },
-      );
-    } else {
+        ]);
+        await updateItemIngredients(db, id, itemIngredients);
+        await updateItemGroups(db, id, selectedGroups);
+        await updateItemModifiers(db, id, selectedMods);
+        return res.redirect("/admin?tab=menu&msg=Item+saved");
+      }
       const insertSql =
         "INSERT INTO menu_items (name, price, station_id, category_id, image_url, recipe, is_available, stock) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-      db.query(
-        insertSql,
-        [
-          name,
-          price,
-          stationId,
-          categoryId,
-          imageUrl,
-          recipe,
-          isAvailable,
-          stock,
-        ],
-        (err, result) => {
-          if (err) {
-            logger.error("Error inserting item:", err);
-            return res.redirect("/admin?tab=menu");
-          }
-          const itemId = result.insertId;
-          updateItemIngredients(db, itemId, itemIngredients, (err2) => {
-            if (err2) {
-              logger.error("Error saving ingredients:", err2);
-            }
-            updateItemGroups(db, itemId, selectedGroups, (err3) => {
-              if (err3) {
-                logger.error("Error saving groups:", err3);
-              }
-              updateItemModifiers(db, itemId, selectedMods, (err4) => {
-                if (err4) {
-                  logger.error("Error saving modifiers:", err4);
-                }
-                return res.redirect("/admin?tab=menu&msg=Item+saved");
-              });
-            });
-          });
-        },
-      );
+      const [result] = await query(db, insertSql, [
+        name,
+        price,
+        stationId,
+        categoryId,
+        imageUrl,
+        recipe,
+        isAvailable,
+        stock,
+      ]);
+      const itemId = result.insertId;
+      await updateItemIngredients(db, itemId, itemIngredients);
+      await updateItemGroups(db, itemId, selectedGroups);
+      await updateItemModifiers(db, itemId, selectedMods);
+      return res.redirect("/admin?tab=menu&msg=Item+saved");
+    } catch (err) {
+      logger.error("Error saving item:", err);
+      return res.redirect("/admin?tab=menu");
     }
   });
 

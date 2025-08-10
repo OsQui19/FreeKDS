@@ -1,14 +1,14 @@
 const logger = require('../utils/logger');
+const { query } = require('../utils/db');
 const unitsById = {};
 const unitsByAbbr = {};
 
-function loadUnits(db, cb) {
-  db.query("SELECT id, abbreviation, type, to_base FROM units", (err, rows) => {
-    if (err) {
-      logger.error("Error loading units:", err);
-      if (cb) cb(err);
-      return;
-    }
+async function loadUnits(db) {
+  try {
+    const [rows] = await query(
+      db,
+      'SELECT id, abbreviation, type, to_base FROM units',
+    );
     const byId = {};
     const byAbbr = {};
     rows.forEach((r) => {
@@ -31,8 +31,10 @@ function loadUnits(db, cb) {
     Object.keys(byAbbr).forEach((k) => {
       unitsByAbbr[k] = byAbbr[k];
     });
-    if (cb) cb(null);
-  });
+  } catch (err) {
+    logger.error('Error loading units:', err);
+    throw err;
+  }
 }
 
 function convert(amount, fromId, toId) {

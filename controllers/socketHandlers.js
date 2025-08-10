@@ -1,32 +1,36 @@
 const logger = require('../utils/logger');
+const { query } = require('../utils/db');
 module.exports = function (io, db) {
   io.on("connection", (socket) => {
-    const registerStation = (stationId) => {
+    const registerStation = async (stationId) => {
       socket.stationId = parseInt(stationId, 10);
       if (isNaN(socket.stationId)) return;
-      db.query(
-        "SELECT type FROM stations WHERE id=?",
-        [socket.stationId],
-        (err, rows) => {
-          if (!err && rows.length) {
-            const type = (rows[0].type || "").trim().toLowerCase();
-            if (type === "expo" || type === "prep") {
-              socket.stationType = type;
-            } else {
-              socket.stationType = rows[0].type;
-            }
-            socket.join(`station-${socket.stationId}`);
-            if (socket.stationType === "expo") socket.join("expo");
-            logger.info(
-              "Registered station",
-              socket.stationId,
-              socket.stationType,
-            );
+      try {
+        const [rows] = await query(
+          db,
+          "SELECT type FROM stations WHERE id=?",
+          [socket.stationId],
+        );
+        if (rows.length) {
+          const type = (rows[0].type || "").trim().toLowerCase();
+          if (type === "expo" || type === "prep") {
+            socket.stationType = type;
           } else {
-            logger.info("Failed to register station", socket.stationId, err);
+            socket.stationType = rows[0].type;
           }
-        },
-      );
+          socket.join(`station-${socket.stationId}`);
+          if (socket.stationType === "expo") socket.join("expo");
+          logger.info(
+            "Registered station",
+            socket.stationId,
+            socket.stationType,
+          );
+        } else {
+          logger.info("Failed to register station", socket.stationId);
+        }
+      } catch (err) {
+        logger.info("Failed to register station", socket.stationId, err);
+      }
     };
 
     if (socket.handshake.query && socket.handshake.query.stationId) {
@@ -35,7 +39,7 @@ module.exports = function (io, db) {
 
     socket.on("register", registerStation);
 
-    socket.on("bumpOrder", ({ orderId }) => {
+    socket.on("bumpOrder", async ({ orderId }) => {
       if (!orderId) return;
       if (!socket.stationType) {
         logger.info("bumpOrder from unregistered socket", socket.stationId);
@@ -46,51 +50,52 @@ module.exports = function (io, db) {
         stationId: socket.stationId,
         type: socket.stationType,
       });
-      if (socket.stationType === "expo") {
-        db.query(
-          'UPDATE orders SET status="completed" WHERE id=?',
-          [orderId],
-          () => {},
-        );
-        db.query(
-          `INSERT INTO bumped_orders (order_id, station_id, order_number)
-                 SELECT id, ?, order_number FROM orders WHERE id=?
-                 ON DUPLICATE KEY UPDATE bumped_at=NOW(), order_number=VALUES(order_number)`,
-          [socket.stationId, orderId, orderId],
-          () => {},
-        );
-        io.emit("orderCompleted", { orderId });
-        io.emit("reportsUpdated");
-      } else {
-        db.query(
-          `INSERT INTO bumped_orders (order_id, station_id, order_number)
-                 SELECT id, ?, order_number FROM orders WHERE id=?
-                 ON DUPLICATE KEY UPDATE bumped_at=NOW(), order_number=VALUES(order_number)`,
-          [socket.stationId, orderId, orderId],
-          () => {},
-        );
-        io.to("expo").emit("stationDone", {
-          orderId,
-          stationId: socket.stationId,
-        });
+      try {
+        if (socket.stationType === "expo") {
+          await query(db, 'UPDATE orders SET status="completed" WHERE id=?', [orderId]);
+          await query(
+            db,
+            `INSERT INTO bumped_orders (order_id, station_id, order_number)
+                   SELECT id, ?, order_number FROM orders WHERE id=?
+                   ON DUPLICATE KEY UPDATE bumped_at=NOW(), order_number=VALUES(order_number)`,
+            [socket.stationId, orderId, orderId],
+          );
+          io.emit("orderCompleted", { orderId });
+          io.emit("reportsUpdated");
+        } else {
+          await query(
+            db,
+            `INSERT INTO bumped_orders (order_id, station_id, order_number)
+                   SELECT id, ?, order_number FROM orders WHERE id=?
+                   ON DUPLICATE KEY UPDATE bumped_at=NOW(), order_number=VALUES(order_number)`,
+            [socket.stationId, orderId, orderId],
+          );
+          io.to("expo").emit("stationDone", {
+            orderId,
+            stationId: socket.stationId,
+          });
+        }
+      } catch (err) {
+        logger.error("Error handling bumpOrder:", err);
       }
     });
 
-    socket.on("recallOrder", ({ orderId }) => {
+    socket.on("recallOrder", async ({ orderId }) => {
       if (!orderId) return;
-      db.query(
-        "DELETE FROM bumped_orders WHERE order_id=? AND station_id=?",
-        [orderId, socket.stationId],
-        () => {},
-      );
-      if (socket.stationType === "expo") {
-        db.query(
-          'UPDATE orders SET status="active" WHERE id=?',
-          [orderId],
-          () => {},
+      try {
+        await query(
+          db,
+          "DELETE FROM bumped_orders WHERE order_id=? AND station_id=?",
+          [orderId, socket.stationId],
         );
-        io.emit("reportsUpdated");
-        const fetchSql = `SELECT o.order_number, o.order_type, o.special_instructions, o.allergy, UNIX_TIMESTAMP(o.created_at) AS ts,
+        if (socket.stationType === "expo") {
+          await query(
+            db,
+            'UPDATE orders SET status="active" WHERE id=?',
+            [orderId],
+          );
+          io.emit("reportsUpdated");
+          const fetchSql = `SELECT o.order_number, o.order_type, o.special_instructions, o.allergy, UNIX_TIMESTAMP(o.created_at) AS ts,
                                oi.quantity, mi.name, mi.station_id, mi.id AS item_id,
                                oi.special_instructions AS item_instructions, oi.allergy AS item_allergy,
                                GROUP_CONCAT(m.name ORDER BY m.name SEPARATOR ', ') AS modifiers
@@ -102,11 +107,7 @@ module.exports = function (io, db) {
                         WHERE o.id=?
                         GROUP BY oi.id
                         ORDER BY oi.id`;
-        db.query(fetchSql, [orderId], (err, rows) => {
-          if (err) {
-            logger.error("Error fetching items for recall:", err);
-            return;
-          }
+          const [rows] = await query(db, fetchSql, [orderId]);
           if (rows.length === 0) return;
           const stationMap = {};
           rows.forEach((r) => {
@@ -154,31 +155,32 @@ module.exports = function (io, db) {
               allergy: !!r.item_allergy,
             })),
           });
-        });
-      } else {
-        io.to("expo").emit("stationUndo", {
-          orderId,
-          stationId: socket.stationId,
-        });
+        } else {
+          io.to("expo").emit("stationUndo", {
+            orderId,
+            stationId: socket.stationId,
+          });
+        }
+      } catch (err) {
+        logger.error("Error handling recallOrder:", err);
       }
     });
-    socket.on("markUrgent", ({ orderId }) => {
+    socket.on("markUrgent", async ({ orderId }) => {
       if (!orderId || socket.stationType !== "expo") return;
       const sql = `SELECT DISTINCT mi.station_id
                    FROM order_items oi
                    JOIN menu_items mi ON oi.menu_item_id = mi.id
                    WHERE oi.order_id=?`;
-      db.query(sql, [orderId], (err, rows) => {
-        if (err) {
-          logger.error("Error fetching stations for urgent:", err);
-          return;
-        }
+      try {
+        const [rows] = await query(db, sql, [orderId]);
         const stationIds = rows.map((r) => r.station_id);
         stationIds.forEach((id) => {
           io.to(`station-${id}`).emit("orderUrgent", { orderId });
         });
         io.to("expo").emit("orderUrgent", { orderId });
-      });
+      } catch (err) {
+        logger.error("Error fetching stations for urgent:", err);
+      }
     });
   });
 };

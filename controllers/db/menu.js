@@ -1,61 +1,47 @@
 const logger = require('../../utils/logger');
+const { query } = require('../../utils/db');
 
-function updateItemModifiers(db, itemId, modifierRows, callback) {
-  let rows = [];
-  if (Array.isArray(modifierRows)) {
-    rows = modifierRows;
+async function updateItemModifiers(db, itemId, modifierRows) {
+  const rows = Array.isArray(modifierRows) ? modifierRows : [];
+  try {
+    await query(db, 'DELETE FROM item_modifiers WHERE menu_item_id=?', [itemId]);
+    if (!rows.length) return;
+    const values = rows.map((m) => [
+      itemId,
+      m.modifier_id,
+      m.replaces_ingredient_id || null,
+    ]);
+    await query(
+      db,
+      'INSERT INTO item_modifiers (menu_item_id, modifier_id, replaces_ingredient_id) VALUES ?',
+      [values],
+    );
+  } catch (err) {
+    logger.error(err);
+    throw err;
   }
-  db.query(
-    "DELETE FROM item_modifiers WHERE menu_item_id=?",
-    [itemId],
-    (err) => {
-      if (err) {
-        logger.error(err);
-      }
-      if (rows.length === 0) return callback();
-      const values = rows.map((m) => [
-        itemId,
-        m.modifier_id,
-        m.replaces_ingredient_id || null,
-      ]);
-      db.query(
-        "INSERT INTO item_modifiers (menu_item_id, modifier_id, replaces_ingredient_id) VALUES ?",
-        [values],
-        (err2) => {
-          if (err2) {
-            logger.error(err2);
-          }
-          callback();
-        },
-      );
-    },
-  );
 }
 
-function updateItemGroups(db, itemId, groupIds, callback) {
+async function updateItemGroups(db, itemId, groupIds) {
   const rows = Array.isArray(groupIds)
     ? groupIds.filter((g) => g).map((g) => [itemId, g])
     : [];
-  db.query(
-    "DELETE FROM item_modifier_groups WHERE menu_item_id=?",
-    [itemId],
-    (err) => {
-      if (err) {
-        logger.error(err);
-      }
-      if (rows.length === 0) return callback && callback();
-      db.query(
-        "INSERT INTO item_modifier_groups (menu_item_id, group_id) VALUES ?",
-        [rows],
-        (err2) => {
-          if (err2) {
-            logger.error(err2);
-          }
-          if (callback) callback();
-        },
-      );
-    },
-  );
+  try {
+    await query(
+      db,
+      'DELETE FROM item_modifier_groups WHERE menu_item_id=?',
+      [itemId],
+    );
+    if (!rows.length) return;
+    await query(
+      db,
+      'INSERT INTO item_modifier_groups (menu_item_id, group_id) VALUES ?',
+      [rows],
+    );
+  } catch (err) {
+    logger.error(err);
+    throw err;
+  }
 }
 
 async function updateMenuItem(db, itemId, fields) {
@@ -83,7 +69,11 @@ async function updateMenuItem(db, itemId, fields) {
   if (!sets.length) return;
   params.push(itemId);
   try {
-    await db.promise().query(`UPDATE menu_items SET ${sets.join(', ')} WHERE id=?`, params);
+    await query(
+      db,
+      `UPDATE menu_items SET ${sets.join(', ')} WHERE id=?`,
+      params,
+    );
   } catch (err) {
     logger.error('Error updating menu item:', err);
     throw err;
@@ -92,33 +82,35 @@ async function updateMenuItem(db, itemId, fields) {
 
 async function getMenuData(db) {
   const queries = [
-    db.promise().query("SELECT * FROM categories ORDER BY sort_order, id"),
-    db.promise().query("SELECT * FROM stations ORDER BY name"),
-    db.promise().query(`SELECT i.id, i.name, i.price, i.recipe, i.image_url,
+    query(db, 'SELECT * FROM categories ORDER BY sort_order, id'),
+    query(db, 'SELECT * FROM stations ORDER BY name'),
+    query(db, `SELECT i.id, i.name, i.price, i.recipe, i.image_url,
                                i.station_id, i.category_id, i.sort_order,
                                i.is_available, i.stock,
                                s.name AS station_name
                         FROM menu_items i
                         JOIN stations s ON i.station_id = s.id
                         ORDER BY i.category_id, i.sort_order, i.id`),
-    db.promise().query(`SELECT m.*, ing.name AS ingredient_name
+    query(db, `SELECT m.*, ing.name AS ingredient_name
                         FROM modifiers m
                         LEFT JOIN ingredients ing ON m.ingredient_id = ing.id
                         ORDER BY m.name`),
-    db.promise().query("SELECT * FROM modifier_groups ORDER BY name"),
-    db.promise().query("SELECT * FROM item_modifiers"),
-    db.promise().query("SELECT * FROM item_modifier_groups"),
-    db.promise()
-      .query(`SELECT ing.id, ing.name, ing.quantity, ing.unit_id, u.abbreviation AS unit, ing.sku, ing.cost, ing.is_public
+    query(db, 'SELECT * FROM modifier_groups ORDER BY name'),
+    query(db, 'SELECT * FROM item_modifiers'),
+    query(db, 'SELECT * FROM item_modifier_groups'),
+    query(
+      db,
+      `SELECT ing.id, ing.name, ing.quantity, ing.unit_id, u.abbreviation AS unit, ing.sku, ing.cost, ing.is_public
                          FROM ingredients ing
                          LEFT JOIN units u ON ing.unit_id = u.id
                          WHERE ing.is_public=1
                          ORDER BY ing.name`),
-    db.promise()
-      .query(`SELECT ii.menu_item_id, ii.ingredient_id, ii.amount, ii.unit_id, u.abbreviation AS unit
+    query(
+      db,
+      `SELECT ii.menu_item_id, ii.ingredient_id, ii.amount, ii.unit_id, u.abbreviation AS unit
                          FROM item_ingredients ii
                          LEFT JOIN units u ON ii.unit_id = u.id`),
-    db.promise().query("SELECT * FROM units ORDER BY name"),
+    query(db, 'SELECT * FROM units ORDER BY name'),
   ];
   const [
     cats,
@@ -219,42 +211,37 @@ async function getMenuData(db) {
 }
 
 async function getStations(db) {
-  const [rows] = await db.promise().query('SELECT * FROM stations ORDER BY id');
+  const [rows] = await query(db, 'SELECT * FROM stations ORDER BY id');
   return rows;
 }
 
 async function getCategories(db) {
-  const [rows] = await db
-    .promise()
-    .query('SELECT * FROM categories ORDER BY sort_order, id');
+  const [rows] = await query(
+    db,
+    'SELECT * FROM categories ORDER BY sort_order, id',
+  );
   return rows;
 }
 
-function updateItemIngredients(db, itemId, ingList, callback) {
+async function updateItemIngredients(db, itemId, ingList) {
   let rows = [];
   if (Array.isArray(ingList)) {
     rows = ingList
       .filter((r) => r.ingredient_id && r.amount)
       .map((r) => [itemId, r.ingredient_id, r.amount, r.unit_id || null]);
   }
-  db.query(
-    'DELETE FROM item_ingredients WHERE menu_item_id=?',
-    [itemId],
-    (err) => {
-      if (err) {
-        logger.error(err);
-      }
-      if (rows.length === 0) return callback && callback();
-      db.query(
-        'INSERT INTO item_ingredients (menu_item_id, ingredient_id, amount, unit_id) VALUES ?',
-        [rows],
-        (err2) => {
-          if (err2) logger.error(err2);
-          if (callback) callback();
-        },
-      );
-    },
-  );
+  try {
+    await query(db, 'DELETE FROM item_ingredients WHERE menu_item_id=?', [itemId]);
+    if (!rows.length) return;
+    await query(
+      db,
+      'INSERT INTO item_ingredients (menu_item_id, ingredient_id, amount, unit_id) VALUES ?',
+      [rows],
+    );
+  } catch (err) {
+    logger.error(err);
+    throw err;
+  }
 }
 
 module.exports = {

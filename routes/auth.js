@@ -2,6 +2,7 @@ const logger = require('../utils/logger');
 const express = require('express');
 const bcrypt = require('bcrypt');
 const { logSecurityEvent } = require('../controllers/securityLog');
+const { pinLookup } = require('../utils/pin');
 const {
   normalizeRole,
   hasLevel,
@@ -78,19 +79,15 @@ module.exports = (db, io) => {
     const { pin } = req.body;
     if (!pin) return res.redirect('/clock');
     try {
+      const lookup = pinLookup(pin);
       const [rows] = await db
         .promise()
         .query(
-          'SELECT id, username, role, pin_hash FROM employees WHERE pin_hash IS NOT NULL',
+          'SELECT id, username, role, pin_hash FROM employees WHERE pin_lookup=?',
+          [lookup],
         );
-      let employee = null;
-      for (const r of rows) {
-        if (await bcrypt.compare(pin, r.pin_hash)) {
-          employee = r;
-          break;
-        }
-      }
-      if (!employee) {
+      const employee = rows[0];
+      if (!employee || !(await bcrypt.compare(pin, employee.pin_hash))) {
         await logSecurityEvent(db, 'clock', null, '/clock', false, req.ip);
         return res.redirect('/clock');
       }

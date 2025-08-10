@@ -1,4 +1,5 @@
 const logger = require('../utils/logger');
+const { query } = require('../utils/db');
 const { spawn } = require("child_process");
 const path = require("path");
 const fs = require("fs");
@@ -20,15 +21,17 @@ function isBackupRunning() {
   return backupRunning;
 }
 
-function logBackup(db, action, result, message) {
+async function logBackup(db, action, result, message) {
   if (!db) return;
-  db.query(
-    'INSERT INTO backup_log (action, result, message) VALUES (?, ?, ?)',
-    [action, result, message],
-    (err) => {
-      if (err) logger.error('Backup log error:', err);
-    },
-  );
+  try {
+    await query(
+      db,
+      'INSERT INTO backup_log (action, result, message) VALUES (?, ?, ?)',
+      [action, result, message],
+    );
+  } catch (err) {
+    logger.error('Backup log error:', err);
+  }
 }
 
 function setBackupDir(dir) {

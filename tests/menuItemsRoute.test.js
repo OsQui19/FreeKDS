@@ -22,7 +22,7 @@ function buildApp(role, db) {
 
 describe('PUT /api/menu-items/:id', () => {
   let db;
-  beforeEach(() => {
+  beforeEach(async () => {
     db = {
       query: (sql, params, cb) => {
         if (typeof params === 'function') cb = params;
@@ -32,7 +32,7 @@ describe('PUT /api/menu-items/:id', () => {
         query: async () => [[], []],
       }),
     };
-    accessControl.savePermissions(db, {
+    await accessControl.savePermissions(db, {
       management: accessControl.ALL_MODULES,
       FOH: ['order'],
     });

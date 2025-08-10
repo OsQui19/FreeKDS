@@ -1,16 +1,20 @@
-const logger = require("../utils/logger");
+const logger = require("../../utils/logger");
 const express = require("express");
-const { getBumpedOrders } = require("../controllers/db/orders");
+const { getBumpedOrders } = require("../../controllers/db/orders");
 const {
   logInventoryForOrder,
   insertUnit,
   getUnits,
-} = require("../controllers/db/inventory");
-const { updateMenuItem } = require("../controllers/db/menu");
-const { backupDatabase } = require("../controllers/dbBackup");
-const unitConversion = require("../controllers/unitConversion");
+} = require("../../controllers/db/inventory");
+const { updateMenuItem } = require("../../controllers/db/menu");
+const { backupDatabase } = require("../../controllers/dbBackup");
+const unitConversion = require("../../controllers/unitConversion");
 const bcrypt = require("bcrypt");
-const accessControl = require("../controllers/accessControl");
+const accessControl = require("../../controllers/accessControl");
+<<<<<<< ours
+const { pinLookup } = require("../../utils/pin");
+=======
+>>>>>>> theirs
 
 module.exports = (db, io) => {
   const router = express.Router();
@@ -323,9 +327,12 @@ module.exports = (db, io) => {
         }
         if (emp.pin) {
           cols.push("pin_hash");
+          cols.push("pin_lookup");
           const pinHash = await bcrypt.hash(emp.pin, 10);
           vals.push(pinHash);
+          vals.push(pinLookup(emp.pin));
           updates.push("pin_hash=VALUES(pin_hash)");
+          updates.push("pin_lookup=VALUES(pin_lookup)");
         }
         await db
           .promise()
@@ -479,9 +486,7 @@ module.exports = (db, io) => {
       return res.status(403).send("Forbidden");
     }
     try {
-      await new Promise((resolve, reject) =>
-        saveHierarchy(db, roles, (err) => (err ? reject(err) : resolve())),
-      );
+      await saveHierarchy(db, roles);
       res.json({ success: true });
     } catch (err) {
       logger.error("Error saving hierarchy:", err);
@@ -625,11 +630,7 @@ module.exports = (db, io) => {
       return res.status(403).send("Forbidden");
     }
     try {
-      await new Promise((resolve, reject) =>
-        accessControl.savePermissions(db, req.body.permissions, (err) =>
-          err ? reject(err) : resolve(),
-        ),
-      );
+      await accessControl.savePermissions(db, req.body.permissions);
       res.json({ success: true });
     } catch (err) {
       logger.error("Error saving permissions:", err);
