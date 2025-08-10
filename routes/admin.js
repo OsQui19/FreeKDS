@@ -1,4 +1,4 @@
-const logger = require('../utils/logger');
+const logger = require("../utils/logger");
 const express = require("express");
 const {
   updateItemModifiers,
@@ -17,6 +17,7 @@ const {
   getPurchaseOrderItems,
   receivePurchaseOrder,
 } = require("../controllers/dbHelpers");
+const { setBackupRetention } = require("../controllers/dbBackup");
 const {
   fetchSalesTotals,
   fetchIngredientUsage,
@@ -136,7 +137,6 @@ module.exports = (db, io) => {
         mods,
         modGroups,
         ingredients: publicIngredients,
-        units,
       } = await getMenuData(db);
       const stationRows = await getStations(db);
       const allIngredients = await getIngredients(db);
@@ -215,7 +215,9 @@ module.exports = (db, io) => {
         : null;
     const isAvailable =
       req.body.is_available !== undefined
-        ? parseInt(req.body.is_available, 10) ? 1 : 0
+        ? parseInt(req.body.is_available, 10)
+          ? 1
+          : 0
         : 1;
     const stock =
       req.body.stock !== undefined && req.body.stock !== ""
@@ -421,21 +423,21 @@ module.exports = (db, io) => {
                             stationId,
                           ]);
                         const stationName = rows[0] ? rows[0].name : "";
-                    return res.json({
-                      item: {
-                        id: newItemId,
-                        name,
-                        price,
-                        station_id: stationId,
-                        station_name: stationName,
-                        category_id: categoryId,
-                        recipe,
-                        image_url: imageUrl,
-                        is_available: isAvailable,
-                        stock,
-                        modifierNamesStr: "",
-                      },
-                    });
+                        return res.json({
+                          item: {
+                            id: newItemId,
+                            name,
+                            price,
+                            station_id: stationId,
+                            station_name: stationName,
+                            category_id: categoryId,
+                            recipe,
+                            image_url: imageUrl,
+                            is_available: isAvailable,
+                            stock,
+                            modifierNamesStr: "",
+                          },
+                        });
                       } catch (err2) {
                         logger.error("Error returning item json:", err2);
                         return res.status(500).json({ error: "DB Error" });
@@ -1324,9 +1326,7 @@ module.exports = (db, io) => {
     try {
       const commit = execSync("git rev-parse --short HEAD").toString().trim();
       const date = execSync("git log -1 --format=%cd").toString().trim();
-      const log = execSync(
-        "git log -5 --format=%h %s --date=short"
-      )
+      const log = execSync("git log -5 --format=%h %s --date=short")
         .toString()
         .trim()
         .split("\n");
@@ -1346,7 +1346,9 @@ module.exports = (db, io) => {
     }
     try {
       const url = `https://api.github.com/repos/${config.githubRepo}/releases/latest`;
-      const response = await fetch(url, { headers: { "User-Agent": "FreeKDS" } });
+      const response = await fetch(url, {
+        headers: { "User-Agent": "FreeKDS" },
+      });
       if (!response.ok) throw new Error(`Status ${response.status}`);
       const data = await response.json();
       releaseCache = {
@@ -1366,7 +1368,14 @@ module.exports = (db, io) => {
   router.post("/admin/updates/apply", async (req, res) => {
     const user = req.session.user;
     if (!user || !hasLevel(user.role, "management")) {
-      await logSecurityEvent(db, "update", user && user.id, req.originalUrl, false, req.ip);
+      await logSecurityEvent(
+        db,
+        "update",
+        user && user.id,
+        req.originalUrl,
+        false,
+        req.ip,
+      );
       return res.status(403).json({ error: "Forbidden" });
     }
     try {
@@ -1374,30 +1383,61 @@ module.exports = (db, io) => {
       try {
         const status = execSync("git status --porcelain").toString().trim();
         repoClean = status === "";
-      } catch (e) {
+      } catch (_e) {
         repoClean = false;
       }
       if (repoClean) {
         execSync("git pull --ff-only", { stdio: "ignore" });
-        await logSecurityEvent(db, "update", user.id, req.originalUrl, true, req.ip);
+        await logSecurityEvent(
+          db,
+          "update",
+          user.id,
+          req.originalUrl,
+          true,
+          req.ip,
+        );
         return res.json({ success: true });
       }
       if (!config.githubRepo) {
-        await logSecurityEvent(db, "update", user.id, req.originalUrl, false, req.ip);
+        await logSecurityEvent(
+          db,
+          "update",
+          user.id,
+          req.originalUrl,
+          false,
+          req.ip,
+        );
         return res.status(400).json({ error: "Dirty repository" });
       }
-      const relRes = await fetch(`https://api.github.com/repos/${config.githubRepo}/releases/latest`, { headers: { "User-Agent": "FreeKDS" } });
+      const relRes = await fetch(
+        `https://api.github.com/repos/${config.githubRepo}/releases/latest`,
+        { headers: { "User-Agent": "FreeKDS" } },
+      );
       if (!relRes.ok) throw new Error("release");
       const rel = await relRes.json();
       const zipUrl = rel.zipball_url;
       if (!zipUrl) throw new Error("archive");
       const fileRes = await fetch(zipUrl);
       if (!fileRes.ok) throw new Error("download");
-      await logSecurityEvent(db, "update", user.id, req.originalUrl, true, req.ip);
+      await logSecurityEvent(
+        db,
+        "update",
+        user.id,
+        req.originalUrl,
+        true,
+        req.ip,
+      );
       res.json({ success: true });
     } catch (err) {
       logger.error("Update apply failed:", err);
-      await logSecurityEvent(db, "update", user && user.id, req.originalUrl, false, req.ip);
+      await logSecurityEvent(
+        db,
+        "update",
+        user && user.id,
+        req.originalUrl,
+        false,
+        req.ip,
+      );
       res.status(500).json({ error: "Failed" });
     }
   });
@@ -1573,21 +1613,15 @@ module.exports = (db, io) => {
     const sqlGroups = "SELECT id, name FROM modifier_groups";
     const dbp = db.promise();
     try {
-      const [
-        cats,
-        [items],
-        [itemMods],
-        [itemGroups],
-        [mods],
-        [groups],
-      ] = await Promise.all([
-        getCategories(db),
-        dbp.query(sqlItems),
-        dbp.query(sqlItemMods),
-        dbp.query(sqlItemGroups),
-        dbp.query(sqlMods),
-        dbp.query(sqlGroups),
-      ]);
+      const [cats, [items], [itemMods], [itemGroups], [mods], [groups]] =
+        await Promise.all([
+          getCategories(db),
+          dbp.query(sqlItems),
+          dbp.query(sqlItemMods),
+          dbp.query(sqlItemGroups),
+          dbp.query(sqlMods),
+          dbp.query(sqlGroups),
+        ]);
 
       const modMap = {};
       mods.forEach((m) => {
@@ -1599,8 +1633,7 @@ module.exports = (db, io) => {
       });
       const itemGroupsMap = {};
       itemGroups.forEach((g) => {
-        if (!itemGroupsMap[g.menu_item_id])
-          itemGroupsMap[g.menu_item_id] = [];
+        if (!itemGroupsMap[g.menu_item_id]) itemGroupsMap[g.menu_item_id] = [];
         itemGroupsMap[g.menu_item_id].push(g.group_id);
       });
       const itemModsMap = {};
@@ -1610,8 +1643,7 @@ module.exports = (db, io) => {
           : null;
         const allowed = itemGroupsMap[im.menu_item_id] || [];
         if (grp && !allowed.includes(grp)) return;
-        if (!itemModsMap[im.menu_item_id])
-          itemModsMap[im.menu_item_id] = [];
+        if (!itemModsMap[im.menu_item_id]) itemModsMap[im.menu_item_id] = [];
         if (modMap[im.modifier_id])
           itemModsMap[im.menu_item_id].push(modMap[im.modifier_id]);
       });

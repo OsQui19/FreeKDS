@@ -1,5 +1,4 @@
-const logger = require('../utils/logger');
-const { backupDatabase } = require('../controllers/dbBackup');
+const { backupDatabase } = require("../controllers/dbBackup");
 
 backupDatabase((err) => {
   if (!err) return;

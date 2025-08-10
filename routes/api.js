@@ -1,7 +1,6 @@
-const logger = require('../utils/logger');
+const logger = require("../utils/logger");
 const express = require("express");
 const {
-  updateItemModifiers,
   getBumpedOrders,
   logInventoryForOrder,
   insertUnit,
@@ -534,10 +533,8 @@ module.exports = (db, io) => {
     }
     if (stock !== undefined) updateFields.stock = stock;
     if (stock_count !== undefined) updateFields.stock_count = stock_count;
-    if (available_qty !== undefined)
-      updateFields.available_qty = available_qty;
-    if (avail !== undefined)
-      updateFields.is_available = avail ? 1 : 0;
+    if (available_qty !== undefined) updateFields.available_qty = available_qty;
+    if (avail !== undefined) updateFields.is_available = avail ? 1 : 0;
     try {
       await updateMenuItem(db, id, updateFields);
       if (
@@ -572,14 +569,22 @@ module.exports = (db, io) => {
     if (!id) return res.status(400).send("Invalid id");
     const start = new Date(req.body.clock_in);
     const end = req.body.clock_out ? new Date(req.body.clock_out) : null;
-    if (!req.body.clock_in || Number.isNaN(start) || (req.body.clock_out && Number.isNaN(end))) {
+    if (
+      !req.body.clock_in ||
+      Number.isNaN(start) ||
+      (req.body.clock_out && Number.isNaN(end))
+    ) {
       return res.status(400).send("Invalid data");
     }
     if (end && end <= start) return res.status(400).send("Invalid range");
     try {
       await db
         .promise()
-        .query("UPDATE time_clock SET clock_in=?, clock_out=? WHERE id=?", [start, end, id]);
+        .query("UPDATE time_clock SET clock_in=?, clock_out=? WHERE id=?", [
+          start,
+          end,
+          id,
+        ]);
       const [rows] = await db
         .promise()
         .query(
@@ -596,17 +601,15 @@ module.exports = (db, io) => {
 
   router.get("/api/payroll", async (req, res) => {
     try {
-      const [rows] = await db
-        .promise()
-        .query(
-          `SELECT e.username AS name,
+      const [rows] = await db.promise().query(
+        `SELECT e.username AS name,
                   DATE_SUB(DATE(tc.clock_in), INTERVAL (DAYOFWEEK(tc.clock_in)+5)%7 DAY) AS period_start,
                   SUM(TIMESTAMPDIFF(MINUTE, tc.clock_in, COALESCE(tc.clock_out, NOW())))/60 AS hours
            FROM time_clock tc
            JOIN employees e ON tc.employee_id=e.id
            GROUP BY e.id, period_start
-           ORDER BY e.username, period_start`
-        );
+           ORDER BY e.username, period_start`,
+      );
       res.json({ payroll: rows });
     } catch (err) {
       logger.error("Error fetching payroll data:", err);
