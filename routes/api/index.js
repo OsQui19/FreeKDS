@@ -1,12 +1,12 @@
 const logger = require("../utils/logger");
 const express = require("express");
+const { getBumpedOrders } = require("../controllers/db/orders");
 const {
-  getBumpedOrders,
   logInventoryForOrder,
   insertUnit,
   getUnits,
-  updateMenuItem,
-} = require("../controllers/dbHelpers");
+} = require("../controllers/db/inventory");
+const { updateMenuItem } = require("../controllers/db/menu");
 const { backupDatabase } = require("../controllers/dbBackup");
 const unitConversion = require("../controllers/unitConversion");
 const bcrypt = require("bcrypt");
@@ -256,7 +256,7 @@ module.exports = (db, io) => {
     hasLevel,
     getHierarchy,
     saveHierarchy,
-  } = require("../controllers/accessControl");
+  } = require("../../controllers/accessControl");
 
   router.post("/api/employees", async (req, res, next) => {
     const topRole = getHierarchy().slice(-1)[0];

@@ -1,516 +1,433 @@
- (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
-diff --git a//dev/null b/routes/admin/index.js
-index 0000000000000000000000000000000000000000..1d52fc59b7d9670e7b06f8acf3cf337723ec18f0 100644
---- a//dev/null
-+++ b/routes/admin/index.js
-@@ -0,0 +1,507 @@
-+const express = require("express");
-+const logger = require("../../utils/logger");
-+const {
-+  getMenuData,
-+  getStations,
-+  getIngredients,
-+  getUnits,
-+  getItemCategories,
-+  getTags,
-+  getSuppliers,
-+  getLocations,
-+  getPurchaseOrders,
-+  getCategories,
-+} = require("../../controllers/dbHelpers");
-+const {
-+  fetchSalesTotals,
-+  fetchIngredientUsage,
-+  fetchTopMenuItems,
-+  fetchCategorySales,
-+  fetchLowStockIngredients,
-+  fetchAverageBumpTimes,
-+} = require("../../controllers/analytics");
-+const settingsCache = require("../../controllers/settingsCache");
-+const { logSecurityEvent } = require("../../controllers/securityLog");
-+const { validateSettings } = require("../../utils/validateSettings");
-+const { execSync } = require("child_process");
-+const config = require("../../config");
-+const RELEASE_CACHE_TTL = 60 * 60 * 1000; // 1 hour
-+let releaseCache = null;
-+let releaseCacheTime = 0;
-+
-+const menuRoutes = require("./menu");
-+const inventoryRoutes = require("./inventory");
-+const backupRoutes = require("./backups");
-+
-+module.exports = (db, io) => {
-+  const router = express.Router();
-+  const {
-+    hasLevel,
-+    getHierarchy,
-+    roleHasAccess,
-+    getRolePermissions,
-+    ALL_MODULES,
-+  } = require("../../controllers/accessControl");
-+
-+  router.use((req, res, next) => {
-+    if (!req.path.startsWith("/admin")) return next();
-+    if (req.session.pinOnly) {
-+      logSecurityEvent(
-+        db,
-+        "unauthorized",
-+        req.session.user && req.session.user.id,
-+        req.originalUrl,
-+        false,
-+        req.ip,
-+      );
-+      return res.status(403).send("Forbidden");
-+    }
-+    if (!req.session.user) return next();
-+    const role = req.session.user.role;
-+    const topRole = getHierarchy().slice(-1)[0];
-+    const map = {
-+      "/admin/stations": "stations",
-+      "/admin/menu": "menu",
-+      "/admin/theme": "theme",
-+      "/admin/inventory": "inventory",
-+      "/admin/suppliers": "inventory",
-+      "/admin/purchase-orders": "inventory",
-+      "/admin/reports": "reports",
-+      "/admin/locations": "locations",
-+      "/admin/backups": "backup",
-+      "/admin/updates": "updates",
-+    };
-+    const comp = Object.entries(map).find(([p]) => req.path.startsWith(p));
-+    if (comp) {
-+      const c = comp[1];
-+      if (!roleHasAccess(role, c)) {
-+        logSecurityEvent(
-+          db,
-+          "unauthorized",
-+          req.session.user.id,
-+          req.originalUrl,
-+          false,
-+          req.ip,
-+        );
-+        return res.status(403).send("Forbidden");
-+      }
-+    } else if (req.path === "/admin" || req.path === "/admin/") {
-+      const allowed = getRolePermissions(role);
-+      if (!allowed.length && !hasLevel(role, topRole)) {
-+        logSecurityEvent(
-+          db,
-+          "unauthorized",
-+          req.session.user.id,
-+          req.originalUrl,
-+          false,
-+          req.ip,
-+        );
-+        return res.status(403).send("Forbidden");
-+      }
-+    } else if (!hasLevel(role, topRole)) {
-+      logSecurityEvent(
-+        db,
-+        "unauthorized",
-+        req.session.user.id,
-+        req.originalUrl,
-+        false,
-+        req.ip,
-+      );
-+      return res.status(403).send("Forbidden");
-+    }
-+    next();
-+  });
-+
-+  router.use(menuRoutes(db));
-+  router.use(inventoryRoutes(db, io));
-+  router.use(backupRoutes(db));
-+
-+  router.get("/admin", async (req, res) => {
-+    try {
-+      const {
-+        categories,
-+        stations: menuStations,
-+        mods,
-+        modGroups,
-+        ingredients: publicIngredients,
-+        units,
-+      } = await getMenuData(db);
-+      const stationRows = await getStations(db);
-+      const allIngredients = await getIngredients(db);
-+      const itemCategories = await getItemCategories(db);
-+      const tags = await getTags(db);
-+      const unitRows = await getUnits(db);
-+      const [logRows] = await db
-+        .promise()
-+        .query(`SELECT l.*, mi.name AS item_name, ing.name AS ingredient_name, u.abbreviation AS unit
-+                                                FROM inventory_log l
-+                                                JOIN menu_items mi ON l.menu_item_id = mi.id
-+                                                JOIN ingredients ing ON l.ingredient_id = ing.id
-+                                                LEFT JOIN units u ON ing.unit_id = u.id
-+                                                ORDER BY l.id DESC LIMIT 100`);
-+      const [transactions] = await db
-+        .promise()
-+        .query(`SELECT t.*, ing.name AS ingredient_name, u.abbreviation AS unit
-+                                                      FROM inventory_transactions t
-+                                                      JOIN ingredients ing ON t.ingredient_id = ing.id
-+                                                      LEFT JOIN units u ON ing.unit_id = u.id
-+                                                      ORDER BY t.id DESC LIMIT 100`);
-+      const summarySql = `SELECT ing.id AS ingredient_id, ing.name, u.abbreviation AS unit, SUM(d.amount) AS total
-+                          FROM daily_usage_log d
-+                          JOIN ingredients ing ON d.ingredient_id = ing.id
-+                          LEFT JOIN units u ON ing.unit_id = u.id
-+                          GROUP BY ing.id
-+                          ORDER BY ing.name`;
-+      const [summary] = await db.promise().query(summarySql);
-+
-+      const suppliers = await getSuppliers(db);
-+      const locations = await getLocations(db);
-+      const orders = await getPurchaseOrders(db);
-+
-+      const settings = res.locals.settings || {};
-+      const allowedModules = getRolePermissions(req.session.user.role);
-+      res.render("admin/home", {
-+        stations: stationRows,
-+        categories,
-+        stationsMenu: menuStations,
-+        mods,
-+        modGroups,
-+        ingredients: allIngredients,
-+        itemCategories,
-+        tags,
-+        publicIngredients,
-+        logs: logRows,
-+        summary,
-+        transactions,
-+        units: unitRows,
-+        suppliers,
-+        locations,
-+        orders,
-+        settings,
-+        allowedModules,
-+        modules: ALL_MODULES,
-+      });
-+    } catch (err) {
-+      logger.error("Error fetching admin page data:", err);
-+      res.status(500).send("DB Error");
-+    }
-+  });
-+
-+  router.get("/admin/reports/data", async (req, res) => {
-+    try {
-+      const { start, end } = req.query;
-+      const sales = await fetchSalesTotals(db, start, end);
-+      const usage = await fetchIngredientUsage(db, start, end);
-+      const topItems = await fetchTopMenuItems(db, start, end);
-+      const categorySales = await fetchCategorySales(db, start, end);
-+      const lowStock = await fetchLowStockIngredients(db);
-+      const avgTimes = await fetchAverageBumpTimes(db, start, end);
-+      res.json({ sales, usage, topItems, categorySales, lowStock, avgTimes });
-+    } catch (err) {
-+      logger.error("Error fetching reports data:", err);
-+      res.status(500).json({ error: "DB Error" });
-+    }
-+  });
-+
-+  router.get("/admin/stations", (req, res) => {
-+    res.redirect("/admin?tab=stations");
-+  });
-+
-+  router.post("/admin/stations", (req, res) => {
-+    const wantsJSON =
-+      req.headers.accept && req.headers.accept.includes("application/json");
-+    const name = req.body.name;
-+    const type = req.body.type;
-+    let filter = req.body.order_type_filter;
-+    const bg = req.body.bg_color || null;
-+    const primary = req.body.primary_color || null;
-+    const font = req.body.font_family || null;
-+    if (filter === "") filter = null;
-+    const insert = () => {
-+      db.query(
-+        "INSERT INTO stations (name, type, order_type_filter, bg_color, primary_color, font_family) VALUES (?, ?, ?, ?, ?, ?)",
-+        [name, type, filter, bg, primary, font],
-+        async (err, result) => {
-+          if (err) {
-+            logger.error("Error inserting station:", err);
-+            if (wantsJSON) return res.status(500).json({ error: "DB Error" });
-+          }
-+          if (wantsJSON) {
-+            return res.json({
-+              station: {
-+                id: result.insertId,
-+                name,
-+                type,
-+                order_type_filter: filter,
-+                bg_color: bg,
-+                primary_color: primary,
-+                font_family: font,
-+              },
-+            });
-+          }
-+          res.redirect("/admin?tab=stations&msg=Station+saved");
-+        },
-+      );
-+    };
-+
-+    insert();
-+  });
-+
-+  router.post("/admin/stations/update", (req, res) => {
-+    const wantsJSON =
-+      req.headers.accept && req.headers.accept.includes("application/json");
-+    const id = req.body.id;
-+    const name = req.body.name;
-+    const type = req.body.type;
-+    let filter = req.body.order_type_filter;
-+    const bg = req.body.bg_color || null;
-+    const primary = req.body.primary_color || null;
-+    const font = req.body.font_family || null;
-+    if (!id) return res.redirect("/admin?tab=stations");
-+    if (filter === "") filter = null;
-+
-+    const update = () => {
-+      db.query(
-+        "UPDATE stations SET name=?, type=?, order_type_filter=?, bg_color=?, primary_color=?, font_family=? WHERE id=?",
-+        [name, type, filter, bg, primary, font, id],
-+        (err) => {
-+          if (err) {
-+            logger.error("Error updating station:", err);
-+            if (wantsJSON) return res.status(500).json({ error: "DB Error" });
-+          }
-+          if (wantsJSON) {
-+            return res.json({
-+              station: {
-+                id: parseInt(id, 10),
-+                name,
-+                type,
-+                order_type_filter: filter,
-+                bg_color: bg,
-+                primary_color: primary,
-+                font_family: font,
-+              },
-+            });
-+          }
-+          res.redirect("/admin?tab=stations&msg=Station+saved");
-+        },
-+      );
-+    };
-+
-+    update();
-+  });
-+
-+  router.post("/admin/stations/delete", (req, res) => {
-+    const id = req.body.id;
-+    if (!id) return res.redirect("/admin?tab=stations");
-+    db.query("DELETE FROM stations WHERE id=?", [id], (err) => {
-+      if (err) logger.error("Error deleting station:", err);
-+      res.redirect("/admin?tab=stations&msg=Station+deleted");
-+    });
-+  });
-+
-+  router.get("/admin/theme", (req, res) => {
-+    res.redirect("/admin?tab=theme");
-+  });
-+
-+  router.post("/admin/settings", (req, res) => {
-+    const { settings, errors } = validateSettings(req.body);
-+    if (errors.length) {
-+      return res.redirect("/admin?tab=theme&err=Invalid+settings");
-+    }
-+    const keys = Object.keys(settings);
-+    if (keys.length === 0) return res.redirect("/admin?tab=theme");
-+
-+    let remaining = keys.length;
-+    keys.forEach((key) => {
-+      const value = settings[key];
-+      const sql =
-+        "INSERT INTO settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)";
-+      db.query(sql, [key, value], (err) => {
-+        if (err) logger.error("Error saving setting:", err);
-+        if (--remaining === 0) {
-+          settingsCache.loadSettings(db);
-+          res.redirect("/admin?tab=theme&msg=Settings+saved");
-+        }
-+      });
-+    });
-+  });
-+
-+  router.get("/admin/updates", (req, res) => {
-+    res.redirect("/admin?tab=updates");
-+  });
-+
-+  router.get("/admin/updates/info", (req, res) => {
-+    try {
-+      const commit = execSync("git rev-parse --short HEAD").toString().trim();
-+      const date = execSync("git log -1 --format=%cd").toString().trim();
-+      const log = execSync("git log -5 --format=%h %s --date=short")
-+        .toString()
-+        .trim()
-+        .split("\n");
-+      res.json({ commit, date, log });
-+    } catch (err) {
-+      logger.error("Error reading git info:", err);
-+      res.status(500).json({ error: "Failed" });
-+    }
-+  });
-+
-+  router.get("/admin/updates/latest", async (req, res) => {
-+    if (!config.githubRepo) {
-+      return res.status(400).json({ error: "Repository not configured" });
-+    }
-+    if (releaseCache && Date.now() - releaseCacheTime < RELEASE_CACHE_TTL) {
-+      return res.json(releaseCache);
-+    }
-+    try {
-+      const url = `https://api.github.com/repos/${config.githubRepo}/releases/latest`;
-+      const response = await fetch(url, { headers: { "User-Agent": "FreeKDS" } });
-+      if (!response.ok) throw new Error(`Status ${response.status}`);
-+      const data = await response.json();
-+      releaseCache = {
-+        tag_name: data.tag_name,
-+        name: data.name,
-+        body: data.body,
-+        html_url: data.html_url,
-+      };
-+      releaseCacheTime = Date.now();
-+      res.json(releaseCache);
-+    } catch (err) {
-+      logger.error("Error fetching release info:", err);
-+      res.status(500).json({ error: "Failed" });
-+    }
-+  });
-+
-+  router.post("/admin/updates/apply", async (req, res) => {
-+    const user = req.session.user;
-+    if (!user || !hasLevel(user.role, "management")) {
-+      await logSecurityEvent(db, "update", user && user.id, req.originalUrl, false, req.ip);
-+      return res.status(403).json({ error: "Forbidden" });
-+    }
-+    try {
-+      let repoClean = false;
-+      try {
-+        const status = execSync("git status --porcelain").toString().trim();
-+        repoClean = status === "";
-+      } catch (e) {
-+        repoClean = false;
-+      }
-+      if (repoClean) {
-+        execSync("git pull --ff-only", { stdio: "ignore" });
-+        await logSecurityEvent(db, "update", user.id, req.originalUrl, true, req.ip);
-+        return res.json({ success: true });
-+      }
-+      if (!config.githubRepo) {
-+        await logSecurityEvent(db, "update", user.id, req.originalUrl, false, req.ip);
-+        return res.status(400).json({ error: "Dirty repository" });
-+      }
-+      const relRes = await fetch(`https://api.github.com/repos/${config.githubRepo}/releases/latest`, { headers: { "User-Agent": "FreeKDS" } });
-+      if (!relRes.ok) throw new Error("release");
-+      const rel = await relRes.json();
-+      const zipUrl = rel.zipball_url;
-+      if (!zipUrl) throw new Error("archive");
-+      const fileRes = await fetch(zipUrl);
-+      if (!fileRes.ok) throw new Error("download");
-+      await logSecurityEvent(db, "update", user.id, req.originalUrl, true, req.ip);
-+      res.json({ success: true });
-+    } catch (err) {
-+      logger.error("Update apply failed:", err);
-+      await logSecurityEvent(db, "update", user && user.id, req.originalUrl, false, req.ip);
-+      res.status(500).json({ error: "Failed" });
-+    }
-+  });
-+
-+  router.get("/foh/order", async (req, res) => {
-+    if (!req.session.user || !roleHasAccess(req.session.user.role, "order")) {
-+      return res.status(403).send("Forbidden");
-+    }
-+    const table = req.query.table || "";
-+    const sqlItems =
-+      "SELECT id, name, price, image_url, category_id, is_available, stock FROM menu_items ORDER BY category_id, sort_order, id";
-+    const sqlItemMods = "SELECT * FROM item_modifiers";
-+    const sqlItemGroups = "SELECT * FROM item_modifier_groups";
-+    const sqlMods = "SELECT id, name, group_id FROM modifiers";
-+    const sqlGroups = "SELECT id, name FROM modifier_groups";
-+    try {
-+      const [
-+        cats,
-+        [items],
-+        [itemMods],
-+        [itemGroups],
-+        [mods],
-+        [groups],
-+      ] = await Promise.all([
-+        getCategories(db),
-+        db.promise().query(sqlItems),
-+        db.promise().query(sqlItemMods),
-+        db.promise().query(sqlItemGroups),
-+        db.promise().query(sqlMods),
-+        db.promise().query(sqlGroups),
-+      ]);
-+
-+      const modMap = {};
-+      mods.forEach((m) => {
-+        modMap[m.id] = {
-+          id: m.id,
-+          name: m.name,
-+          group_id: m.group_id,
-+        };
-+      });
-+      const itemGroupsMap = {};
-+      itemGroups.forEach((g) => {
-+        if (!itemGroupsMap[g.menu_item_id])
-+          itemGroupsMap[g.menu_item_id] = [];
-+        itemGroupsMap[g.menu_item_id].push(g.group_id);
-+      });
-+      const itemModsMap = {};
-+      itemMods.forEach((im) => {
-+        const grp = modMap[im.modifier_id]
-+          ? modMap[im.modifier_id].group_id
-+          : null;
-+        const allowed = itemGroupsMap[im.menu_item_id] || [];
-+        if (grp && !allowed.includes(grp)) return;
-+        if (!itemModsMap[im.menu_item_id])
-+          itemModsMap[im.menu_item_id] = [];
-+        if (modMap[im.modifier_id])
-+          itemModsMap[im.menu_item_id].push(modMap[im.modifier_id]);
-+      });
-+      const catMap = cats.map((c) => ({
-+        id: c.id,
-+        name: c.name,
-+        items: [],
-+      }));
-+      const idx = {};
-+      catMap.forEach((c) => {
-+        idx[c.id] = c;
-+      });
-+      items.forEach((it) => {
-+        if (
-+          idx[it.category_id] &&
-+          it.is_available &&
-+          (it.stock === null || it.stock > 0)
-+        ) {
-+          idx[it.category_id].items.push({
-+            id: it.id,
-+            name: it.name,
-+            price: it.price,
-+            image_url: it.image_url,
-+            modifiers: itemModsMap[it.id] || [],
-+            stock: it.stock,
-+            is_available: it.is_available,
-+          });
-+        }
-+      });
-+      res.render("order-foh", {
-+        categories: catMap,
-+        table,
-+        settings: res.locals.settings,
-+        modGroups: groups,
-+      });
-+    } catch (err) {
-+      logger.error(err);
-+      res.status(500).send("DB Error");
-+    }
-+  });
-+
-+  return router;
-+};
-+
- 
-EOF
-)
+const express = require("express");
+const logger = require("../../../utils/logger");
+const { convert } = require("../../../controllers/unitConversion");
+const {
+  getIngredients,
+  getUnits,
+  getPurchaseOrderItems,
+  receivePurchaseOrder,
+<<<<<<< ours
+} = require("../../controllers/db/inventory");
+const { fetchSalesTotals, fetchIngredientUsage } = require("../../controllers/analytics");
+const { getRolePermissions } = require("../../controllers/accessControl");
+=======
+} = require("../../../controllers/dbHelpers");
+const { fetchSalesTotals, fetchIngredientUsage } = require("../../../controllers/analytics");
+const { getRolePermissions } = require("../../../controllers/accessControl");
+const itemsRoutes = require("./items");
+>>>>>>> theirs
+
+module.exports = (db, io) => {
+  const router = express.Router();
+
+  router.use("/admin/ingredients", itemsRoutes(db));
+
+  router.post("/admin/item-categories", (req, res) => {
+    const { id, name, parent_id } = req.body;
+    if (!name) return res.redirect("/admin?tab=inventory");
+    if (id) {
+      db.query(
+        "UPDATE item_categories SET name=?, parent_id=? WHERE id=?",
+        [name, parent_id || null, id],
+        (err) => {
+          if (err) logger.error("Error updating item category:", err);
+          res.redirect("/admin?tab=inventory&msg=Category+saved");
+        },
+      );
+    } else {
+      db.query(
+        "INSERT INTO item_categories (name, parent_id) VALUES (?, ?)",
+        [name, parent_id || null],
+        (err) => {
+          if (err) logger.error("Error inserting item category:", err);
+          res.redirect("/admin?tab=inventory&msg=Category+saved");
+        },
+      );
+    }
+  });
+
+  router.post("/admin/item-categories/delete", (req, res) => {
+    const { id } = req.body;
+    if (!id) return res.redirect("/admin?tab=inventory");
+    db.query("DELETE FROM item_categories WHERE id=?", [id], (err) => {
+      if (err) logger.error("Error deleting item category:", err);
+      res.redirect("/admin?tab=inventory&msg=Category+deleted");
+    });
+  });
+
+  router.post("/admin/tags", (req, res) => {
+    const { id, name } = req.body;
+    if (!name) return res.redirect("/admin?tab=inventory");
+    if (id) {
+      db.query("UPDATE tags SET name=? WHERE id=?", [name, id], (err) => {
+        if (err) logger.error("Error updating tag:", err);
+        res.redirect("/admin?tab=inventory&msg=Tag+saved");
+      });
+    } else {
+      db.query("INSERT INTO tags (name) VALUES (?)", [name], (err) => {
+        if (err) logger.error("Error inserting tag:", err);
+        res.redirect("/admin?tab=inventory&msg=Tag+saved");
+      });
+    }
+  });
+
+  router.post("/admin/tags/delete", (req, res) => {
+    const { id } = req.body;
+    if (!id) return res.redirect("/admin?tab=inventory");
+    db.query("DELETE FROM tags WHERE id=?", [id], (err) => {
+      if (err) logger.error("Error deleting tag:", err);
+      res.redirect("/admin?tab=inventory&msg=Tag+deleted");
+    });
+  });
+
+  router.post("/admin/inventory/transactions", async (req, res) => {
+    const ingredientId = req.body.ingredient_id;
+    const type = req.body.type || "adjust";
+    const qty = parseFloat(req.body.quantity);
+    if (!ingredientId || isNaN(qty))
+      return res.redirect("/admin?tab=inventory");
+
+    let conn;
+    try {
+      conn = await db.promise().getConnection();
+      await conn.beginTransaction();
+      await conn.query(
+        "INSERT INTO inventory_transactions (ingredient_id, type, quantity) VALUES (?, ?, ?)",
+        [ingredientId, type, qty],
+      );
+      await conn.query(
+        "UPDATE ingredients SET quantity = quantity + ? WHERE id=?",
+        [qty, ingredientId],
+      );
+      await conn.commit();
+      io.emit("reportsUpdated");
+      res.redirect("/admin?tab=inventory&msg=Transaction+recorded");
+    } catch (err) {
+      if (conn) await conn.rollback();
+      logger.error("Error recording transaction:", err);
+      res.status(500).send("DB Error");
+    } finally {
+      if (conn) conn.release();
+    }
+  });
+
+  router.get("/admin/inventory/stats", async (req, res) => {
+    try {
+      const { start, end } = req.query;
+      const sales = await fetchSalesTotals(db, start, end);
+      const usage = await fetchIngredientUsage(db, start, end);
+      res.json({ sales, usage });
+    } catch (err) {
+      logger.error("Error fetching inventory stats:", err);
+      res.status(500).json({ error: "DB Error" });
+    }
+  });
+
+  router.get("/admin/inventory/logs", async (req, res) => {
+    try {
+      const { startDate, endDate } = req.query;
+      const fmt = (d) => `${d} 00:00:00`;
+      const sql = `SELECT l.*, mi.name AS item_name, ing.name AS ingredient_name, u.abbreviation AS unit
+                    FROM inventory_log l
+                    JOIN menu_items mi ON l.menu_item_id = mi.id
+                    JOIN ingredients ing ON l.ingredient_id = ing.id
+                    LEFT JOIN units u ON ing.unit_id = u.id
+                    WHERE l.created_at BETWEEN ? AND ?
+                    ORDER BY l.id DESC`;
+      const [logs] = await db
+        .promise()
+        .query(sql, [fmt(startDate), fmt(endDate)]);
+      res.json({ logs });
+    } catch (err) {
+      logger.error("Error fetching inventory logs:", err);
+      res.status(500).json({ error: "DB Error" });
+    }
+  });
+
+  router.post("/admin/inventory/logs", async (req, res) => {
+    try {
+      const { start, end } = req.body;
+      if (!start || !end) return res.redirect("/admin?tab=inventory");
+      const [rows] = await db.promise().query(
+        `SELECT ingredient_id, SUM(amount) AS total
+           FROM inventory_log
+          WHERE created_at BETWEEN ? AND ?
+          GROUP BY ingredient_id`,
+        [start + " 00:00:00", end + " 23:59:59"],
+      );
+      for (const r of rows) {
+        await db
+          .promise()
+          .query(
+            "INSERT INTO daily_usage_log (start_date, end_date, ingredient_id, amount) VALUES (?, ?, ?, ?)",
+            [start, end, r.ingredient_id, r.total],
+          );
+      }
+      res.redirect("/admin?tab=inventory&msg=Usage+log+created");
+    } catch (err) {
+      logger.error("Error creating usage log:", err);
+      res.status(500).send("DB Error");
+    }
+  });
+
+  router.get("/admin/inventory", (req, res) => {
+    res.redirect("/admin?tab=inventory");
+  });
+
+  router.get("/admin/purchase-orders", (req, res) => {
+    res.redirect("/admin?tab=purchase-orders");
+  });
+
+  router.post("/admin/purchase-orders/:id/receive", async (req, res) => {
+    const orderId = parseInt(req.params.id, 10);
+    if (isNaN(orderId)) return res.redirect("/admin/purchase-orders");
+    try {
+      const [items] = await db.promise().query(
+        `SELECT poi.ingredient_id, poi.quantity, poi.unit_id, ing.unit_id AS ing_unit
+           FROM purchase_order_items poi
+           JOIN ingredients ing ON poi.ingredient_id = ing.id
+          WHERE poi.purchase_order_id=?`,
+        [orderId],
+      );
+      for (const it of items) {
+        let qty = parseFloat(it.quantity);
+        const conv = convert(qty, it.unit_id || it.ing_unit, it.ing_unit);
+        if (conv !== null) qty = conv;
+        await db
+          .promise()
+          .query("UPDATE ingredients SET quantity = quantity + ? WHERE id=?", [
+            qty,
+            it.ingredient_id,
+          ]);
+        await db
+          .promise()
+          .query(
+            "INSERT INTO inventory_transactions (ingredient_id, type, quantity) VALUES (?, ?, ?)",
+            [it.ingredient_id, "purchase", qty],
+          );
+      }
+      await db
+        .promise()
+        .query('UPDATE purchase_orders SET status="received" WHERE id=?', [
+          orderId,
+        ]);
+      res.redirect(`/admin/purchase-orders/${orderId}?msg=Order+received`);
+    } catch (err) {
+      logger.error("Error receiving order:", err);
+      res.status(500).send("DB Error");
+    }
+  });
+
+  router.post("/admin/purchase-order-items", async (req, res) => {
+    const { purchase_order_id, ingredient_id, quantity, unit_id } = req.body;
+    if (!purchase_order_id || !ingredient_id || !quantity)
+      return res.redirect(`/admin/purchase-orders/${purchase_order_id}`);
+    try {
+      await db
+        .promise()
+        .query(
+          "INSERT INTO purchase_order_items (purchase_order_id, ingredient_id, quantity, unit_id) VALUES (?, ?, ?, ?)",
+          [purchase_order_id, ingredient_id, quantity, unit_id || null],
+        );
+      res.redirect(
+        `/admin/purchase-orders/${purchase_order_id}?msg=Item+added`,
+      );
+    } catch (err) {
+      logger.error("Error adding order item:", err);
+      res.status(500).send("DB Error");
+    }
+  });
+
+  router.post("/admin/purchase-order-items/delete", async (req, res) => {
+    const { id, order_id } = req.body;
+    if (!id) return res.redirect(`/admin/purchase-orders/${order_id}`);
+    try {
+      await db
+        .promise()
+        .query("DELETE FROM purchase_order_items WHERE id=?", [id]);
+      res.redirect(`/admin/purchase-orders/${order_id}?msg=Item+deleted`);
+    } catch (err) {
+      logger.error("Error deleting order item:", err);
+      res.status(500).send("DB Error");
+    }
+  });
+
+  router.post("/admin/purchase-orders", (req, res) => {
+    const supplier = req.body.supplier_id;
+    const location = req.body.location_id || null;
+    const date = req.body.order_date || new Date().toISOString().slice(0, 10);
+    if (!supplier) return res.redirect("/admin/purchase-orders");
+    db.query(
+      "INSERT INTO purchase_orders (supplier_id, location_id, order_date) VALUES (?, ?, ?)",
+      [supplier, location, date],
+      (err) => {
+        if (err) logger.error("Error inserting purchase order:", err);
+        res.redirect("/admin/purchase-orders?msg=Order+created");
+      },
+    );
+  });
+
+  router.get("/admin/purchase-orders/:id", async (req, res) => {
+    const id = req.params.id;
+    try {
+      const orders = await db
+        .promise()
+        .query(
+          `SELECT po.*, s.name AS supplier_name, l.name AS location_name FROM purchase_orders po LEFT JOIN suppliers s ON po.supplier_id=s.id LEFT JOIN inventory_locations l ON po.location_id=l.id WHERE po.id=?`,
+          [id],
+        );
+      if (!orders[0].length) return res.redirect("/admin/purchase-orders");
+      const order = orders[0][0];
+      const items = await getPurchaseOrderItems(db, id);
+      const ingredients = await getIngredients(db);
+      const units = await getUnits(db);
+      const allowedModules = getRolePermissions(req.session.user.role);
+      res.render("admin/purchase_order_detail", {
+        order,
+        items,
+        ingredients,
+        units,
+        allowedModules,
+        settings: res.locals.settings || {},
+      });
+    } catch (err) {
+      logger.error("Error fetching order detail:", err);
+      res.status(500).send("DB Error");
+    }
+  });
+
+  router.get("/admin/suppliers", (req, res) => {
+    res.redirect("/admin?tab=suppliers");
+  });
+
+  router.post("/admin/suppliers", async (req, res) => {
+    const { id, name, contact_info } = req.body;
+    if (!name) return res.redirect("/admin/suppliers");
+    try {
+      if (id) {
+        await db
+          .promise()
+          .query("UPDATE suppliers SET name=?, contact_info=? WHERE id=?", [
+            name,
+            contact_info || null,
+            id,
+          ]);
+      } else {
+        await db
+          .promise()
+          .query("INSERT INTO suppliers (name, contact_info) VALUES (?, ?)", [
+            name,
+            contact_info || null,
+          ]);
+      }
+      res.redirect("/admin/suppliers?msg=Supplier+saved");
+    } catch (err) {
+      logger.error("Error saving supplier:", err);
+      res.status(500).send("DB Error");
+    }
+  });
+
+  router.post("/admin/purchase-orders/:id/receive", async (req, res) => {
+    const id = req.params.id;
+    try {
+      await receivePurchaseOrder(db, id);
+      res.redirect(`/admin/purchase-orders/${id}?msg=Order+received`);
+      io.emit("reportsUpdated");
+    } catch (err) {
+      logger.error("Error receiving order:", err);
+      res.status(500).send("DB Error");
+    }
+  });
+
+  router.post("/admin/suppliers/delete", async (req, res) => {
+    const { id } = req.body;
+    if (!id) return res.redirect("/admin/suppliers");
+    try {
+      await db.promise().query("DELETE FROM suppliers WHERE id=?", [id]);
+      res.redirect("/admin/suppliers?msg=Supplier+deleted");
+    } catch (err) {
+      logger.error("Error deleting supplier:", err);
+      res.status(500).send("DB Error");
+    }
+  });
+
+  router.post("/admin/purchase-orders/delete", (req, res) => {
+    const id = req.body.id;
+    if (!id) return res.redirect("/admin/purchase-orders");
+    db.query("DELETE FROM purchase_orders WHERE id=?", [id], (err) => {
+      if (err) logger.error("Error deleting order:", err);
+      res.redirect("/admin/purchase-orders?msg=Order+deleted");
+    });
+  });
+
+  router.post("/admin/purchase-order-items", (req, res) => {
+    const orderId = req.body.purchase_order_id;
+    const ingredient = req.body.ingredient_id;
+    const qty = parseFloat(req.body.quantity);
+    const unitId = req.body.unit_id || null;
+    if (!orderId || !ingredient || isNaN(qty))
+      return res.redirect("/admin/purchase-orders");
+    db.query(
+      "INSERT INTO purchase_order_items (purchase_order_id, ingredient_id, quantity, unit_id) VALUES (?, ?, ?, ?)",
+      [orderId, ingredient, qty, unitId],
+      (err) => {
+        if (err) logger.error("Error inserting PO item:", err);
+        res.redirect(`/admin/purchase-orders/${orderId}`);
+      },
+    );
+  });
+
+  router.post("/admin/purchase-order-items/delete", (req, res) => {
+    const id = req.body.id;
+    const orderId = req.body.order_id;
+    if (!id) return res.redirect("/admin/purchase-orders");
+    db.query("DELETE FROM purchase_order_items WHERE id=?", [id], (err) => {
+      if (err) logger.error("Error deleting PO item:", err);
+      res.redirect(`/admin/purchase-orders/${orderId}`);
+    });
+  });
+
+  router.get("/admin/locations", (req, res) => {
+    res.redirect("/admin?tab=locations");
+  });
+
+  router.post("/admin/locations", async (req, res) => {
+    const { id, name } = req.body;
+    if (!name) return res.redirect("/admin/locations");
+    try {
+      if (id) {
+        await db
+          .promise()
+          .query("UPDATE inventory_locations SET name=? WHERE id=?", [
+            name,
+            id,
+          ]);
+      } else {
+        await db
+          .promise()
+          .query("INSERT INTO inventory_locations (name) VALUES (?)", [name]);
+      }
+      res.redirect("/admin/locations?msg=Location+saved");
+    } catch (err) {
+      logger.error("Error saving location:", err);
+      res.status(500).send("DB Error");
+    }
+  });
+
+  router.post("/admin/locations/delete", async (req, res) => {
+    const { id } = req.body;
+    if (!id) return res.redirect("/admin/locations");
+    try {
+      await db
+        .promise()
+        .query("DELETE FROM inventory_locations WHERE id=?", [id]);
+      res.redirect("/admin/locations?msg=Location+deleted");
+    } catch (err) {
+      logger.error("Error deleting location:", err);
+      res.status(500).send("DB Error");
+    }
+  });
+
+  return router;
+};
+

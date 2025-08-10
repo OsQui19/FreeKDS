@@ -13,6 +13,7 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import ModuleGroup from './components/ModuleGroup';
 
 export default function HierarchyApp() {
   const [roles, setRoles] = useState([]);
@@ -266,38 +267,18 @@ export default function HierarchyApp() {
         </h5>
         {!modulesCollapsed && selectedRole && (
           <div>
-            {moduleGroups.map((grp, idx) => {
-              const collapsed = collapsedGroups[idx];
-              return (
-                <div key={grp.category || idx} className="module-group mb-3">
-                  <button
-                    type="button"
-                    className="btn btn-link btn-sm arrow-toggle"
-                    onClick={() => toggleGroup(idx)}
-                  >
-                    <i className={`bi ${collapsed ? 'bi-caret-right' : 'bi-caret-down'}`} />
-                  </button>
-                  <span className="ms-1 fw-semibold">{grp.category}</span>
-                  {!collapsed && (
-                    <ul className="list-group mt-2">
-                      {grp.modules.map((m) => (
-                        <li key={m} className="list-group-item d-flex justify-content-between align-items-center">
-                          <span>{m.replace(/-/g, ' ')}</span>
-                          <div className="form-check form-switch">
-                            <input
-                              className="form-check-input"
-                              type="checkbox"
-                              checked={(permissions[selectedRole] || []).includes(m)}
-                              onChange={() => togglePermission(selectedRole, m)}
-                            />
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              );
-            })}
+            {moduleGroups.map((grp, idx) => (
+              <ModuleGroup
+                key={grp.category || idx}
+                group={grp}
+                index={idx}
+                collapsed={collapsedGroups[idx]}
+                toggleGroup={toggleGroup}
+                role={selectedRole}
+                permissions={permissions}
+                togglePermission={togglePermission}
+              />
+            ))}
           </div>
         )}
       </div>

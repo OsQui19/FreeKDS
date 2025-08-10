@@ -1,24 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import EmployeeForm from './components/EmployeeForm';
+import useEmployeeForm from './hooks/useEmployeeForm';
 
 export default function OnboardingApp() {
-  const emptyForm = {
-    first_name: '',
-    last_name: '',
-    position: '',
-    start_date: '',
-    email: '',
-    phone: '',
-    wage_rate: '',
-    username: '',
-    password: '',
-    pin: '',
-    role: '',
-  };
-
   const [roles, setRoles] = useState([]);
   const [employees, setEmployees] = useState([]);
-  const [form, setForm] = useState(emptyForm);
-  const [editIndex, setEditIndex] = useState(-1);
+  const { form, setForm, editIndex, setEditIndex, resetForm, handleChange } =
+    useEmployeeForm(roles[0]);
   const [search, setSearch] = useState('');
 
   useEffect(() => {
@@ -32,23 +20,12 @@ export default function OnboardingApp() {
         const roleJson = await roleRes.json();
         setEmployees(empJson.employees || []);
         setRoles(roleJson.hierarchy || []);
-        setForm(f => ({ ...f, role: (roleJson.hierarchy || [])[0] || '' }));
       } catch (err) {
         console.error(err);
       }
     }
     load();
   }, []);
-
-  const resetForm = () => {
-    setForm((f) => ({ ...emptyForm, role: roles[0] || '' }));
-    setEditIndex(-1);
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((f) => ({ ...f, [name]: value }));
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -99,143 +76,14 @@ export default function OnboardingApp() {
 
   return (
     <div>
-      <form onSubmit={handleSubmit} className="mb-4">
-        <div className="row g-2 mb-3">
-          <div className="col-sm-3">
-            <input
-              type="text"
-              name="first_name"
-              value={form.first_name}
-              onChange={handleChange}
-              className="form-control form-control-sm"
-              placeholder="First Name"
-            />
-          </div>
-          <div className="col-sm-3">
-            <input
-              type="text"
-              name="last_name"
-              value={form.last_name}
-              onChange={handleChange}
-              className="form-control form-control-sm"
-              placeholder="Last Name"
-            />
-          </div>
-          <div className="col-sm-3">
-            <input
-              type="text"
-              name="position"
-              value={form.position}
-              onChange={handleChange}
-              className="form-control form-control-sm"
-              placeholder="Position"
-            />
-          </div>
-          <div className="col-sm-3">
-            <input
-              type="date"
-              name="start_date"
-              value={form.start_date}
-              onChange={handleChange}
-              className="form-control form-control-sm"
-            />
-          </div>
-        </div>
-        <div className="row g-2 mb-3">
-          <div className="col-sm-3">
-            <input
-              type="email"
-              name="email"
-              value={form.email}
-              onChange={handleChange}
-              className="form-control form-control-sm"
-              placeholder="Email"
-            />
-          </div>
-          <div className="col-sm-3">
-            <input
-              type="text"
-              name="phone"
-              value={form.phone}
-              onChange={handleChange}
-              className="form-control form-control-sm"
-              placeholder="Phone"
-            />
-          </div>
-          <div className="col-sm-3">
-            <input
-              type="number"
-              step="0.01"
-              name="wage_rate"
-              value={form.wage_rate}
-              onChange={handleChange}
-              className="form-control form-control-sm"
-              placeholder="Wage Rate"
-            />
-          </div>
-          <div className="col-sm-3">
-            <input
-              type="text"
-              name="username"
-              value={form.username}
-              onChange={handleChange}
-              className="form-control form-control-sm"
-              placeholder="Username"
-            />
-          </div>
-        </div>
-        <div className="row g-2 mb-3">
-          <div className="col-sm-4">
-            <input
-              type="password"
-              name="password"
-              value={form.password}
-              onChange={handleChange}
-              className="form-control form-control-sm"
-              placeholder="Password"
-              autoComplete="new-password"
-            />
-          </div>
-          <div className="col-sm-4">
-            <input
-              type="password"
-              name="pin"
-              value={form.pin}
-              onChange={handleChange}
-              className="form-control form-control-sm"
-              placeholder="PIN (4-6 digits)"
-              autoComplete="new-password"
-              pattern="\d{4,6}"
-            />
-          </div>
-          <div className="col-sm-4">
-            <select
-              name="role"
-              value={form.role}
-              onChange={handleChange}
-              className="form-select form-select-sm"
-            >
-              {roles.map((r) => (
-                <option key={r} value={r}>
-                  {r}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-        <button type="submit" className="btn btn-primary btn-sm">
-          {editIndex >= 0 ? 'Update' : 'Save'}
-        </button>
-        {editIndex >= 0 && (
-          <button
-            type="button"
-            className="btn btn-secondary btn-sm ms-2"
-            onClick={resetForm}
-          >
-            Cancel
-          </button>
-        )}
-      </form>
+      <EmployeeForm
+        form={form}
+        roles={roles}
+        onChange={handleChange}
+        onSubmit={handleSubmit}
+        editIndex={editIndex}
+        resetForm={resetForm}
+      />
       <div className="mt-4">
         <h5>Current Employees</h5>
         <input

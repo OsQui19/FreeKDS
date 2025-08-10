@@ -4,7 +4,7 @@ const {
   updateItemModifiers,
   updateItemGroups,
   updateItemIngredients,
-} = require("../../controllers/dbHelpers");
+} = require("../../controllers/db/menu");
 
 module.exports = (db) => {
   const router = express.Router();

@@ -1,10 +1,7 @@
 const logger = require('../utils/logger');
 const express = require("express");
-const {
-  getBumpedOrders,
-  getStations,
-  getCategories,
-} = require("../controllers/dbHelpers");
+const { getBumpedOrders } = require("../controllers/db/orders");
+const { getStations, getCategories } = require("../controllers/db/menu");
 const { roleHasAccess } = require("../controllers/accessControl");
 module.exports = (db) => {
   const router = express.Router();
