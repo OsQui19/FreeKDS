@@ -16,7 +16,6 @@ services:
   mysql:
     image: mysql:8
     environment:
-      DB_PORT: ${DB_PORT:-3306}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
       MYSQL_DATABASE: ${DB_NAME:-kds_db}
       MYSQL_USER: ${DB_USER:-freekds}
