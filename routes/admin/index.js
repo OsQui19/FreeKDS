@@ -52,6 +52,7 @@ module.exports = (db, io) => {
           orders,
           locations,
           summary: [],
+          logs: [],
         });
       }
       res.render("admin/home", viewData);
