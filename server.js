@@ -204,7 +204,7 @@ app.use((req, res, next) => {
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 const setupSocketHandlers = require("./controllers/socketHandlers");
-const adminRoutes = require("./routes/admin")(db, io);
+const adminRoutes = require("./routes/admin/index")(db, io);
 const authRoutes = require("./routes/auth")(db, io);
 const stationRoutes = require("./routes/stations")(db);
 const apiRoutes = require("./routes/api")(db, io);
