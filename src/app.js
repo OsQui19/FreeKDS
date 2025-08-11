@@ -61,6 +61,7 @@ function createApp(db, io) {
       '/clock/dashboard',
       '/favicon.ico',
       '/order',
+      '/foh/order',
       '/order.js',
       '/order.css',
       '/bootstrap-vars.css',
