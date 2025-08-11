@@ -151,24 +151,17 @@ module.exports = (db, io) => {
       if (conn) conn.release();
     }
   });
-  router.get("/api/bumped_orders", async (req, res, next) => {
+  router.get("/api/bumped_orders", async (req, res) => {
     try {
       const stationId = parseInt(req.query.station_id, 10);
       const limit = parseInt(req.query.limit, 10) || 20;
       if (isNaN(stationId))
         return res.status(400).json({ error: "station_id required" });
-      const orders = await new Promise((resolve, reject) =>
-        getBumpedOrders(
-          db,
-          stationId,
-          (err, o) => (err ? reject(err) : resolve(o)),
-          limit,
-        ),
-      );
+      const orders = await getBumpedOrders(db, stationId, limit);
       res.json({ orders });
     } catch (err) {
       logger.error("Error fetching bumped orders:", err);
-      next(err);
+      res.status(500).json({ error: "DB Error" });
     }
   });
 

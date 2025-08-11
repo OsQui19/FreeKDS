@@ -77,7 +77,7 @@ module.exports = (db) => {
                      WHERE ${conditions.join(" AND ")}
                      GROUP BY oi.id
                      ORDER BY o.id, oi.id`;
-        db.query(orderSql, orderParams, (err3, rows) => {
+        db.query(orderSql, orderParams, async (err3, rows) => {
           if (err3) {
             logger.error("Error fetching orders:", err3);
             return res.status(500).send("DB Error");
@@ -106,23 +106,20 @@ module.exports = (db) => {
             });
           });
           const orders = Object.values(ordersMap);
-          getBumpedOrders(db, stationId, (errB, bumpedOrders) => {
-            if (errB) logger.error("Error fetching bumped orders:", errB);
-            getStations(db)
-              .then((stationRows) => {
-                res.render("station", {
-                  station,
-                  orders,
-                  settings,
-                  allStations: stationRows,
-                  bumpedOrders,
-                });
-              })
-              .catch((err4) => {
-                logger.error("Error fetching stations list:", err4);
-                res.status(500).send("DB Error");
-              });
-          });
+          try {
+            const bumpedOrders = await getBumpedOrders(db, stationId, 20);
+            const stationRows = await getStations(db);
+            res.render("station", {
+              station,
+              orders,
+              settings,
+              allStations: stationRows,
+              bumpedOrders,
+            });
+          } catch (err4) {
+            logger.error("Error fetching stations list or bumped orders:", err4);
+            res.status(500).send("DB Error");
+          }
         });
       },
     );
