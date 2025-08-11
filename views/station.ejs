@@ -7,7 +7,9 @@
     :root {
       --color-bg: <%= station.bg_color || settings.theme_bg_color %>;
       --color-primary: <%= station.primary_color || settings.theme_primary_color %>;
-      --font-family: <%= station.font_family || 'Roboto, sans-serif' %>;
+      <% if (station.font_family) { %>
+      --font-family: <%= station.font_family %>;
+      <% } %>
     }
     .brand-name {
       color: var(--color-primary);

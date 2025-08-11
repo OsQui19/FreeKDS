@@ -1,22 +1,4 @@
 /* style.css - Common styles for KDS station screens */
-@font-face {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 400;
-  src: url('/vendor/inter-fonts/Inter-Regular.ttf') format('truetype');
-}
-@font-face {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 600;
-  src: url('/vendor/inter-fonts/Inter-SemiBold.ttf') format('truetype');
-}
-@font-face {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 700;
-  src: url('/vendor/inter-fonts/Inter-Bold.ttf') format('truetype');
-}
 body.station-screen {
   margin: 0;
   font-family: var(--font-family);
