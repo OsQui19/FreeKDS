@@ -44,7 +44,7 @@
   --color-station-primary-default: #0084ff;
 
   /* Typography */
-  --font-family: 'Inter', sans-serif;
+  --font-family: "Inter", sans-serif;
   --font-size-base: 16px;
   --line-height-base: 1.5;
 
@@ -89,6 +89,7 @@
   --card-shadow-hover: 0 4px 10px rgba(0, 0, 0, 0.15);
   --card-shadow-side: -2px 0 4px rgba(0, 0, 0, 0.1);
   --btn-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --nav-shadow: 2px 0 12px rgba(0, 0, 0, 0.15);
 
   /* Misc */
   --bg-image: none;
