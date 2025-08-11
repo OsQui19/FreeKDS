@@ -1,19 +1,4 @@
 /* theme-vars (can also go in partials/theme-vars) */
-:root {
-  --font-family: "Inter", sans-serif;
-  --color-primary: #4f46e5;
-  --color-accent: #a78bfa;
-  --color-bg-start: #eef2ff;
-  --color-bg-end: #e0e7ff;
-  --card-bg: rgba(255, 255, 255, 0.75);
-  --card-radius: 16px;
-  --card-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-  --card-border: rgba(0, 0, 0, 0.1);
-  --input-border: #ddd;
-  --input-focus: var(--color-primary);
-  --transition-fast: 0.2s ease-in-out;
-}
-
 body.login-page {
   margin: 0;
   min-height: 100vh;
@@ -33,7 +18,7 @@ body.login-page {
   max-width: 420px;
   margin: auto;
   padding: 2rem;
-  background: var(--card-bg, #fff);
+  background: var(--card-bg);
   border: 1px solid var(--card-border);
   border-radius: var(--card-radius);
   box-shadow: var(--card-shadow);

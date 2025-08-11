@@ -2,15 +2,6 @@
    Safe to include after Bootstrap and your existing style.css
 */
 
-:root {
-  /* Defer to your existing variables; these are only fallbacks */
-  --bg-color: var(--bg-color, #f8f8f8);
-  --primary-color: var(--primary-color, #007aff);
-  --button-radius: var(--button-radius, 6px);
-  --card-shadow: var(--card-shadow, 0 2px 6px rgba(0,0,0,0.08));
-  --text-color: var(--text-color, #000);
-}
-
 body.admin-screen {
   background: var(--bg-color);
   color: var(--text-color);
@@ -18,7 +9,7 @@ body.admin-screen {
 
 /* Cards feel consistent with theme editor */
 .admin-container .card {
-  border-radius: var(--card-radius, 8px);
+  border-radius: var(--card-radius);
   box-shadow: var(--card-shadow);
 }
 
