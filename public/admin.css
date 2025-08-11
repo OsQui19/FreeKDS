@@ -1,10 +1,17 @@
-/* admin.css — additive admin shell polish aligned with Theme bundle
-   Safe to include after Bootstrap and your existing style.css
-*/
+/* admin.css - additive admin shell polish aligned with Theme bundle */
+:root {
+  /* Fallback variable values */
+  --bg-color: #f8f8f8;
+  --primary-color: #007aff;
+  --button-radius: 6px;
+  --card-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  --text-color: #000;
+  --card-radius: 8px;
+}
 
 body.admin-screen {
-  background: var(--color-bg);
-  color: var(--color-text);
+  background: var(--bg-color);
+  color: var(--text-color);
 }
 
 /* Cards feel consistent with theme editor */
@@ -23,7 +30,9 @@ body.admin-screen {
 @media (max-width: 767.98px) {
   #sideNav {
     position: fixed;
-    top: 0; left: 0; bottom: 0;
+    top: 0;
+    left: 0;
+    bottom: 0;
     width: 260px;
     background: #fff;
     box-shadow: 2px 0 12px rgba(0,0,0,.15);
@@ -31,10 +40,14 @@ body.admin-screen {
     transition: transform .25s ease;
     z-index: 1040;
   }
-  #sideNav.open { transform: translateX(0); }
+  #sideNav.open {
+    transform: translateX(0);
+  }
 
   /* Make room for header, avoid content shift */
-  body.admin-screen { padding: 10px; }
+  body.admin-screen {
+    padding: 10px;
+  }
 }
 
 /* Sidenav links: improve hit targets */
