@@ -45,7 +45,7 @@ body.station-screen {
   max-height: 40px;
 }
 .top-bar .btn {
-  padding: 6px 12px;
+  padding: var(--spacing-6) var(--spacing-12);
   font-size: 0.9rem;
   touch-action: manipulation;
 }
@@ -58,12 +58,12 @@ body.station-screen {
   background: var(--color-white);
   color: var(--color-text);
   border: 1px solid var(--color-border);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 .top-bar-links {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--spacing-10);
 }
 .btn {
   display: inline-block;
@@ -102,7 +102,7 @@ body.station-screen {
   margin: var(--spacing-sm);
   break-inside: avoid;
   border: 1px solid var(--input-border);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 .ticket.selected {
@@ -119,9 +119,9 @@ body.station-screen {
 }
 .ticket-header .order-type {
   font-weight: bold;
-  margin-right: 5px;
-  padding: 2px 4px;
-  border-radius: 3px;
+  margin-right: var(--spacing-5);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-3);
   color: var(--color-white);
 }
 .ticket-header .order-num {
@@ -130,25 +130,25 @@ body.station-screen {
 .allergy-label {
   background: var(--color-allergy-bg);
   color: var(--color-white);
-  padding: 2px 4px;
-  border-radius: 3px;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-3);
   font-weight: bold;
 }
 .ticket-header .allergy-label {
-  margin-left: 5px;
+  margin-left: var(--spacing-5);
 }
 .ticket-header .order-time,
 .ticket-header .elapsed {
   font-family: monospace;
-  margin-left: 8px;
+  margin-left: var(--spacing-md);
 }
 .items {
   list-style: none;
   margin: 0;
-  padding: 5px;
+  padding: var(--spacing-5);
 }
 .ticket-instructions {
-  padding: 4px 6px;
+  padding: var(--spacing-sm) var(--spacing-6);
   background: var(--color-warning-bg);
   color: var(--color-text);
   font-style: italic;
@@ -159,18 +159,18 @@ body.station-screen {
   color: var(--color-danger-text);
 }
 .items li {
-  padding: 2px 0;
+  padding: var(--spacing-xs) 0;
 }
 .item-modifiers {
   list-style: disc;
-  margin-left: 20px;
+  margin-left: var(--spacing-20);
   padding-left: 0;
   color: var(--color-muted);
   font-size: 0.9em;
 }
 .items .qty {
   font-weight: bold;
-  margin-right: 4px;
+  margin-right: var(--spacing-sm);
 }
 .items .item-name {
   cursor: pointer;
@@ -235,7 +235,7 @@ body.station-screen {
 .no-orders {
   color: var(--color-muted-light);
   font-style: italic;
-  padding: 20px;
+  padding: var(--spacing-20);
 }
 
 /* Color coding for order types */
@@ -268,7 +268,7 @@ body.station-screen {
   padding: var(--spacing-md) var(--spacing-lg);
   margin: 0 var(--spacing-md);
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-6);
   cursor: pointer;
 }
 .btn-primary {
@@ -317,11 +317,11 @@ body.station-screen {
   white-space: pre-wrap;
   font-family: monospace;
   background: var(--color-dark);
-  padding: 10px;
+  padding: var(--spacing-10);
 }
 .recipe-text ol {
   background: var(--color-dark);
-  padding: 10px;
+  padding: var(--spacing-10);
 }
 .recipe-text li {
   margin-bottom: 0.5em;
@@ -332,18 +332,18 @@ body.station-screen {
   padding: 0;
 }
 #recallList li {
-  margin: 5px 0;
+  margin: var(--spacing-5) 0;
 }
 #recallList .ticket {
   cursor: pointer;
-  margin: 5px 0;
+  margin: var(--spacing-5) 0;
 }
 /* Admin interface "Bistro Warm" theme */
 body.admin-screen {
   background: var(--color-bg);
   color: var(--color-dark);
   font-family: var(--font-family);
-  padding: 20px;
+  padding: var(--spacing-20);
 }
 .admin-screen .card {
   border-radius: var(--card-radius);
@@ -356,7 +356,7 @@ body.admin-screen {
   .action-bar .btn-primary,
   .action-bar .btn-secondary {
     font-size: 1.1em;
-    padding: 12px 20px;
+    padding: var(--spacing-12) var(--spacing-20);
   }
 }
 
@@ -375,16 +375,16 @@ body.admin-screen {
 /* Admin tab styles */
 .tab-bar {
   display: flex;
-  gap: 5px;
+  gap: var(--spacing-5);
   overflow-x: auto;
   white-space: nowrap;
   border-bottom: 2px solid var(--color-primary);
-  margin-bottom: 10px;
+  margin-bottom: var(--spacing-10);
 }
 .tab-bar .tab {
   background: var(--color-paper-bg);
-  padding: 8px 12px;
-  border-radius: 4px 4px 0 0;
+  padding: var(--spacing-md) var(--spacing-12);
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
   cursor: pointer;
   position: relative;
   white-space: nowrap;
@@ -394,7 +394,7 @@ body.admin-screen {
   color: var(--color-white);
 }
 .tab-bar .tab .close {
-  margin-left: 6px;
+  margin-left: var(--spacing-6);
   cursor: pointer;
 }
 /* Admin windows layout */
@@ -420,23 +420,23 @@ body.admin-screen {
   align-items: center;
   justify-content: flex-start;
   color: var(--color-muted);
-  padding: 0 15px;
+  padding: 0 var(--spacing-15);
 }
 #sideNav .nav-link span {
-  margin-left: 8px;
+  margin-left: var(--spacing-md);
 }
 #sideNav .nav-link.active {
   background: var(--color-primary);
   color: var(--color-white);
 }
 .windows-container {
-  padding: 10px;
+  padding: var(--spacing-10);
 }
 /* flexbox layout for admin windows */
 .windows-container.flex-layout {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 20px;
+  gap: var(--spacing-20);
 }
 
 .windows-container.flex-layout .admin-window {
@@ -447,14 +447,14 @@ body.admin-screen {
   background: var(--color-white);
   border-radius: var(--card-radius);
   box-shadow: var(--card-shadow);
-  padding: 15px;
+  padding: var(--spacing-15);
 }
 @media (min-width: 768px) {
   #sideNav {
     left: 0;
   }
   body.admin-screen {
-    margin-left: 200px;
+    margin-left: var(--spacing-200);
   }
 }
 
@@ -462,15 +462,15 @@ body.admin-screen {
 .navbar-nav .nav-link {
   font-size: 1.5rem;
   color: var(--color-white);
-  padding: 0 12px;
+  padding: 0 var(--spacing-12);
 }
 .navbar-nav .nav-link .bi {
   vertical-align: middle;
 }
 /* Admin menu management styles */
 #itemSearch {
-  margin-bottom: 20px;
-  padding: 5px;
+  margin-bottom: var(--spacing-20);
+  padding: var(--spacing-5);
   max-width: 250px;
 }
 
@@ -487,7 +487,7 @@ body.admin-screen {
 
 .category-header {
   background: var(--color-paper-bg);
-  padding: 5px 10px;
+  padding: var(--spacing-5) var(--spacing-10);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -498,7 +498,7 @@ body.admin-screen {
 }
 .category-title-group .drag-handle {
   cursor: grab;
-  margin-right: 8px;
+  margin-right: var(--spacing-md);
   font-weight: bold;
 }
 .category-name-view {
@@ -507,11 +507,11 @@ body.admin-screen {
 }
 .order-num {
   color: var(--color-paper-text);
-  margin-right: 8px;
+  margin-right: var(--spacing-md);
   font-style: italic;
 }
 .category-actions button {
-  margin-left: 5px;
+  margin-left: var(--spacing-5);
 }
 .item-list {
   list-style: none;
@@ -524,7 +524,7 @@ body.admin-screen {
 .menu-item {
   background: var(--color-white);
   border: 1px solid var(--color-paper-border);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   padding: 1rem;
   margin: 0;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -535,39 +535,39 @@ body.admin-screen {
 }
 .item-view .drag-handle {
   cursor: grab;
-  margin-right: 8px;
+  margin-right: var(--spacing-md);
   font-weight: bold;
 }
 .item-thumb {
   width: 60px;
   height: 60px;
   object-fit: cover;
-  margin-right: 10px;
+  margin-right: var(--spacing-10);
   border: 1px solid var(--color-paper-border);
 }
 .item-name {
-  margin-right: 10px;
+  margin-right: var(--spacing-10);
   font-weight: 600;
 }
 .item-price,
 .item-station,
 .item-recipe,
 .item-mods {
-  margin-right: 15px;
+  margin-right: var(--spacing-15);
 }
 .item-actions button {
-  margin-left: 5px;
+  margin-left: var(--spacing-5);
 }
 .mod-checkboxes label {
-  margin-right: 10px;
-  margin-bottom: 5px;
+  margin-right: var(--spacing-10);
+  margin-bottom: var(--spacing-5);
   display: inline-block;
 }
 .mod-group {
-  margin-bottom: 8px;
+  margin-bottom: var(--spacing-md);
 }
 .mod-group-list {
-  margin-bottom: 20px;
+  margin-bottom: var(--spacing-20);
 }
 .hidden {
   display: none;
@@ -575,30 +575,30 @@ body.admin-screen {
 .add-item-form {
   background: var(--color-paper-bg-light);
   border: 1px dashed var(--color-paper-border-dashed);
-  border-radius: 4px;
-  padding: 5px;
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-5);
 }
 .add-item-form input,
 .add-item-form select,
 .add-item-form textarea {
-  margin-right: 5px;
+  margin-right: var(--spacing-5);
 }
 .item-edit-form {
   background: var(--color-paper-bg-light);
   border: 1px dashed var(--color-paper-border-dashed);
-  border-radius: 4px;
-  padding: 5px;
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-5);
 }
 .item-edit-form input,
 .item-edit-form select,
 .item-edit-form textarea {
-  margin-right: 5px;
+  margin-right: var(--spacing-5);
 }
 .mod-row {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 0.5rem;
-  margin-bottom: 5px;
+  margin-bottom: var(--spacing-5);
   align-items: end;
 }
 .mod-row input[name="name"],
@@ -607,7 +607,7 @@ body.admin-screen {
   width: 100%;
 }
 .toggle-items-btn {
-  margin-left: 10px;
+  margin-left: var(--spacing-10);
 }
 .category-section.collapsed .item-list {
   display: none;
@@ -625,7 +625,7 @@ body.admin-screen {
 }
 @media (max-width: 575.98px) {
   body.admin-screen {
-    padding: 10px;
+    padding: var(--spacing-10);
   }
   .admin-container {
     padding-left: 0;
@@ -637,7 +637,7 @@ body.admin-screen {
   display: contents;
 }
 .ingredient-table input.form-control {
-  padding: 2px 4px;
+  padding: var(--spacing-xs) var(--spacing-sm);
 }
 .ingredient-table th,
 .ingredient-table td {
@@ -696,7 +696,7 @@ body.admin-screen {
 }
 @media (max-width: 768px) {
   #menuPreview {
-    margin-top: 15px;
+    margin-top: var(--spacing-15);
     height: calc(100vh - 320px);
   }
 }
@@ -714,7 +714,7 @@ body.admin-screen {
 }
 @media (max-width: 768px) {
   #stationPreview {
-    margin-top: 15px;
+    margin-top: var(--spacing-15);
     height: calc(100vh - 320px);
   }
 }
@@ -800,17 +800,17 @@ body.admin-screen {
 /* Global navigation buttons */
 .nav-buttons {
   position: fixed;
-  top: 10px;
-  right: 10px;
+  top: var(--spacing-10);
+  right: var(--spacing-10);
   z-index: 1000;
   display: flex;
-  gap: 10px;
+  gap: var(--spacing-10);
 }
 .nav-buttons form {
   margin: 0;
 }
 .nav-buttons .btn {
-  padding: 6px 12px;
+  padding: var(--spacing-6) var(--spacing-12);
   font-size: 0.9rem;
   touch-action: manipulation;
 }
