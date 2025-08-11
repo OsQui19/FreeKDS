@@ -2,7 +2,7 @@
   display: grid;
   grid-template-columns: repeat(3, 80px);
   grid-auto-rows: 80px;
-  gap: 0.5rem;
+    gap: var(--spacing-8);
   justify-content: center;
 }
 
@@ -22,14 +22,14 @@
   position: static;
   display: flex;
   justify-content: center;
-  gap: 0.5rem;
-  margin-top: 1rem;
+    gap: var(--spacing-8);
+    margin-top: var(--spacing-16);
 }
 
-.clock-page .nav-buttons .btn {
-  padding: 0.5rem 1rem;
-  font-size: 0.9rem;
-}
+  .clock-page .nav-buttons .btn {
+    padding: var(--spacing-8) var(--spacing-16);
+    font-size: 0.9rem;
+  }
 
 /* Stack the clock button above nav buttons */
 .clock-page .login-card {

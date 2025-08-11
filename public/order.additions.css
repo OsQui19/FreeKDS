@@ -6,7 +6,7 @@
   #categoryNav {
     overflow-x: auto;
     white-space: nowrap;
-    padding-bottom: .25rem;
+      padding-bottom: var(--spacing-4);
   }
   #categoryNav a { flex: 0 0 auto; }
 }
@@ -18,12 +18,12 @@
     inset: 0;
     background: var(--color-bg);
     z-index: 1050;
-    padding: 1rem;
+      padding: var(--spacing-16);
     overflow-y: auto;
   }
   #cart.open { display: block; }
   #cart .btn-close {
     position: absolute;
-    top: .5rem; right: .5rem;
+      top: var(--spacing-8); right: var(--spacing-8);
   }
 }

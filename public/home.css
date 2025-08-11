@@ -4,7 +4,7 @@ body.home-page {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1rem;
+  padding: var(--spacing-16);
   background: var(--color-bg);
   background-image: linear-gradient(135deg, var(--color-bg-start), var(--color-bg-end)), var(--bg-image);
   background-size: cover;
@@ -23,20 +23,20 @@ body.home-page {
   margin: 0 auto;
 }
 
-.home-page h1 {
-  font-size: 2rem;
-  margin-bottom: 2rem;
+  .home-page h1 {
+    font-size: 2rem;
+    margin-bottom: var(--spacing-32);
   color: var(--color-primary);
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-.home-page .options {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
-}
+  .home-page .options {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: var(--spacing-24);
+    margin-bottom: var(--spacing-24);
+  }
 
 .home-page .dash-btn {
   display: block;
@@ -44,7 +44,7 @@ body.home-page {
   max-width: 240px;
   margin-left: auto;
   margin-right: auto;
-  padding: 1.5rem 0;
+    padding: var(--spacing-24) 0;
   font-size: 1.5rem;
   border-radius: var(--btn-radius);
   box-shadow: var(--btn-shadow);
@@ -70,40 +70,40 @@ body.home-page {
   outline-offset: 2px;
 }
 
-.home-page .nav-buttons {
-  position: static;
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  margin-top: 1rem;
-}
+  .home-page .nav-buttons {
+    position: static;
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-16);
+    margin-top: var(--spacing-16);
+  }
 
-.home-page .nav-buttons .btn {
-  padding: 0.5rem 1rem;
-  font-size: 0.8rem;
-}
+  .home-page .nav-buttons .btn {
+    padding: var(--spacing-8) var(--spacing-16);
+    font-size: 0.8rem;
+  }
 
 @media (max-width: 768px) {
-  body.home-page {
-    padding: 1rem;
-  }
-  .home-page h1 {
-    font-size: 1.75rem;
-    margin-bottom: 1.5rem;
-  }
+    body.home-page {
+      padding: var(--spacing-16);
+    }
+    .home-page h1 {
+      font-size: 1.75rem;
+      margin-bottom: var(--spacing-24);
+    }
 }
 
 @media (max-width: 420px) {
-  .home-page .btn {
-    font-size: 1.1rem;
-    padding: 1rem 0;
-  }
+    .home-page .btn {
+      font-size: 1.1rem;
+      padding: var(--spacing-16) 0;
+    }
 }
 
 @media (min-width: 1200px) {
-  body.home-page {
-    padding: 3rem;
-  }
+    body.home-page {
+      padding: var(--spacing-48);
+    }
 }
 
 @media (prefers-color-scheme: dark) {

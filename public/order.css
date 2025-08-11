@@ -85,7 +85,7 @@ body {
 .item-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 1.5rem;
+    gap: var(--spacing-24);
 }
 
 body.menu-layout-list .item-grid {
@@ -204,7 +204,7 @@ body.menu-layout-list .item-card {
 
 #modOptions .mod-group-label {
   font-weight: 600;
-  margin-top: 0.5rem;
+    margin-top: var(--spacing-8);
   display: block;
 }
 @media (max-width: 768px) {
@@ -216,7 +216,7 @@ body.menu-layout-list .item-card {
     width: 100%;
     border-left: none;
     box-shadow: none;
-    margin-top: 1rem;
+      margin-top: var(--spacing-16);
   }
 }
 
