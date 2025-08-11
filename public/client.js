@@ -147,11 +147,11 @@ function updateTimers() {
     if (elapsedElem) {
       elapsedElem.textContent = `${mm}:${ss}`;
       if (mins >= 10) {
-        elapsedElem.style.color = "#ff5555";
+        elapsedElem.style.color = "var(--color-danger)";
         ticket.classList.add("urgent");
         ticket.classList.remove("warning");
       } else if (mins >= 5) {
-        elapsedElem.style.color = "#ffcc00";
+        elapsedElem.style.color = "var(--color-warning)";
         ticket.classList.add("warning");
         ticket.classList.remove("urgent");
       } else {

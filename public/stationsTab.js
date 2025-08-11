@@ -1,6 +1,10 @@
 let stationsTabInitialized = false;
 import { showAlert, handleForm } from '/adminUtils.js';
 
+const rootStyles = getComputedStyle(document.documentElement);
+const DEFAULT_BG = rootStyles.getPropertyValue('--color-station-bg-default').trim();
+const DEFAULT_PRIMARY = rootStyles.getPropertyValue('--color-station-primary-default').trim();
+
 function serialize(form) {
   return new URLSearchParams(new FormData(form));
 }
@@ -78,13 +82,13 @@ function createStationCard(st) {
             <div class="row mb-3">
               <label for="station-bg-${st.id}" class="col-sm-4 col-form-label">Bg Color</label>
               <div class="col-sm-8">
-                <input id="station-bg-${st.id}" class="form-control" type="color" name="bg_color" value="${st.bg_color || '#222222'}">
+                <input id="station-bg-${st.id}" class="form-control" type="color" name="bg_color" value="${st.bg_color || DEFAULT_BG}">
               </div>
             </div>
             <div class="row mb-3">
               <label for="station-primary-${st.id}" class="col-sm-4 col-form-label">Primary</label>
               <div class="col-sm-8">
-                <input id="station-primary-${st.id}" class="form-control" type="color" name="primary_color" value="${st.primary_color || '#0084ff'}">
+                <input id="station-primary-${st.id}" class="form-control" type="color" name="primary_color" value="${st.primary_color || DEFAULT_PRIMARY}">
               </div>
             </div>
             <div class="row mb-3">

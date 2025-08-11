@@ -5,7 +5,9 @@
   const input = document.getElementById('theme-primary-color');
   if (!wrap || !input || typeof tinycolor === 'undefined') return;
   const render = () => {
-    const base = tinycolor(input.value || '#3366cc');
+    const rootStyles = getComputedStyle(document.documentElement);
+    const baseColor = input.value || rootStyles.getPropertyValue('--color-primary').trim();
+    const base = tinycolor(baseColor);
     const palette = [
       base.clone().lighten(10),
       base.clone().lighten(20),

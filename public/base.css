@@ -11,6 +11,37 @@
   --card-border: rgba(0, 0, 0, 0.1);
   --input-border: #ddd;
   --input-focus: var(--color-primary);
+  --color-white: #ffffff;
+  --color-dark: #333;
+  --color-muted-light: #888;
+  --color-border: #ccc;
+  --color-border-light: #e5e5e5;
+  --color-border-muted: #dee2e6;
+  --color-bg-light: #f0f0f0;
+  --color-bg-muted: #e0e0e0;
+  --color-warning: #ffcc00;
+  --color-warning-bg: #fff3cd;
+  --color-danger: #ff5555;
+  --color-danger-strong: #ff0000;
+  --color-danger-bg: #f8d7da;
+  --color-danger-text: #721c24;
+  --color-success: #4caf50;
+  --color-allergy-bg: #d9534f;
+  --color-order-dine-in: #0066cc;
+  --color-order-to-go: #cc6600;
+  --color-order-catering: #669900;
+  --color-order-online: #8833cc;
+  --color-secondary: #6c757d;
+  --color-paper-bg: #e9d4b4;
+  --color-paper-text: #7b6253;
+  --color-paper-border: #d8c2a7;
+  --color-paper-border-dashed: #c7a589;
+  --color-paper-bg-light: #f2e8d8;
+  --color-text-light: #e5e5e5;
+  --color-bg-dark-start: #1e2030;
+  --color-bg-dark-end: #2a2f45;
+  --color-station-bg-default: #222222;
+  --color-station-primary-default: #0084ff;
 
   /* Typography */
   --font-family: 'Inter', sans-serif;

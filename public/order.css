@@ -8,7 +8,7 @@ body {
 
 .menu-header {
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-white);
   padding: 10px 20px;
   position: sticky;
   top: 0;
@@ -40,7 +40,7 @@ body {
   padding: 6px 12px;
   font-size: 0.9rem;
   background: var(--bs-secondary);
-  color: #fff;
+  color: var(--color-white);
   border: none;
 }
 .view-toggle .btn.active {
@@ -55,7 +55,7 @@ body {
 }
 
 #categoryNav a {
-  color: #fff;
+  color: var(--color-white);
   text-decoration: none;
   background: rgba(255, 255, 255, 0.2);
   padding: 6px 12px;
@@ -187,7 +187,7 @@ body.menu-layout-list .item-card img {
   border-radius: var(--bs-btn-border-radius);
   cursor: pointer;
   background: var(--bs-primary);
-  color: #fff;
+  color: var(--color-white);
   transition:
     background 0.2s ease-in-out,
     filter 0.2s ease-in-out;

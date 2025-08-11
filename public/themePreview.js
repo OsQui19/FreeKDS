@@ -15,13 +15,14 @@
 
   const computeVars = () => {
     const get = id => form.querySelector('#' + id);
+    const rootStyles = getComputedStyle(document.documentElement);
     return {
-      '--color-primary': get('theme-primary-color')?.value || '#3366cc',
-      '--color-bg': get('theme-bg-color')?.value || '#222222',
-      '--color-text': get('text-color')?.value || '#000000',
-      '--font-family': get('font-family')?.value || '',
-      '--button-radius': (get('button-radius')?.value || 6) + 'px',
-      '--card-shadow': get('card-shadow')?.value || '0 2px 6px rgba(0,0,0,0.08)'
+      '--color-primary': get('theme-primary-color')?.value || rootStyles.getPropertyValue('--color-primary').trim(),
+      '--color-bg': get('theme-bg-color')?.value || rootStyles.getPropertyValue('--color-bg').trim(),
+      '--color-text': get('text-color')?.value || rootStyles.getPropertyValue('--color-text').trim(),
+      '--font-family': get('font-family')?.value || rootStyles.getPropertyValue('--font-family').trim(),
+      '--button-radius': (get('button-radius')?.value || rootStyles.getPropertyValue('--button-radius').trim() || '6px'),
+      '--card-shadow': get('card-shadow')?.value || rootStyles.getPropertyValue('--card-shadow').trim() || '0 2px 6px rgba(0,0,0,0.08)'
     };
   };
 
