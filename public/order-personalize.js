@@ -19,9 +19,9 @@
   const applyVars = () => {
     const root = document.documentElement;
     // Set CSS custom properties (used by your CSS & Bootstrap mapping)
-    root.style.setProperty('--primary-color', inputs.primary.value || '#3366cc');
-    root.style.setProperty('--text-color', inputs.text.value || '#000000');
-    root.style.setProperty('--bg-color', inputs.bg.value || '#f8f8f8');
+    root.style.setProperty('--color-primary', inputs.primary.value || '#3366cc');
+    root.style.setProperty('--color-text', inputs.text.value || '#000000');
+    root.style.setProperty('--color-bg', inputs.bg.value || '#f8f8f8');
     if (inputs.font.value) root.style.setProperty('--font-family', inputs.font.value);
     root.style.setProperty('--button-radius', (inputs.radius.value || 6) + 'px');
     root.style.setProperty('--card-shadow', inputs.shadow.value || '0 2px 6px rgba(0,0,0,0.08)');

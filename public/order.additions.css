@@ -16,7 +16,7 @@
     display: none;
     position: fixed;
     inset: 0;
-    background: var(--bg-color);
+    background: var(--color-bg);
     z-index: 1050;
     padding: 1rem;
     overflow-y: auto;

@@ -3,8 +3,8 @@
 */
 
 body.admin-screen {
-  background: var(--bg-color);
-  color: var(--text-color);
+  background: var(--color-bg);
+  color: var(--color-text);
 }
 
 /* Cards feel consistent with theme editor */

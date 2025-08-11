@@ -43,11 +43,6 @@
   --bg-image: none;
   --transition-fast: 0.2s ease-in-out;
   --tap-highlight: transparent;
-
-  /* Legacy aliases */
-  --bg-color: var(--color-bg);
-  --primary-color: var(--color-primary);
-  --text-color: var(--color-text);
 }
 
 body {

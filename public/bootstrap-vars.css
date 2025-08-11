@@ -1,10 +1,10 @@
 :root {
   /* Map custom theme variables to Bootstrap color system */
-  --bs-primary: var(--primary-color);
-  --bs-body-bg: var(--bg-color);
-  --bs-body-color: var(--text-color);
+  --bs-primary: var(--color-primary);
+  --bs-body-bg: var(--color-bg);
+  --bs-body-color: var(--color-text);
   --bs-border-radius: var(--button-radius);
   --bs-btn-border-radius: var(--button-radius);
   --bs-card-border-radius: var(--card-radius);
-  --bs-card-bg: var(--bg-color);
+  --bs-card-bg: var(--color-bg);
 }

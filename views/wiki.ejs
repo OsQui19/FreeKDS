@@ -5,19 +5,19 @@
   <title><%= station.name %> – Recipes Wiki</title>
   <style>
     :root {
-      --bg-color: <%= station.bg_color || settings.theme_bg_color %>;
-      --primary-color: <%= station.primary_color || settings.theme_primary_color %>;
+      --color-bg: <%= station.bg_color || settings.theme_bg_color %>;
+      --color-primary: <%= station.primary_color || settings.theme_primary_color %>;
       --font-family: <%= station.font_family || 'Roboto, sans-serif' %>;
     }
     body {
-      background: var(--bg-color);
+      background: var(--color-bg);
       color: #fff;
       padding: 20px;
       font-family: var(--font-family);
     }
-    h1 { color: var(--primary-color); }
+    h1 { color: var(--color-primary); }
     .recipe-entry { margin-bottom: 2em; }
-    .recipe-entry h3 { color: var(--primary-color); }
+    .recipe-entry h3 { color: var(--color-primary); }
     pre { background: #333; padding: 10px; }
     .recipe-list { background: #333; padding: 10px; }
     .recipe-list li { margin-bottom: 0.5em; }

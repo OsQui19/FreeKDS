@@ -16,9 +16,9 @@
   const computeVars = () => {
     const get = id => form.querySelector('#' + id);
     return {
-      '--primary-color': get('theme-primary-color')?.value || '#3366cc',
-      '--bg-color': get('theme-bg-color')?.value || '#222222',
-      '--text-color': get('text-color')?.value || '#000000',
+      '--color-primary': get('theme-primary-color')?.value || '#3366cc',
+      '--color-bg': get('theme-bg-color')?.value || '#222222',
+      '--color-text': get('text-color')?.value || '#000000',
       '--font-family': get('font-family')?.value || '',
       '--button-radius': (get('button-radius')?.value || 6) + 'px',
       '--card-shadow': get('card-shadow')?.value || '0 2px 6px rgba(0,0,0,0.08)'

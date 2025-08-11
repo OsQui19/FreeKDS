@@ -20,8 +20,8 @@
 body.station-screen {
   margin: 0;
   font-family: var(--font-family);
-  background: var(--bg-color);
-  color: var(--text-color);
+  background: var(--color-bg);
+  color: var(--color-text);
   overflow-x: hidden;
 }
 .top-bar {
@@ -38,7 +38,7 @@ body.station-screen {
   font-weight: 700;
 }
 .brand-name {
-  color: var(--primary-color);
+  color: var(--color-primary);
 }
 
 .brand-logo {
@@ -67,7 +67,7 @@ body.station-screen {
 }
 .btn {
   display: inline-block;
-  background: var(--primary-color);
+  background: var(--color-primary);
   color: #fff;
   padding: var(--spacing-sm) var(--spacing-md);
   border-radius: var(--button-radius);
@@ -106,7 +106,7 @@ body.station-screen {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 .ticket.selected {
-  outline: 2px solid var(--primary-color);
+  outline: 2px solid var(--color-primary);
 }
 .ticket-header {
   background: #f0f0f0;
@@ -272,7 +272,7 @@ body.station-screen {
   cursor: pointer;
 }
 .btn-primary {
-  background: var(--primary-color);
+  background: var(--color-primary);
   color: #fff;
 }
 .btn-secondary {
@@ -340,7 +340,7 @@ body.station-screen {
 }
 /* Admin interface "Bistro Warm" theme */
 body.admin-screen {
-  background: var(--bg-color);
+  background: var(--color-bg);
   color: #333;
   font-family: var(--font-family);
   padding: 20px;
@@ -378,7 +378,7 @@ body.admin-screen {
   gap: 5px;
   overflow-x: auto;
   white-space: nowrap;
-  border-bottom: 2px solid var(--primary-color);
+  border-bottom: 2px solid var(--color-primary);
   margin-bottom: 10px;
 }
 .tab-bar .tab {
@@ -390,7 +390,7 @@ body.admin-screen {
   white-space: nowrap;
 }
 .tab-bar .tab.active {
-  background: var(--primary-color);
+  background: var(--color-primary);
   color: #fff;
 }
 .tab-bar .tab .close {
@@ -426,7 +426,7 @@ body.admin-screen {
   margin-left: 8px;
 }
 #sideNav .nav-link.active {
-  background: var(--primary-color);
+  background: var(--color-primary);
   color: #fff;
 }
 .windows-container {
@@ -847,7 +847,7 @@ body.admin-screen {
 
 /* Highlight frames when editing theme */
 .preview-highlight {
-  outline: 3px solid var(--primary-color);
+  outline: 3px solid var(--color-primary);
   outline-offset: -3px;
 }
 
