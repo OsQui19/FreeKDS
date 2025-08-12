@@ -13,9 +13,14 @@ const accessControl = require('../controllers/accessControl');
 const config = require('../config');
 
 async function startServer(server, db) {
-  await new Promise((resolve, reject) =>
-    applySchema((e) => (e ? reject(e) : resolve()))
-  );
+  const [tables] = await db
+    .promise()
+    .query("SHOW TABLES LIKE 'settings'");
+  if (tables.length === 0) {
+    await new Promise((resolve, reject) =>
+      applySchema((e) => (e ? reject(e) : resolve()))
+    );
+  }
   await new Promise((resolve, reject) =>
     applyMigrations(db, (e) => (e ? reject(e) : resolve()))
   );
