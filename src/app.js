@@ -27,12 +27,13 @@ function createApp(db, io) {
     skip: (req) => req.path.startsWith('/socket.io'),
   });
   app.use(limiter);
-  const sessionStore = new MySQLStore({}, db);
   const secureCookie = config.secureCookie;
   app.use(express.urlencoded({ extended: true }));
   app.use(express.json());
-  app.use(
-    session({
+  let sessionMiddleware;
+  try {
+    const sessionStore = new MySQLStore({}, db);
+    sessionMiddleware = session({
       secret: config.sessionSecret,
       resave: false,
       saveUninitialized: false,
@@ -42,8 +43,21 @@ function createApp(db, io) {
         secure: secureCookie,
         sameSite: 'lax',
       },
-    })
-  );
+    });
+  } catch (err) {
+    logger.error('Failed to initialize MySQL session store', err);
+    sessionMiddleware = session({
+      secret: config.sessionSecret,
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        httpOnly: true,
+        secure: secureCookie,
+        sameSite: 'lax',
+      },
+    });
+  }
+  app.use(sessionMiddleware);
   app.use((req, res, next) => {
     if (req.secure || req.headers['x-forwarded-proto'] === 'https') {
       return res.redirect('http://' + req.headers.host + req.originalUrl);
