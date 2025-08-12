@@ -1,57 +1,49 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <%- include('partials/common-head') %>
-  <title><%= station.name %> – Recipes Wiki</title>
-  <style>
-    :root {
-      --color-bg: <%= station.bg_color || settings.theme_bg_color %>;
-      --color-primary: <%= station.primary_color || settings.theme_primary_color %>;
-      <% if (station.font_family) { %>
-      --font-family: <%= station.font_family %>;
-      <% } %>
-    }
-    body {
-      background: var(--color-bg);
-      color: #fff;
-      padding: 20px;
-      font-family: var(--font-family);
-    }
-    h1 { color: var(--color-primary); }
-    .recipe-entry { margin-bottom: 2em; }
-    .recipe-entry h3 { color: var(--color-primary); }
-    pre { background: #333; padding: 10px; }
-    .recipe-list { background: #333; padding: 10px; }
-    .recipe-list li { margin-bottom: 0.5em; }
-  </style>
-</head>
-<body>
-  <header class="top-bar">
-    <h1 class="station-title"><%= station.name %> – Recipe Wiki</h1>
-    <div class="top-bar-links">
-      <a href="/station/<%= station.id %>" class="btn btn-secondary btn-sm" aria-label="Back to KDS">
-        <i class="bi bi-arrow-left-circle me-1" aria-hidden="true"></i>Back to KDS
-      </a>
-      <%- include('partials/nav-buttons') %>
-    </div>
-  </header>
-  <p>All recipes for items prepared at this station:</p>
-  <% items.forEach(item => { %>
-    <div class="recipe-entry">
-      <h3><%= item.name %></h3>
-      <% if (item.recipe && item.recipe.trim() !== '') { %>
-        <% const steps = item.recipe.replace(/\r/g,'').split('\n').filter(s => s.trim()); %>
-        <ol class="recipe-list">
-          <% steps.forEach(function(step){ %>
-            <li><%= step %></li>
-          <% }); %>
-        </ol>
-      <% } else { %>
-        <p><em>No recipe available.</em></p>
-      <% } %>
-    </div>
-  <% }); %>
-  <footer><a href="/station/<%= station.id %>">← Back to <%= station.name %> KDS</a></footer>
-</body>
-</html>
-
+<% title = station.name + ' – Recipes Wiki'; %>
+<% contentFor('head') %>
+<style>
+  :root {
+    --color-bg: <%= station.bg_color || settings.theme_bg_color %>;
+    --color-primary: <%= station.primary_color || settings.theme_primary_color %>;
+    <% if (station.font_family) { %>
+    --font-family: <%= station.font_family %>;
+    <% } %>
+  }
+  body {
+    background: var(--color-bg);
+    color: #fff;
+    padding: 20px;
+    font-family: var(--font-family);
+  }
+  h1 { color: var(--color-primary); }
+  .recipe-entry { margin-bottom: 2em; }
+  .recipe-entry h3 { color: var(--color-primary); }
+  pre { background: #333; padding: 10px; }
+  .recipe-list { background: #333; padding: 10px; }
+  .recipe-list li { margin-bottom: 0.5em; }
+</style>
+<% endContentFor %>
+<header class="top-bar">
+  <h1 class="station-title"><%= station.name %> – Recipe Wiki</h1>
+  <div class="top-bar-links">
+    <a href="/station/<%= station.id %>" class="btn btn-secondary btn-sm" aria-label="Back to KDS">
+      <i class="bi bi-arrow-left-circle me-1" aria-hidden="true"></i>Back to KDS
+    </a>
+  </div>
+</header>
+<p>All recipes for items prepared at this station:</p>
+<% items.forEach(item => { %>
+  <div class="recipe-entry">
+    <h3><%= item.name %></h3>
+    <% if (item.recipe && item.recipe.trim() !== '') { %>
+      <% const steps = item.recipe.replace(/\r/g,'').split('\n').filter(s => s.trim()); %>
+      <ol class="recipe-list">
+        <% steps.forEach(function(step){ %>
+          <li><%= step %></li>
+        <% }); %>
+      </ol>
+    <% } else { %>
+      <p><em>No recipe available.</em></p>
+    <% } %>
+  </div>
+<% }); %>
+<footer><a href="/station/<%= station.id %>">← Back to <%= station.name %> KDS</a></footer>

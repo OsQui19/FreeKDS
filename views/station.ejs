@@ -1,140 +1,117 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <%- include('partials/common-head') %>
-  <title><%= station.name %> KDS</title>
-  <style>
-    :root {
-      --color-bg: <%= station.bg_color || settings.theme_bg_color %>;
-      --color-primary: <%= station.primary_color || settings.theme_primary_color %>;
-      <% if (station.font_family) { %>
-      --font-family: <%= station.font_family %>;
-      <% } %>
-    }
-    .brand-name {
-      color: var(--color-primary);
-    }
-  </style>
-</head>
-<body class="station-screen <%= station.type %>">
-  <header class="top-bar">
-    <h1 class="station-title">
-      <% if (settings.brand_logo) { %>
-        <img src="<%= settings.brand_logo %>" alt="<%= settings.brand_name || 'Logo' %>" class="brand-logo">
-      <% } else { %>
-        <span class="brand-name"><%= settings.brand_name || '' %></span>
-      <% } %>
-      – <%= station.name %>
-    </h1>
-    <div class="top-bar-links">
-      <label for="stationSelect" class="me-1">Switch Station:</label>
-      <select id="stationSelect" class="station-switch">
-        <% allStations.forEach(function(st){ %>
-          <option value="<%= st.id %>" <%= st.id === station.id ? 'selected' : '' %>><%= st.name %></option>
-        <% }); %>
-      </select>
-      <a href="/wiki/<%= station.id %>" class="btn btn-secondary btn-sm" aria-label="Recipes">
-        <i class="bi bi-journal-bookmark-fill me-1" aria-hidden="true"></i>Recipes
-      </a>
-      <a href="/admin" class="btn btn-secondary btn-sm" aria-label="Admin">
-        <i class="bi bi-gear-fill" aria-hidden="true"></i>
-      </a>
-      <%- include('partials/nav-buttons') %>
-    </div>
-  </header>
-
+<% title = station.name + ' KDS'; %>
+<% bodyClass = 'station-screen ' + station.type; %>
+<% contentFor('head') %>
+<style>
+  :root {
+    --color-bg: <%= station.bg_color || settings.theme_bg_color %>;
+    --color-primary: <%= station.primary_color || settings.theme_primary_color %>;
+    <% if (station.font_family) { %>
+    --font-family: <%= station.font_family %>;
+    <% } %>
+  }
+  .brand-name {
+    color: var(--color-primary);
+  }
+</style>
+<% endContentFor %>
+<header class="top-bar">
+  <h1 class="station-title">
+    <% if (settings.brand_logo) { %>
+      <img src="<%= settings.brand_logo %>" alt="<%= settings.brand_name || 'Logo' %>" class="brand-logo">
+    <% } else { %>
+      <span class="brand-name"><%= settings.brand_name || '' %></span>
+    <% } %>
+    – <%= station.name %>
+  </h1>
+  <div class="top-bar-links">
+    <label for="stationSelect" class="me-1">Switch Station:</label>
+    <select id="stationSelect" class="station-switch">
+      <% allStations.forEach(function(st){ %>
+        <option value="<%= st.id %>" <%= st.id === station.id ? 'selected' : '' %>><%= st.name %></option>
+      <% }); %>
+    </select>
+    <a href="/wiki/<%= station.id %>" class="btn btn-secondary btn-sm" aria-label="Recipes">
+      <i class="bi bi-journal-bookmark-fill me-1" aria-hidden="true"></i>Recipes
+    </a>
+    <a href="/admin" class="btn btn-secondary btn-sm" aria-label="Admin">
+      <i class="bi bi-gear-fill" aria-hidden="true"></i>
+    </a>
+  </div>
+</header>
 <main id="ticketsMain" class="tickets-container<%= settings.ticket_layout > 1 ? ' tickets-grid' : '' %>"
       <% if (settings.ticket_layout > 1) { %>
         style="--ticket-columns:<%= parseInt(settings.ticket_layout) %>"
       <% } %>>
-    <% if (orders.length === 0) { %>
-      <p class="no-orders">No current orders.</p>
-    <% } %>
-    <% orders.forEach(function(order) { %>
-      <div class="ticket <%= order.order_type ? order.order_type.replace(/\s+/g, '-').toLowerCase() : '' %>" data-order-id="<%= order.order_id %>" data-created-ts="<%= order.ts %>">
-        <div class="ticket-header">
-          <!-- Order type label -->
-          <% if (order.order_type) {
-               // Display order type or a source tag (could customize if needed)
-          %>
-            <span class="order-type <%= order.order_type.replace(/\s+/g, '-').toLowerCase() %>">
-              <%= order.order_type %>
-            </span>
-          <% } %>
-          <!-- Order number or reference -->
-          <span class="order-num"><%= order.order_number || '#' + order.order_id %></span>
-          <% if (order.allergy) { %>
-            <span class="allergy-label">ALLERGY</span>
-          <% } %>
-          <!-- Order time and elapsed -->
-          <span class="order-time">
-            <%
-              // Format created_at timestamp to hh:mm AM/PM
-              const date = new Date(order.ts * 1000);
-              const timeStr = date.toLocaleTimeString('en-US', {hour: 'numeric', minute: 'numeric'});
-            %>
-            <%= timeStr %>
-          </span>
-          <span class="elapsed">00:00</span>
-        </div>
-        <% if (order.special_instructions) { %>
-          <div class="ticket-instructions<%= order.allergy ? ' allergy' : '' %>"><%= order.special_instructions %></div>
+  <% if (orders.length === 0) { %>
+    <p class="no-orders">No current orders.</p>
+  <% } %>
+  <% orders.forEach(function(order) { %>
+    <div class="ticket <%= order.order_type ? order.order_type.replace(/\s+/g, '-').toLowerCase() : '' %>" data-order-id="<%= order.order_id %>" data-created-ts="<%= order.ts %>">
+      <div class="ticket-header">
+        <% if (order.order_type) { %>
+          <span class="order-type <%= order.order_type.replace(/\s+/g, '-').toLowerCase() %>"><%= order.order_type %></span>
         <% } %>
-        <ul class="items<%= station.type === 'expo' ? ' expo-items' : '' %>">
-          <% order.items.forEach(function(item) { %>
-            <li class="item <%= item.stationId ? 'station-' + item.stationId : '' %>">
-              <span class="qty"><%= item.quantity %>×</span>
-              <span class="item-name" data-item-id="<%= item.itemId %>" <% if (item.stationId) { %>data-station-id="<%= item.stationId %>"<% } %>><%= item.name %></span>
-              <% if (item.modifiers && item.modifiers.length) { %>
-                <ul class="item-modifiers">
-                  <% item.modifiers.forEach(function(m){ %>
-                    <li><%= m %></li>
-                  <% }); %>
-                </ul>
-              <% } %>
-              <% if (item.specialInstructions) { %>
-                <div class="ticket-instructions<%= item.allergy ? ' allergy' : '' %>"><%= item.specialInstructions %></div>
-              <% } %>
-              <% if (item.allergy) { %>
-                <div class="allergy-label">ALLERGY</div>
-              <% } %>
-            </li>
-          <% }); %>
-        </ul>
+        <span class="order-num"><%= order.order_number || '#' + order.order_id %></span>
+        <% if (order.allergy) { %>
+          <span class="allergy-label">ALLERGY</span>
+        <% } %>
+        <span class="order-time">
+          <%
+            const date = new Date(order.ts * 1000);
+            const timeStr = date.toLocaleTimeString('en-US', {hour: 'numeric', minute: 'numeric'});
+          %>
+          <%= timeStr %>
+        </span>
+        <span class="elapsed">00:00</span>
       </div>
-    <% }); %>
-  </main>
-
-  <!-- Bottom action bar -->
-  <footer class="action-bar">
-    <button id="actionBtn" class="btn-primary">
-      <% if (station.type === 'expo') { %>Serve<% } else { %>Ready<% } %>
-    </button>
-    <button id="urgentBtn" class="btn-secondary">Urgent</button>
-    <button id="recallBtn" class="btn-secondary">Recall</button>
-    <button id="layoutToggle" class="btn-secondary">Toggle Layout</button>
-  </footer>
-
-  <!-- Recipe Modal (hidden by default) -->
-  <div id="recipeModal" class="modal custom-modal d-none">
-    <div class="modal-content">
-      <button id="modalClose" class="btn-secondary">Close</button>
-      <div id="recipeText" class="recipe-text"><!-- Recipe details go here --></div>
+      <% if (order.special_instructions) { %>
+        <div class="ticket-instructions<%= order.allergy ? ' allergy' : '' %>"><%= order.special_instructions %></div>
+      <% } %>
+      <ul class="items<%= station.type === 'expo' ? ' expo-items' : '' %>">
+        <% order.items.forEach(function(item) { %>
+          <li class="item <%= item.stationId ? 'station-' + item.stationId : '' %>">
+            <span class="qty"><%= item.quantity %>×</span>
+            <span class="item-name" data-item-id="<%= item.itemId %>" <% if (item.stationId) { %>data-station-id="<%= item.stationId %>"<% } %>><%= item.name %></span>
+            <% if (item.modifiers && item.modifiers.length) { %>
+              <ul class="item-modifiers">
+                <% item.modifiers.forEach(function(m){ %>
+                  <li><%= m %></li>
+                <% }); %>
+              </ul>
+            <% } %>
+            <% if (item.specialInstructions) { %>
+              <div class="ticket-instructions<%= item.allergy ? ' allergy' : '' %>"><%= item.specialInstructions %></div>
+            <% } %>
+            <% if (item.allergy) { %>
+              <div class="allergy-label">ALLERGY</div>
+            <% } %>
+          </li>
+        <% }); %>
+      </ul>
     </div>
+  <% }); %>
+</main>
+<footer class="action-bar">
+  <button id="actionBtn" class="btn-primary">
+    <% if (station.type === 'expo') { %>Serve<% } else { %>Ready<% } %>
+  </button>
+  <button id="urgentBtn" class="btn-secondary">Urgent</button>
+  <button id="recallBtn" class="btn-secondary">Recall</button>
+  <button id="layoutToggle" class="btn-secondary">Toggle Layout</button>
+</footer>
+<div id="recipeModal" class="modal custom-modal d-none">
+  <div class="modal-content">
+    <button id="modalClose" class="btn-secondary">Close</button>
+    <div id="recipeText" class="recipe-text"></div>
   </div>
-  
-  <!-- Recall Modal (hidden by default) -->
-  <div id="recallModal" class="modal custom-modal d-none">
-    <div class="modal-content">
-      <button id="recallClose" class="btn-secondary">Close</button>
-      <h2>Recall Order</h2>
-      <ul id="recallList"></ul>
-    </div>
+</div>
+<div id="recallModal" class="modal custom-modal d-none">
+  <div class="modal-content">
+    <button id="recallClose" class="btn-secondary">Close</button>
+    <h2>Recall Order</h2>
+    <ul id="recallList"></ul>
   </div>
-  
-  <!-- Client-side scripts -->
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-  <script defer src="/client.js" data-station-id="<%= station.id %>" data-station-type="<%= station.type %>" data-bumped-history='<%- JSON.stringify(bumpedOrders || []) %>'></script>
-</body>
-</html>
+</div>
+<script src="/socket.io/socket.io.js"></script>
+<script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script defer src="/client.js" data-station-id="<%= station.id %>" data-station-type="<%= station.type %>" data-bumped-history='<%- JSON.stringify(bumpedOrders || []) %>'></script>

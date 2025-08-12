@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <%- include('partials/common-head') %>
+  <%- yield('head') %>
+</head>
+<body class="<%= typeof bodyClass !== 'undefined' ? bodyClass : '' %>">
+  <%- include('partials/header') %>
+  <%- include('partials/nav-buttons') %>
+  <%- body %>
+</body>
+</html>

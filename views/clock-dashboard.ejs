@@ -1,25 +1,19 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <%- include('partials/common-head') %>
-  <title>Clock</title>
-  <link rel="stylesheet" href="/login.css">
-</head>
-<body class="login-page">
-  <%- include('partials/header') %>
-  <div class="login-container text-center">
-    <div class="login-card card shadow-sm p-4">
-      <h1 class="mb-4">Welcome <%= employee.name %></h1>
-      <% if (clockedIn) { %>
-      <form method="post" action="/clock/out">
-        <button type="submit" class="btn btn-secondary w-100">Clock Out</button>
-      </form>
-      <% } else { %>
-      <form method="post" action="/clock/in">
-        <button type="submit" class="btn btn-primary w-100">Clock In</button>
-      </form>
-      <% } %>
-    </div>
+<% title = 'Clock'; %>
+<% bodyClass = 'login-page'; %>
+<% contentFor('head') %>
+<link rel="stylesheet" href="/login.css">
+<% endContentFor %>
+<div class="login-container text-center">
+  <div class="login-card card shadow-sm p-4">
+    <h1 class="mb-4">Welcome <%= employee.name %></h1>
+    <% if (clockedIn) { %>
+    <form method="post" action="/clock/out">
+      <button type="submit" class="btn btn-secondary w-100">Clock Out</button>
+    </form>
+    <% } else { %>
+    <form method="post" action="/clock/in">
+      <button type="submit" class="btn btn-primary w-100">Clock In</button>
+    </form>
+    <% } %>
   </div>
-</body>
-</html>
+</div>

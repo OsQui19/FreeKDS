@@ -1,30 +1,23 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <%- include('partials/common-head') %>
-  <meta name="description" content="Choose an interface for the FreeKDS system">
-  <title>FreeKDS Interfaces</title>
-  <link rel="stylesheet" href="/login.css">
-  <link rel="stylesheet" href="/home.css">
-</head>
-<body class="login-page home-page d-flex align-items-center justify-content-center">
-  <main class="login-container text-center">
-    <div class="login-card card shadow-sm p-4">
-      <h1 class="mb-4">Choose Interface</h1>
-      <div class="options">
-        <a href="/admin" class="btn btn-primary dash-btn" aria-label="Admin interface">
-          <i class="bi bi-gear-fill me-2" aria-hidden="true"></i>Admin
-        </a>
-        <a href="/stations" class="btn btn-primary dash-btn" aria-label="Station interface">
-          <i class="bi bi-display-fill me-2" aria-hidden="true"></i>Stations
-        </a>
-        <a href="/foh/order" class="btn btn-primary dash-btn" aria-label="Order interface">
-          <i class="bi bi-cart-fill me-2" aria-hidden="true"></i>Order
-        </a>
-      </div>
-      <%- include('partials/nav-buttons') %>
+<% title = 'FreeKDS Interfaces'; %>
+<% bodyClass = 'login-page home-page d-flex align-items-center justify-content-center'; %>
+<% contentFor('head') %>
+<link rel="stylesheet" href="/login.css">
+<link rel="stylesheet" href="/home.css">
+<% endContentFor %>
+<main class="login-container text-center">
+  <div class="login-card card shadow-sm p-4">
+    <h1 class="mb-4">Choose Interface</h1>
+    <div class="options">
+      <a href="/admin" class="btn btn-primary dash-btn" aria-label="Admin interface">
+        <i class="bi bi-gear-fill me-2" aria-hidden="true"></i>Admin
+      </a>
+      <a href="/stations" class="btn btn-primary dash-btn" aria-label="Station interface">
+        <i class="bi bi-display-fill me-2" aria-hidden="true"></i>Stations
+      </a>
+      <a href="/foh/order" class="btn btn-primary dash-btn" aria-label="Order interface">
+        <i class="bi bi-cart-fill me-2" aria-hidden="true"></i>Order
+      </a>
     </div>
-  </main>
-  <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+  </div>
+</main>
+<script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>

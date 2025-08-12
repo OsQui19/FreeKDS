@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const session = require('express-session');
 const MySQLStore = require('express-mysql-session')(session);
+const expressLayouts = require('express-ejs-layouts');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const settingsCache = require('../controllers/settingsCache');
@@ -98,6 +99,8 @@ function createApp(db, io) {
   });
   app.set('view engine', 'ejs');
   app.set('views', path.join(__dirname, '..', 'views'));
+  app.use(expressLayouts);
+  app.set('layout', 'layout');
   const adminRoutes = require('../routes/admin')(db, io);
   const authRoutes = require('../routes/auth')(db, io);
   const stationRoutes = require('../routes/stations')(db);

@@ -1,28 +1,22 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <%- include('partials/common-head') %>
-  <title>Clock In</title>
-  <link rel="stylesheet" href="/login.css">
-  <link rel="stylesheet" href="/clock.css">
-</head>
-<body class="login-page clock-page d-flex align-items-center justify-content-center min-vh-100">
-  <div class="login-container text-center">
-    <div class="login-card card shadow-sm p-4">
-      <% if (settings.brand_logo) { %>
-        <img src="<%= settings.brand_logo %>" alt="<%= settings.brand_name || 'Clock In' %>" class="brand-logo mb-1">
-      <% } else { %>
-        <h1 class="brand-name mb-1"><%= settings.brand_name || 'Clock In' %></h1>
-      <% } %>
-      <p class="text-muted mb-4">Enter PIN</p>
-      <form method="post" action="/clock" id="pinForm">
-        <input type="password" id="pinInput" name="pin" class="form-control mb-3" inputmode="numeric" pattern="\d{4,6}" required autofocus autocomplete="one-time-code">
-        <div id="keypad" class="keypad"></div>
-        <button type="submit" class="btn btn-primary w-100 mt-3">Clock In</button>
-      </form>
-      <%- include('partials/nav-buttons') %>
-    </div>
+<% title = 'Clock In'; %>
+<% bodyClass = 'login-page clock-page d-flex align-items-center justify-content-center min-vh-100'; %>
+<% contentFor('head') %>
+<link rel="stylesheet" href="/login.css">
+<link rel="stylesheet" href="/clock.css">
+<% endContentFor %>
+<div class="login-container text-center">
+  <div class="login-card card shadow-sm p-4">
+    <% if (settings.brand_logo) { %>
+      <img src="<%= settings.brand_logo %>" alt="<%= settings.brand_name || 'Clock In' %>" class="brand-logo mb-1">
+    <% } else { %>
+      <h1 class="brand-name mb-1"><%= settings.brand_name || 'Clock In' %></h1>
+    <% } %>
+    <p class="text-muted mb-4">Enter PIN</p>
+    <form method="post" action="/clock" id="pinForm">
+      <input type="password" id="pinInput" name="pin" class="form-control mb-3" inputmode="numeric" pattern="\d{4,6}" required autofocus autocomplete="one-time-code">
+      <div id="keypad" class="keypad"></div>
+      <button type="submit" class="btn btn-primary w-100 mt-3">Clock In</button>
+    </form>
   </div>
-  <script src="/clock.js"></script>
-</body>
-</html>
+</div>
+<script src="/clock.js"></script>
