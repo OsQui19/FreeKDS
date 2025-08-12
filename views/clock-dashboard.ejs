@@ -1,8 +1,8 @@
 <% title = 'Clock'; %>
 <% bodyClass = 'login-page'; %>
-<% contentFor('head') %>
+<%- contentFor('head') %>
 <link rel="stylesheet" href="/login.css">
-<% endContentFor %>
+<%- contentFor('body') %>
 <div class="login-container text-center">
   <div class="login-card card shadow-sm p-4">
     <h1 class="mb-4">Welcome <%= employee.name %></h1>

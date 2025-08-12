@@ -1,5 +1,5 @@
 <% title = station.name + ' – Recipes Wiki'; %>
-<% contentFor('head') %>
+<%- contentFor('head') %>
 <style>
   :root {
     --color-bg: <%= station.bg_color || settings.theme_bg_color %>;
@@ -21,7 +21,7 @@
   .recipe-list { background: #333; padding: 10px; }
   .recipe-list li { margin-bottom: 0.5em; }
 </style>
-<% endContentFor %>
+<%- contentFor('body') %>
 <header class="top-bar">
   <h1 class="station-title"><%= station.name %> – Recipe Wiki</h1>
   <div class="top-bar-links">

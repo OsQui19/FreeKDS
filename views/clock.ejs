@@ -1,9 +1,9 @@
 <% title = 'Clock In'; %>
 <% bodyClass = 'login-page clock-page d-flex align-items-center justify-content-center min-vh-100'; %>
-<% contentFor('head') %>
+<%- contentFor('head') %>
 <link rel="stylesheet" href="/login.css">
 <link rel="stylesheet" href="/clock.css">
-<% endContentFor %>
+<%- contentFor('body') %>
 <div class="login-container text-center">
   <div class="login-card card shadow-sm p-4">
     <% if (settings.brand_logo) { %>
