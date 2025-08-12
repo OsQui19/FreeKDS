@@ -1,17 +1,7 @@
 /* admin.css - additive admin shell polish aligned with Theme bundle */
-:root {
-  /* Fallback variable values */
-  --bg-color: #f8f8f8;
-  --primary-color: #007aff;
-  --button-radius: 6px;
-  --card-shadow: 0 2px 6px rgba(0,0,0,0.08);
-  --text-color: #000;
-  --card-radius: 8px;
-}
-
 body.admin-screen {
-  background: var(--bg-color);
-  color: var(--text-color);
+  background: var(--color-bg);
+  color: var(--color-text);
 }
 
 /* Cards feel consistent with theme editor */
