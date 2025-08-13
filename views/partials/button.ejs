@@ -1,11 +1,19 @@
 <%
-  const cls = [base ?? 'btn', variant ?? 'btn-primary', classes]
+  const cls = [
+    typeof base !== 'undefined' ? base : 'btn',
+    typeof variant !== 'undefined' ? variant : 'btn-primary',
+    typeof classes !== 'undefined' ? classes : null
+  ]
     .filter(Boolean)
     .join(' ');
+  const isLink = typeof href !== 'undefined';
 %>
-<button
-  type="<%= type || 'button' %>"
-  class="<%= cls %>"
-  <% if (id) { %>id="<%= id %>" <% } %><%- extra ? ' ' + extra : '' %>>
-  <% if (icon) { %><i class="<%= icon %>"></i><% } %><%= text || '' %>
+<% if (isLink) { %>
+<a href="<%= href %>" class="<%= cls %>" <% if (typeof id !== 'undefined') { %>id="<%= id %>" <% } %><%- typeof extra !== 'undefined' ? ' ' + extra : '' %>>
+  <% if (typeof icon !== 'undefined') { %><i class="<%= icon %>"></i><% } %><%= typeof text !== 'undefined' ? text : '' %>
+</a>
+<% } else { %>
+<button type="<%= typeof type !== 'undefined' ? type : 'button' %>" class="<%= cls %>" <% if (typeof id !== 'undefined') { %>id="<%= id %>" <% } %><%- typeof extra !== 'undefined' ? ' ' + extra : '' %>>
+  <% if (typeof icon !== 'undefined') { %><i class="<%= icon %>"></i><% } %><%= typeof text !== 'undefined' ? text : '' %>
 </button>
+<% } %>

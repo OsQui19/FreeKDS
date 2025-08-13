@@ -3,17 +3,16 @@
 <%- contentFor('head') %>
 <link rel="stylesheet" href="/login.css">
 <%- contentFor('body') %>
-<div class="login-container text-center">
-  <div class="login-card card shadow-sm p-4">
-    <h1 class="mb-4">Welcome <%= employee.name %></h1>
-    <% if (clockedIn) { %>
-    <form method="post" action="/clock/out">
-        <%- include('partials/button', { type: 'submit', variant: 'btn-secondary', classes: 'w-100', text: 'Clock Out' }) %>
-    </form>
-    <% } else { %>
-    <form method="post" action="/clock/in">
-        <%- include('partials/button', { type: 'submit', variant: 'btn-primary', classes: 'w-100', text: 'Clock In' }) %>
-    </form>
-    <% } %>
-  </div>
-</div>
+<% const headingText = `Welcome ${employee.name}`; %>
+<% function dashboardForm() { %>
+  <% if (clockedIn) { %>
+  <form method="post" action="/clock/out">
+      <%- include('partials/button', { type: 'submit', variant: 'btn-secondary', classes: 'w-100', text: 'Clock Out' }) %>
+  </form>
+  <% } else { %>
+  <form method="post" action="/clock/in">
+      <%- include('partials/button', { type: 'submit', variant: 'btn-primary', classes: 'w-100', text: 'Clock In' }) %>
+  </form>
+  <% } %>
+<% } %>
+<%- include('partials/auth-card', { containerClass: 'text-center', heading: headingText, body: dashboardForm }) %>

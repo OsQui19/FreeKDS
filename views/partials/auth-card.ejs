@@ -1,0 +1,16 @@
+<%
+  const containerCls = ['login-container', typeof containerClass !== 'undefined' ? containerClass : '']
+    .filter(Boolean)
+    .join(' ');
+  const cardCls = ['login-card', 'card', 'shadow-sm', 'p-4', typeof cardClass !== 'undefined' ? cardClass : '']
+    .filter(Boolean)
+    .join(' ');
+%>
+<div class="<%= containerCls %>">
+  <div class="<%= cardCls %>">
+    <% if (typeof heading !== 'undefined') { %>
+      <h1 class="mb-4"><%= heading %></h1>
+    <% } %>
+    <%- typeof body === 'function' ? body() : body %>
+  </div>
+</div>

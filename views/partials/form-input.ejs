@@ -1,13 +1,13 @@
-<% if (wrapperClass) { %>
+<% if (typeof wrapperClass !== 'undefined') { %>
 <div class="<%= wrapperClass %>">
 <% } %>
   <input
     type="<%= type %>"
     name="<%= name %>"
-    <% if (id) { %>id="<%= id %>" <% } %>
-    class="form-control <%= inputClass || '' %>"
-    placeholder="<%= placeholder || '' %>"
-    <%= required ? 'required' : '' %><%- extra ? ' ' + extra : '' %>>
-<% if (wrapperClass) { %>
+    <% if (typeof id !== 'undefined') { %>id="<%= id %>" <% } %>
+    class="form-control <%= typeof inputClass !== 'undefined' ? inputClass : '' %>"
+    placeholder="<%= typeof placeholder !== 'undefined' ? placeholder : '' %>"
+    <%= typeof required !== 'undefined' && required ? 'required' : '' %><%- typeof extra !== 'undefined' ? ' ' + extra : '' %>>
+<% if (typeof wrapperClass !== 'undefined') { %>
 </div>
 <% } %>
