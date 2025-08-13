@@ -39,12 +39,12 @@ body {
 .view-toggle .btn {
   padding: var(--spacing-6) var(--spacing-12);
   font-size: 0.9rem;
-  background: var(--bs-secondary);
+  background: var(--color-secondary);
   color: var(--color-white);
   border: none;
 }
 .view-toggle .btn.active {
-  background: var(--bs-primary);
+  background: var(--color-primary);
 }
 
 #categoryNav {
@@ -181,26 +181,6 @@ body.menu-layout-list .item-card img {
   margin-top: var(--spacing-10);
 }
 
-.btn {
-  padding: var(--spacing-6) var(--spacing-10);
-  border: none;
-  border-radius: var(--bs-btn-border-radius);
-  cursor: pointer;
-  background: var(--bs-primary);
-  color: var(--color-white);
-  transition:
-    background 0.2s ease-in-out,
-    filter 0.2s ease-in-out;
-}
-
-.btn:hover {
-  filter: brightness(0.9);
-}
-
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
 
 #modOptions .mod-group-label {
   font-weight: 600;

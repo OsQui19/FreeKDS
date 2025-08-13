@@ -92,22 +92,22 @@
   <% }); %>
 </main>
 <footer class="action-bar">
-  <button id="actionBtn" class="btn-primary">
+  <button id="actionBtn" class="btn btn-primary">
     <% if (station.type === 'expo') { %>Serve<% } else { %>Ready<% } %>
   </button>
-  <button id="urgentBtn" class="btn-secondary">Urgent</button>
-  <button id="recallBtn" class="btn-secondary">Recall</button>
-  <button id="layoutToggle" class="btn-secondary">Toggle Layout</button>
+  <button id="urgentBtn" class="btn btn-secondary">Urgent</button>
+  <button id="recallBtn" class="btn btn-secondary">Recall</button>
+  <button id="layoutToggle" class="btn btn-secondary">Toggle Layout</button>
 </footer>
 <div id="recipeModal" class="modal custom-modal d-none">
   <div class="modal-content">
-    <button id="modalClose" class="btn-secondary">Close</button>
+    <button id="modalClose" class="btn btn-secondary">Close</button>
     <div id="recipeText" class="recipe-text"></div>
   </div>
 </div>
 <div id="recallModal" class="modal custom-modal d-none">
   <div class="modal-content">
-    <button id="recallClose" class="btn-secondary">Close</button>
+    <button id="recallClose" class="btn btn-secondary">Close</button>
     <h2>Recall Order</h2>
     <ul id="recallList"></ul>
   </div>
