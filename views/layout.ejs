@@ -2,7 +2,7 @@
 <html>
 <head>
   <%- include('partials/common-head') %>
-  <%- yield('head') %>
+  <%- head %>
 </head>
 <body class="<%= typeof bodyClass !== 'undefined' ? bodyClass : '' %>">
   <%- include('partials/header') %>
