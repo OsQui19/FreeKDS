@@ -6,7 +6,7 @@
   height: 100%;
   background: var(--color-white);
   color: var(--color-text);
-  box-shadow: -2px 0 16px rgba(0,0,0,.15);
+  box-shadow: var(--panel-shadow);
   transform: translateX(100%);
   transition: transform .25s ease;
   z-index: 1060;
@@ -33,7 +33,7 @@
   position: fixed;
     right: var(--spacing-16); bottom: var(--spacing-16);
   z-index: 1050;
-  box-shadow: 0 8px 24px rgba(0,0,0,.12);
+  box-shadow: var(--btn-shadow-lg);
 }
 
 /* Compact on small screens to avoid covering category chips */

@@ -11,7 +11,7 @@
     <div class="inventory-pane active" id="itemsPane" role="tabpanel" aria-labelledby="itemsTab">
       <div class="ingredient-list mb-3">
         <div class="d-flex mb-2 align-items-center">
-          <select id="filterCategory" class="form-select form-select-sm me-2" style="width:auto;">
+          <select id="filterCategory" class="form-select form-select-sm me-2 w-auto">
             <option value="">All Categories</option>
             <% itemCategories.forEach(cat => { %>
               <option value="<%= cat.id %>"><%= cat.name %></option>
@@ -36,12 +36,11 @@
             <input type="hidden" name="ingredient_id" id="quickAddId" />
             <input
               id="quickAddQty"
-              class="form-control form-control-sm"
+              class="form-control form-control-sm w-6em"
               type="number"
               step="0.01"
               name="quantity"
               placeholder="Quantity"
-              style="width:6em;"
             />
             <button
               id="quickAddBtn"
