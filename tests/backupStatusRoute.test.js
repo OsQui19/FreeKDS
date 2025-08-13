@@ -1,14 +1,11 @@
-const express = require('express');
 const request = require('supertest');
 const { expect } = require('chai');
+const createApp = require('../src/app');
 
-function buildApp(db = { promise: () => ({ query: async () => [] }) }) {
-  const app = express();
-  app.use(express.urlencoded({ extended: false }));
-  app.use((req, res, next) => { req.session = {}; next(); });
-  const router = require('../routes/admin')(db, {});
-  app.use(router);
-  return app;
+process.env.NODE_ENV = 'test';
+
+function buildApp(db = { promise: () => ({ query: async () => [] }), query: () => {} }) {
+  return createApp(db, {});
 }
 
 describe('GET /admin/backups/status', () => {

@@ -1,96 +1,30 @@
 const express = require('express');
 const path = require('path');
-const session = require('express-session');
-const MySQLStore = require('express-mysql-session')(session);
 const expressLayouts = require('express-ejs-layouts');
-const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
 const settingsCache = require('../controllers/settingsCache');
-const { logSecurityEvent } = require('../controllers/securityLog');
 const accessControl = require('../controllers/accessControl');
 const config = require('../config');
 const logger = require('../utils/logger');
+const helmetMiddleware = require('./middleware/helmet');
+const rateLimitMiddleware = require('./middleware/rateLimit');
+const sessionMiddleware = require('./middleware/session');
+const authMiddleware = require('./middleware/auth');
+const registerRoutes = require('./routes');
 
 function createApp(db, io) {
   const app = express();
-  const cspDirectives = helmet.contentSecurityPolicy.getDefaultDirectives();
-  delete cspDirectives['upgrade-insecure-requests'];
-  app.use(
-    helmet({
-      contentSecurityPolicy: { directives: cspDirectives },
-      hsts: { maxAge: 0 },
-    })
-  );
-  const limiter = rateLimit({
-    windowMs: config.rateLimit.windowMs,
-    max: config.rateLimit.max,
-    skip: (req) => req.path.startsWith('/socket.io'),
-  });
-  app.use(limiter);
-  const secureCookie = config.secureCookie;
+  app.use(helmetMiddleware());
+  app.use(rateLimitMiddleware(config));
   app.use(express.urlencoded({ extended: true }));
   app.use(express.json());
-  let sessionMiddleware;
-  try {
-    const sessionStore = new MySQLStore({}, db);
-    sessionMiddleware = session({
-      secret: config.sessionSecret,
-      resave: false,
-      saveUninitialized: false,
-      store: sessionStore,
-      cookie: {
-        httpOnly: true,
-        secure: secureCookie,
-        sameSite: 'lax',
-      },
-    });
-  } catch (err) {
-    logger.error('Failed to initialize MySQL session store', err);
-    sessionMiddleware = session({
-      secret: config.sessionSecret,
-      resave: false,
-      saveUninitialized: false,
-      cookie: {
-        httpOnly: true,
-        secure: secureCookie,
-        sameSite: 'lax',
-      },
-    });
-  }
-  app.use(sessionMiddleware);
+  app.use(sessionMiddleware(db, config, logger));
   app.use((req, res, next) => {
     if (req.secure || req.headers['x-forwarded-proto'] === 'https') {
       return res.redirect('http://' + req.headers.host + req.originalUrl);
     }
     next();
   });
-  app.use((req, res, next) => {
-    const publicPaths = [
-      '/login',
-      '/login.css',
-      '/style.css',
-      '/base.css',
-      '/clock.css',
-      '/clock',
-      '/clock.js',
-      '/clock/dashboard',
-      '/favicon.ico',
-      '/order',
-      '/foh/order',
-      '/order.js',
-      '/order.css',
-      '/bootstrap-vars.css',
-      '/health',
-    ];
-    if (
-      req.session.user ||
-      publicPaths.includes(req.path) ||
-      req.path.startsWith('/vendor/')
-    )
-      return next();
-    logSecurityEvent(db, 'unauthorized', null, req.path, false, req.ip);
-    return res.redirect('/login');
-  });
+  app.use(authMiddleware(db));
   app.use(express.static(path.join(__dirname, '..', 'public')));
   app.use((req, res, next) => {
     res.locals.settings = settingsCache.getSettings();
@@ -115,14 +49,7 @@ function createApp(db, io) {
   app.set('views', path.join(__dirname, '..', 'views'));
   app.use(expressLayouts);
   app.set('layout', 'layout');
-  const adminRoutes = require('../routes/admin')(db, io);
-  const authRoutes = require('../routes/auth')(db, io);
-  const stationRoutes = require('../routes/stations')(db);
-  const apiRoutes = require('../routes/api')(db, io);
-  app.use(authRoutes);
-  app.use(adminRoutes);
-  app.use(stationRoutes);
-  app.use(apiRoutes);
+  app.use(registerRoutes(db, io));
   app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok' });
   });

@@ -1,23 +1,18 @@
-const express = require('express');
 const request = require('supertest');
 const { expect } = require('chai');
 const accessControl = require('../controllers/accessControl');
+const createApp = require('../src/app');
 
-function buildApp(role, db) {
-  const app = express();
-  app.use(express.json());
-  app.use((req, res, next) => {
-    req.session = { user: { role } };
-    next();
-  });
-  const router = require('../routes/api')(db, {
+process.env.NODE_ENV = 'test';
+
+function buildApp(db) {
+  const io = {
     emit() {},
     to() {
       return { emit() {} };
     },
-  });
-  app.use(router);
-  return app;
+  };
+  return createApp(db, io);
 }
 
 describe('PUT /api/menu-items/:id', () => {
@@ -39,9 +34,10 @@ describe('PUT /api/menu-items/:id', () => {
   });
 
   it('allows FOH role to mark an item unavailable', async () => {
-    const app = buildApp('FOH', db);
+    const app = buildApp(db);
     const res = await request(app)
       .put('/api/menu-items/1')
+      .set('x-test-role', 'FOH')
       .send({ is_available: false });
     expect(res.status).to.equal(200);
     expect(res.body).to.have.property('success', true);
