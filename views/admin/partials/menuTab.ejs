@@ -240,28 +240,7 @@
   </div>
 
   <!-- Modal for adding recipe and ingredients -->
-  <div id="addRecipeModal" class="modal custom-modal d-none">
-    <div class="modal-content bg-white text-dark">
-      <h3>Item Recipe</h3>
-      <div class="recipe-container mb-3">
-        <label class="form-label">Recipe Steps</label>
-        <div class="recipe-rows"></div>
-        <div class="d-flex gap-2 mb-2">
-          <input type="text" class="form-control recipe-input" placeholder="Instruction">
-          <button type="button" class="btn btn-sm btn-secondary add-recipe-row">Add Step</button>
-        </div>
-      </div>
-      <div class="ingredient-container mb-3">
-        <label class="form-label">Ingredients</label>
-        <div class="ingredient-rows"></div>
-        <button type="button" class="btn btn-sm btn-secondary add-ingredient-row">Add Ingredient</button>
-      </div>
-      <div class="text-end">
-        <button type="button" id="recipeSave" class="btn btn-primary">Save</button>
-        <button type="button" id="recipeCancel" class="btn btn-secondary">Cancel</button>
-      </div>
-    </div>
-  </div>
+  <div id="adminMenuApp"></div>
 
   <!-- Management options -->
   <div class="accordion mb-4" id="menuManageAccordion">
@@ -368,4 +347,4 @@
       <option value="<%= ing.name %>"></option>
     <% }) %>
   </datalist>
-  <script type="module" defer src="/adminMenu.js" data-ingredients='<%= JSON.stringify(publicIngredients) %>' data-units='<%= JSON.stringify(units) %>'></script>
+  <script type="module" defer src="/dist/adminMenu.js" data-ingredients='<%= JSON.stringify(publicIngredients) %>' data-units='<%= JSON.stringify(units) %>'></script>

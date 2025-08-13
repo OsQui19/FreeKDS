@@ -12,6 +12,7 @@ export default defineConfig({
         schedule: 'src/schedule/main.jsx',
         onboarding: 'src/employees/onboardingMain.jsx',
         hierarchy: 'src/employees/hierarchyMain.jsx',
+        adminMenu: 'src/features/AdminMenu/main.jsx',
       },
       output: {
         entryFileNames: '[name].js',

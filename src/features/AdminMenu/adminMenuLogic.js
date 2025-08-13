@@ -713,9 +713,6 @@ function bindForms() {
         showAlert("Modifier saved", 'success', ALERT_CONTAINER);
       }, { alertContainer: ALERT_CONTAINER });
     });
-}
-
-function initAdminMenu() {
   initIngredientFields();
   initRecipeFields();
   initModifierFields();
@@ -730,16 +727,3 @@ function initAdminMenu() {
   initOptionSections();
   initPersistentModifierSection();
 }
-
-window.initAdminMenu = initAdminMenu;
-
-if (!window.__ADMIN_MENU_INITED__) {
-  window.__ADMIN_MENU_INITED__ = true;
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initAdminMenu);
-  } else {
-    initAdminMenu();
-  }
-}
-
-} // end guard
