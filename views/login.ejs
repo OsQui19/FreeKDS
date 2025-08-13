@@ -7,13 +7,9 @@
   <div class="login-card card shadow-sm p-4">
     <h1 class="mb-4">Employee Login</h1>
     <form method="post" action="/login">
-      <div class="mb-3">
-        <input type="text" name="username" class="form-control" placeholder="Username" required>
-      </div>
-      <div class="mb-3">
-        <input type="password" name="password" class="form-control" placeholder="Password" required>
-      </div>
-      <button type="submit" class="btn btn-primary w-100">Log In</button>
+      <%- include('partials/form-input', { type: 'text', name: 'username', placeholder: 'Username', required: true, wrapperClass: 'mb-3' }) %>
+      <%- include('partials/form-input', { type: 'password', name: 'password', placeholder: 'Password', required: true, wrapperClass: 'mb-3' }) %>
+      <%- include('partials/button', { type: 'submit', variant: 'btn-primary', classes: 'w-100', text: 'Log In' }) %>
     </form>
   </div>
 </div>

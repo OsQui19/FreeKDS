@@ -1,0 +1,6 @@
+<button
+  type="<%= type || 'button' %>"
+  class="btn <%= variant || 'btn-primary' %> <%= classes || '' %>"
+  <% if (id) { %>id="<%= id %>" <% } %><%- extra ? ' ' + extra : '' %>>
+  <%= text %>
+</button>

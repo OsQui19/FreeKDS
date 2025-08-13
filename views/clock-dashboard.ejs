@@ -8,11 +8,11 @@
     <h1 class="mb-4">Welcome <%= employee.name %></h1>
     <% if (clockedIn) { %>
     <form method="post" action="/clock/out">
-      <button type="submit" class="btn btn-secondary w-100">Clock Out</button>
+        <%- include('partials/button', { type: 'submit', variant: 'btn-secondary', classes: 'w-100', text: 'Clock Out' }) %>
     </form>
     <% } else { %>
     <form method="post" action="/clock/in">
-      <button type="submit" class="btn btn-primary w-100">Clock In</button>
+        <%- include('partials/button', { type: 'submit', variant: 'btn-primary', classes: 'w-100', text: 'Clock In' }) %>
     </form>
     <% } %>
   </div>

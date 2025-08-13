@@ -1,0 +1,13 @@
+<% if (wrapperClass) { %>
+<div class="<%= wrapperClass %>">
+<% } %>
+  <input
+    type="<%= type %>"
+    name="<%= name %>"
+    <% if (id) { %>id="<%= id %>" <% } %>
+    class="form-control <%= inputClass || '' %>"
+    placeholder="<%= placeholder || '' %>"
+    <%= required ? 'required' : '' %><%- extra ? ' ' + extra : '' %>>
+<% if (wrapperClass) { %>
+</div>
+<% } %>
