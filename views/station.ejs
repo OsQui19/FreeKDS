@@ -92,22 +92,44 @@
   <% }); %>
 </main>
 <footer class="action-bar">
-  <button id="actionBtn" class="btn btn-primary">
-    <% if (station.type === 'expo') { %>Serve<% } else { %>Ready<% } %>
-  </button>
-  <button id="urgentBtn" class="btn btn-secondary">Urgent</button>
-  <button id="recallBtn" class="btn btn-secondary">Recall</button>
-  <button id="layoutToggle" class="btn btn-secondary">Toggle Layout</button>
+  <%- include('partials/button', {
+    id: 'actionBtn',
+    variant: 'btn-primary',
+    text: station.type === 'expo' ? 'Serve' : 'Ready'
+  }) %>
+  <%- include('partials/button', {
+    id: 'urgentBtn',
+    variant: 'btn-secondary',
+    text: 'Urgent'
+  }) %>
+  <%- include('partials/button', {
+    id: 'recallBtn',
+    variant: 'btn-secondary',
+    text: 'Recall'
+  }) %>
+  <%- include('partials/button', {
+    id: 'layoutToggle',
+    variant: 'btn-secondary',
+    text: 'Toggle Layout'
+  }) %>
 </footer>
 <div id="recipeModal" class="modal custom-modal d-none">
   <div class="modal-content">
-    <button id="modalClose" class="btn btn-secondary">Close</button>
+    <%- include('partials/button', {
+      id: 'modalClose',
+      variant: 'btn-secondary',
+      text: 'Close'
+    }) %>
     <div id="recipeText" class="recipe-text"></div>
   </div>
 </div>
 <div id="recallModal" class="modal custom-modal d-none">
   <div class="modal-content">
-    <button id="recallClose" class="btn btn-secondary">Close</button>
+    <%- include('partials/button', {
+      id: 'recallClose',
+      variant: 'btn-secondary',
+      text: 'Close'
+    }) %>
     <h2>Recall Order</h2>
     <ul id="recallList"></ul>
   </div>

@@ -1,6 +1,11 @@
+<%
+  const cls = [base ?? 'btn', variant ?? 'btn-primary', classes]
+    .filter(Boolean)
+    .join(' ');
+%>
 <button
   type="<%= type || 'button' %>"
-  class="btn <%= variant || 'btn-primary' %> <%= classes || '' %>"
+  class="<%= cls %>"
   <% if (id) { %>id="<%= id %>" <% } %><%- extra ? ' ' + extra : '' %>>
-  <%= text %>
+  <% if (icon) { %><i class="<%= icon %>"></i><% } %><%= text || '' %>
 </button>

@@ -46,7 +46,11 @@
           <img src="<%= item.image_url || '/no-image-150.png' %>" alt="<%= item.name %>">
           <span class="item-name"><%= item.name %></span>
           <span class="item-price">$<%= Number(item.price).toFixed(2) %></span>
-          <button class="btn btn-primary" data-id="<%= item.id %>"><i class="bi bi-plus-lg"></i></button>
+          <%- include('partials/button', {
+            variant: 'btn-primary',
+            icon: 'bi bi-plus-lg',
+            extra: 'data-id="' + item.id + '"'
+          }) %>
         </div>
       <% }) %>
       </div>
@@ -57,14 +61,24 @@
   <h3>Your Order</h3>
   <ul id="cartItems"></ul>
   <div id="cartTotal" class="cart-total">$0.00</div>
-  <button id="submitBtn" class="btn btn-success" disabled>Submit Order</button>
+  <%- include('partials/button', {
+    id: 'submitBtn',
+    variant: 'btn-success',
+    text: 'Submit Order',
+    extra: 'disabled'
+  }) %>
 </div>
 <div id="modModal" class="modal" tabindex="-1" aria-labelledby="modTitle">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content modal-small bg-white text-dark">
       <div class="modal-header">
         <h5 class="modal-title" id="modTitle"></h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <%- include('partials/button', {
+          type: 'button',
+          base: '',
+          variant: 'btn-close',
+          extra: 'data-bs-dismiss="modal" aria-label="Close"'
+        }) %>
       </div>
       <div class="modal-body p-3">
         <div id="modOptions"></div>
@@ -82,8 +96,16 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button id="modConfirm" class="btn btn-success">Add Item</button>
-        <button id="modCancel" class="btn btn-secondary">Cancel</button>
+        <%- include('partials/button', {
+          id: 'modConfirm',
+          variant: 'btn-success',
+          text: 'Add Item'
+        }) %>
+        <%- include('partials/button', {
+          id: 'modCancel',
+          variant: 'btn-secondary',
+          text: 'Cancel'
+        }) %>
       </div>
     </div>
   </div>
@@ -94,13 +116,24 @@
   </div>
 </div>
 <% if (user && user.role === 'management') { %>
-  <button id="personalizeToggle" class="btn btn-primary" type="button" aria-controls="personalizePanel" aria-expanded="false">
-    Personalize
-  </button>
+  <%- include('partials/button', {
+    id: 'personalizeToggle',
+    variant: 'btn-primary',
+    type: 'button',
+    text: 'Personalize',
+    extra: 'aria-controls="personalizePanel" aria-expanded="false"'
+  }) %>
   <aside id="personalizePanel" class="personalize-panel" aria-hidden="true">
     <header class="personalize-header">
       <h2 class="h6 m-0">Personalize Display</h2>
-      <button type="button" class="btn btn-sm btn-outline-secondary" id="personalizeClose" aria-label="Close">✕</button>
+      <%- include('partials/button', {
+        id: 'personalizeClose',
+        variant: 'btn-outline-secondary',
+        type: 'button',
+        classes: 'btn-sm',
+        text: '✕',
+        extra: 'aria-label="Close"'
+      }) %>
     </header>
     <div class="personalize-body">
       <label class="form-label">Density</label>
@@ -124,8 +157,18 @@
       </div>
     </div>
     <div class="personalize-actions">
-      <button class="btn btn-secondary" id="personalizeReset" type="button">Reset</button>
-      <button class="btn btn-primary" id="personalizeSave" type="button">Save</button>
+      <%- include('partials/button', {
+        id: 'personalizeReset',
+        variant: 'btn-secondary',
+        type: 'button',
+        text: 'Reset'
+      }) %>
+      <%- include('partials/button', {
+        id: 'personalizeSave',
+        variant: 'btn-primary',
+        type: 'button',
+        text: 'Save'
+      }) %>
     </div>
   </aside>
 <% } %>

@@ -50,7 +50,11 @@
           <span class="item-name"><%= item.name %></span>
           <span class="item-price">$<%= Number(item.price).toFixed(2) %></span>
           <span class="item-qty"><%= item.stock != null ? 'Qty: ' + item.stock : '' %></span>
-          <button class="btn btn-primary" data-id="<%= item.id %>"><i class="bi bi-plus-lg"></i></button>
+          <%- include('partials/button', {
+            variant: 'btn-primary',
+            icon: 'bi bi-plus-lg',
+            extra: 'data-id="' + item.id + '"'
+          }) %>
         </div>
       <% }) %>
       </div>
@@ -61,14 +65,24 @@
   <h3>Your Order</h3>
   <ul id="cartItems"></ul>
   <div id="cartTotal" class="cart-total">$0.00</div>
-  <button id="submitBtn" class="btn btn-success" disabled>Submit Order</button>
+  <%- include('partials/button', {
+    id: 'submitBtn',
+    variant: 'btn-success',
+    text: 'Submit Order',
+    extra: 'disabled'
+  }) %>
 </div>
 <div id="modModal" class="modal" tabindex="-1" aria-labelledby="modTitle">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content modal-small bg-white text-dark">
       <div class="modal-header">
         <h5 class="modal-title" id="modTitle"></h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <%- include('partials/button', {
+          type: 'button',
+          base: '',
+          variant: 'btn-close',
+          extra: 'data-bs-dismiss="modal" aria-label="Close"'
+        }) %>
       </div>
       <div class="modal-body p-3">
         <div id="modOptions"></div>
@@ -86,8 +100,16 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button id="modConfirm" class="btn btn-success">Add Item</button>
-        <button id="modCancel" class="btn btn-secondary">Cancel</button>
+        <%- include('partials/button', {
+          id: 'modConfirm',
+          variant: 'btn-success',
+          text: 'Add Item'
+        }) %>
+        <%- include('partials/button', {
+          id: 'modCancel',
+          variant: 'btn-secondary',
+          text: 'Cancel'
+        }) %>
       </div>
     </div>
   </div>

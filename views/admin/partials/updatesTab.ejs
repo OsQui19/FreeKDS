@@ -7,12 +7,22 @@
           <span class="fw-bold">Latest version:</span>
           <span id="releaseVersion">-</span>
         </div>
-        <button id="checkUpdatesBtn" class="btn btn-sm btn-secondary">Check for updates</button>
+        <%- include('../../partials/button', {
+          id: 'checkUpdatesBtn',
+          variant: 'btn-secondary',
+          classes: 'btn-sm',
+          text: 'Check for updates'
+        }) %>
       </div>
       <pre id="releaseNotes" class="small"></pre>
       <div class="d-flex gap-2">
         <a id="downloadLink" class="btn btn-primary btn-sm mt-2 d-none" target="_blank" rel="noopener">Download</a>
-        <button id="applyUpdateBtn" class="btn btn-danger btn-sm mt-2">Apply update</button>
+        <%- include('../../partials/button', {
+          id: 'applyUpdateBtn',
+          variant: 'btn-danger',
+          classes: 'btn-sm mt-2',
+          text: 'Apply update'
+        }) %>
       </div>
     </div>
   </div>
@@ -25,14 +35,29 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Apply Update</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <%- include('../../partials/button', {
+            type: 'button',
+            base: '',
+            variant: 'btn-close',
+            extra: 'data-bs-dismiss="modal" aria-label="Close"'
+          }) %>
         </div>
         <div class="modal-body">
           Apply the latest update? The system may restart.
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button id="confirmApplyUpdateBtn" type="button" class="btn btn-primary">Apply</button>
+          <%- include('../../partials/button', {
+            type: 'button',
+            variant: 'btn-secondary',
+            text: 'Cancel',
+            extra: 'data-bs-dismiss="modal"'
+          }) %>
+          <%- include('../../partials/button', {
+            id: 'confirmApplyUpdateBtn',
+            type: 'button',
+            variant: 'btn-primary',
+            text: 'Apply'
+          }) %>
         </div>
       </div>
     </div>

@@ -43,7 +43,12 @@
         </div>
         <div id="timeEditModal" class="modal custom-modal d-none">
           <div class="modal-content modal-small">
-              <button id="timeEditCancel" class="btn btn-secondary btn-sm mb-2">Close</button>
+              <%- include('../../partials/button', {
+                id: 'timeEditCancel',
+                variant: 'btn-secondary',
+                classes: 'btn-sm mb-2',
+                text: 'Close'
+              }) %>
             <form id="timeEditForm">
               <input type="hidden" name="id">
               <div class="mb-2">
@@ -54,14 +59,24 @@
                 <label class="form-label">Clock Out</label>
                 <input type="datetime-local" name="clock_out" class="form-control form-control-sm">
               </div>
-              <button type="submit" class="btn btn-primary btn-sm">Save</button>
+              <%- include('../../partials/button', {
+                type: 'submit',
+                variant: 'btn-primary',
+                classes: 'btn-sm',
+                text: 'Save'
+              }) %>
             </form>
           </div>
         </div>
       </div>
       <div class="employees-pane" id="payrollPane">
         <div class="d-flex justify-content-end mb-2">
-          <button id="exportPayroll" class="btn btn-sm btn-outline-secondary">Export CSV</button>
+          <%- include('../../partials/button', {
+            id: 'exportPayroll',
+            variant: 'btn-outline-secondary',
+            classes: 'btn-sm',
+            text: 'Export CSV'
+          }) %>
         </div>
         <div class="table-responsive">
         <table class="table table-sm" id="payrollTable">
