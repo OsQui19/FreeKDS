@@ -1,49 +1,32 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Admin Dashboard</title>
-  <link href="/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="/vendor/bootstrap-icons/bootstrap-icons.css">
-  <link rel="stylesheet" href="/base.css">
-  <link rel="stylesheet" href="/style.css">
-  <link rel="stylesheet" href="/dist/main.css">
-  <link rel="preload" as="script" href="/dist/schedule.js">
-  <%- include('../partials/theme-vars') %>
-  <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-  <script defer src="/adminWindows.js" data-modules='<%- JSON.stringify(allowedModules || []) %>'></script>
-  <script defer src="/loadingSpinner.js"></script>
-  <script defer src="/confirmSubmit.js"></script>
-</head>
-<body class="admin-screen">
-  <%- include('partials/header') %>
-  <%- include('partials/sidenav') %>
-  <%- include('partials/flashMessage') %>
-  <div id="windowsContainer" class="windows-container flex-layout"></div>
-  <% if ((allowedModules || []).includes('stations')) { %>
+<%- layout('admin/adminLayout') %>
+<% pageTitle = 'Dashboard'; %>
+<%- contentFor('head') %>
+<link rel="preload" as="script" href="/dist/schedule.js">
+<script defer src="/adminWindows.js" data-modules='<%- JSON.stringify(allowedModules || []) %>'></script>
+<%- contentFor('body') %>
+<%- include('partials/flashMessage') %>
+<div id="windowsContainer" class="windows-container flex-layout"></div>
+<% if ((allowedModules || []).includes('stations')) { %>
   <template id="tpl-stations"><%- include('partials/stationsTab') %></template>
-  <% } %>
-  <% if ((allowedModules || []).includes('menu')) { %>
+<% } %>
+<% if ((allowedModules || []).includes('menu')) { %>
   <template id="tpl-menu"><%- include('partials/menuTab') %></template>
-  <% } %>
-  <% if ((allowedModules || []).includes('theme')) { %>
+<% } %>
+<% if ((allowedModules || []).includes('theme')) { %>
   <template id="tpl-theme"><%- include('partials/themesTab') %></template>
-  <% } %>
-  <% if ((allowedModules || []).includes('inventory')) { %>
+<% } %>
+<% if ((allowedModules || []).includes('inventory')) { %>
   <template id="tpl-inventory"><%- include('partials/inventoryTab') %></template>
-  <% } %>
-  <% if ((allowedModules || []).includes('reports')) { %>
+<% } %>
+<% if ((allowedModules || []).includes('reports')) { %>
   <template id="tpl-reports"><%- include('partials/reportsTab') %></template>
-  <% } %>
-  <% if ((allowedModules || []).includes('backup')) { %>
+<% } %>
+<% if ((allowedModules || []).includes('backup')) { %>
   <template id="tpl-backup"><%- include('partials/backupTab') %></template>
-  <% } %>
-  <% if ((allowedModules || []).includes('updates')) { %>
+<% } %>
+<% if ((allowedModules || []).includes('updates')) { %>
   <template id="tpl-updates"><%- include('partials/updatesTab') %></template>
-  <% } %>
-  <% if ((allowedModules || []).includes('employees')) { %>
+<% } %>
+<% if ((allowedModules || []).includes('employees')) { %>
   <template id="tpl-employees"><%- include('partials/employeesTab', { modules }) %></template>
-  <% } %>
-</body>
-</html>
+<% } %>
