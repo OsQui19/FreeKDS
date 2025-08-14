@@ -1,7 +1,7 @@
 /* admin.css - additive admin shell polish aligned with Theme bundle */
 body.admin-screen {
-  background: var(--color-bg);
-  color: var(--color-text);
+  background: var(--bs-body-bg);
+  color: var(--bs-body-color);
 }
 
 /* Cards feel consistent with theme editor */
@@ -24,7 +24,7 @@ body.admin-screen {
     left: 0;
     bottom: 0;
     width: 260px;
-    background: var(--color-white);
+    background: var(--bs-white);
     box-shadow: var(--nav-shadow);
     transform: translateX(-100%);
     transition: transform .25s ease;

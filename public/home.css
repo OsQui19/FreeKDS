@@ -5,7 +5,7 @@ body.home-page {
   align-items: center;
   justify-content: center;
   padding: var(--spacing-16);
-  background: var(--color-bg);
+  background: var(--bs-body-bg);
   background-image: linear-gradient(135deg, var(--color-bg-start), var(--color-bg-end)), var(--bg-image);
   background-size: cover;
   background-position: center;
@@ -26,7 +26,7 @@ body.home-page {
   .home-page h1 {
     font-size: 2rem;
     margin-bottom: var(--spacing-32);
-  color: var(--color-primary);
+  color: var(--bs-primary);
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.05);
 }
 
@@ -48,8 +48,8 @@ body.home-page {
   font-size: 1.5rem;
   border-radius: var(--btn-radius);
   box-shadow: var(--btn-shadow);
-  background-color: var(--color-primary);
-  color: var(--color-white);
+  background-color: var(--bs-primary);
+  color: var(--bs-white);
   cursor: pointer;
   -webkit-tap-highlight-color: var(--tap-highlight);
   touch-action: manipulation;
@@ -59,14 +59,14 @@ body.home-page {
 .home-page .dash-btn:hover {
   transform: translateY(-3px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  background-color: var(--color-accent);
+  background-color: var(--bs-info);
 }
 .home-page .dash-btn:active {
   transform: translateY(1px);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
 .home-page .dash-btn:focus-visible {
-  outline: 3px solid var(--color-accent);
+  outline: 3px solid var(--bs-info);
   outline-offset: 2px;
 }
 
@@ -112,9 +112,9 @@ body.home-page {
     color: var(--color-text-light);
   }
   .home-page .dash-btn {
-    background-color: var(--color-primary);
+    background-color: var(--bs-primary);
   }
   .home-page h1 {
-    color: var(--color-accent);
+    color: var(--bs-info);
   }
 }

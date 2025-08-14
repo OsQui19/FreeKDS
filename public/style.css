@@ -2,15 +2,15 @@
 body.station-screen {
   margin: 0;
   font-family: var(--font-family);
-  background: var(--color-bg);
-  color: var(--color-text);
+  background: var(--bs-body-bg);
+  color: var(--bs-body-color);
   overflow-x: hidden;
 }
 .top-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: var(--color-white);
+  background: var(--bs-white);
   padding: var(--spacing-md) var(--spacing-lg);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
@@ -20,7 +20,7 @@ body.station-screen {
   font-weight: 700;
 }
 .brand-name {
-  color: var(--color-primary);
+  color: var(--bs-primary);
 }
 
 .brand-logo {
@@ -37,9 +37,9 @@ body.station-screen {
 .top-bar select.station-switch {
   margin-left: var(--spacing-md);
   padding: var(--spacing-sm);
-  background: var(--color-white);
-  color: var(--color-text);
-  border: 1px solid var(--color-border);
+  background: var(--bs-white);
+  color: var(--bs-body-color);
+  border: 1px solid var(--bs-border-color);
   border-radius: var(--radius-sm);
 }
 .top-bar-links {
@@ -64,8 +64,8 @@ body.station-screen {
   overflow-x: auto;
 }
 .ticket {
-  background: var(--color-white);
-  color: var(--color-text);
+  background: var(--bs-white);
+  color: var(--bs-body-color);
   display: inline-block;
   width: 100%;
   margin: var(--spacing-sm);
@@ -75,11 +75,11 @@ body.station-screen {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 .ticket.selected {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid var(--bs-primary);
 }
 .ticket-header {
-  background: var(--color-bg-light);
-  color: var(--color-dark);
+  background: var(--bs-light);
+  color: var(--bs-dark);
   padding: var(--spacing-sm) var(--spacing-md);
   font-size: 0.9em;
   display: flex;
@@ -91,14 +91,14 @@ body.station-screen {
   margin-right: var(--spacing-5);
   padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: var(--radius-3);
-  color: var(--color-white);
+  color: var(--bs-white);
 }
 .ticket-header .order-num {
   font-weight: bold;
 }
 .allergy-label {
   background: var(--color-allergy-bg);
-  color: var(--color-white);
+  color: var(--bs-white);
   padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: var(--radius-3);
   font-weight: bold;
@@ -119,9 +119,9 @@ body.station-screen {
 .ticket-instructions {
   padding: var(--spacing-sm) var(--spacing-6);
   background: var(--color-warning-bg);
-  color: var(--color-text);
+  color: var(--bs-body-color);
   font-style: italic;
-  border-top: 1px dashed var(--color-border);
+  border-top: 1px dashed var(--bs-border-color);
 }
 .ticket-instructions.allergy {
   background: var(--color-danger-bg);
@@ -150,13 +150,13 @@ body.station-screen {
   color: var(--color-muted-light);
 }
 .ticket.all-done {
-  border-color: var(--color-success); /* green border if all items done */
+  border-color: var(--bs-success); /* green border if all items done */
 }
 .ticket.warning {
-  border-color: var(--color-warning); /* yellow border after 5 min */
+  border-color: var(--bs-warning); /* yellow border after 5 min */
 }
 .ticket.urgent {
-  border-color: var(--color-danger); /* red border after 10 min */
+  border-color: var(--bs-danger); /* red border after 10 min */
   border-width: 3px;
   animation: urgent-flash 1s infinite;
 }
@@ -164,7 +164,7 @@ body.station-screen {
 @keyframes urgent-flash {
   0%,
   100% {
-    border-color: var(--color-danger);
+    border-color: var(--bs-danger);
   }
   50% {
     border-color: var(--color-danger-strong);
@@ -226,7 +226,7 @@ body.station-screen {
   position: fixed;
   bottom: 0;
   width: 100%;
-  background: var(--color-white);
+  background: var(--bs-white);
   text-align: center;
   padding: var(--spacing-md) 0;
   box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.1);
@@ -241,16 +241,16 @@ body.station-screen {
   cursor: pointer;
 }
 .btn-primary {
-  background: var(--color-primary);
-  color: var(--color-white);
+  background: var(--bs-primary);
+  color: var(--bs-white);
 }
 .btn-secondary {
-  background: var(--color-secondary);
-  color: var(--color-white);
+  background: var(--bs-secondary);
+  color: var(--bs-white);
 }
 .action-bar #layoutToggle {
-  background: var(--color-secondary);
-  color: var(--color-white);
+  background: var(--bs-secondary);
+  color: var(--bs-white);
 }
 .btn-primary:active,
 .btn-secondary:active {
@@ -265,16 +265,16 @@ body.station-screen {
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.8);
-  color: var(--color-white);
+  color: var(--bs-white);
   display: flex;
   justify-content: center;
   align-items: center;
 }
 .modal-content {
-  background: var(--color-white);
-  color: var(--color-text);
+  background: var(--bs-white);
+  color: var(--bs-body-color);
   padding: var(--spacing-lg);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--bs-border-color);
   max-width: 80%;
   max-height: 80%;
   overflow: auto;
@@ -285,11 +285,11 @@ body.station-screen {
 .recipe-text pre {
   white-space: pre-wrap;
   font-family: monospace;
-  background: var(--color-dark);
+  background: var(--bs-dark);
   padding: var(--spacing-10);
 }
 .recipe-text ol {
-  background: var(--color-dark);
+  background: var(--bs-dark);
   padding: var(--spacing-10);
 }
 .recipe-text li {
@@ -309,8 +309,8 @@ body.station-screen {
 }
 /* Admin interface "Bistro Warm" theme */
 body.admin-screen {
-  background: var(--color-bg);
-  color: var(--color-dark);
+  background: var(--bs-body-bg);
+  color: var(--bs-dark);
   font-family: var(--font-family);
   padding: var(--spacing-20);
 }
@@ -347,7 +347,7 @@ body.admin-screen {
   gap: var(--spacing-5);
   overflow-x: auto;
   white-space: nowrap;
-  border-bottom: 2px solid var(--color-primary);
+  border-bottom: 2px solid var(--bs-primary);
   margin-bottom: var(--spacing-10);
 }
 .tab-bar .tab {
@@ -359,8 +359,8 @@ body.admin-screen {
   white-space: nowrap;
 }
 .tab-bar .tab.active {
-  background: var(--color-primary);
-  color: var(--color-white);
+  background: var(--bs-primary);
+  color: var(--bs-white);
 }
 .tab-bar .tab .close {
   margin-left: var(--spacing-6);
@@ -385,7 +385,7 @@ body.admin-screen {
 #sideNav .nav-link {
   width: 100%;
   height: var(--spacing-60);
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--bs-border-color);
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -396,8 +396,8 @@ body.admin-screen {
   margin-left: var(--spacing-md);
 }
 #sideNav .nav-link.active {
-  background: var(--color-primary);
-  color: var(--color-white);
+  background: var(--bs-primary);
+  color: var(--bs-white);
 }
 .windows-container {
   padding: var(--spacing-10);
@@ -414,7 +414,7 @@ body.admin-screen {
 }
 .windows-container.flex-layout .admin-window.active {
   display: block;
-  background: var(--color-white);
+  background: var(--bs-white);
   border-radius: var(--card-radius);
   box-shadow: var(--card-shadow);
   padding: var(--spacing-15);
@@ -431,7 +431,7 @@ body.admin-screen {
 /* Header icon links */
 .navbar-nav .nav-link {
   font-size: 1.5rem;
-  color: var(--color-white);
+  color: var(--bs-white);
   padding: 0 var(--spacing-12);
 }
 .navbar-nav .nav-link .bi {
@@ -492,7 +492,7 @@ body.admin-screen {
   gap: var(--spacing-16);
 }
 .menu-item {
-  background: var(--color-white);
+  background: var(--bs-white);
   border: 1px solid var(--color-paper-border);
   border-radius: var(--radius-sm);
   padding: var(--spacing-16);
@@ -659,7 +659,7 @@ body.admin-screen {
   aspect-ratio: 16 / 9;
 }
 #menuPreview {
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--bs-border-color);
   width: 100%;
   height: calc(100vh - 250px);
   min-height: 300px;
@@ -677,7 +677,7 @@ body.admin-screen {
 }
 
 #stationPreview {
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--bs-border-color);
   width: 100%;
   height: calc(100vh - 250px);
   min-height: 300px;
@@ -787,7 +787,7 @@ body.admin-screen {
 
 /* Header wrapper for nav buttons */
 .main-header {
-  background: var(--color-white);
+  background: var(--bs-white);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   padding: var(--spacing-md) var(--spacing-lg);
   position: sticky;
@@ -807,7 +807,7 @@ body.admin-screen {
 
 /* Make nav buttons blend with dark navbars */
 .navbar-dark .nav-buttons .btn {
-  color: var(--color-white);
+  color: var(--bs-white);
   border-color: rgba(255, 255, 255, 0.8);
   background: transparent;
 }
@@ -817,7 +817,7 @@ body.admin-screen {
 
 /* Highlight frames when editing theme */
 .preview-highlight {
-  outline: 3px solid var(--color-primary);
+  outline: 3px solid var(--bs-primary);
   outline-offset: -3px;
 }
 
