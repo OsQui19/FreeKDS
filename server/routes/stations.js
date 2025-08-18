@@ -155,7 +155,7 @@ module.exports = (db) => {
     );
   });
 
-  function renderOrder(template) {
+  function renderOrder() {
     return (req, res) => {
       const table = req.query.table || "";
       const sqlItems =
@@ -262,7 +262,7 @@ module.exports = (db) => {
     };
   }
 
-  router.get("/order", renderOrder("order"));
-  router.get("/foh/order", renderOrder("order-foh"));
+  router.get("/order", renderOrder());
+  router.get("/foh/order", renderOrder());
   return router;
 };
