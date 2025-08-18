@@ -4,6 +4,16 @@ const Ajv = require('ajv');
 const schema = require('./schemas/ModifierList.schema.json');
 const { getToken } = require('../../src/utils/tokens.js');
 
+function requireToken(path) {
+  const value = getToken(path);
+  if (!value) {
+    const message = `Missing required token: ${path}`;
+    console.error(message);
+    throw new Error(message);
+  }
+  return value;
+}
+
 const ajv = new Ajv();
 const validate = ajv.compile(schema);
 
@@ -28,7 +38,7 @@ function ModifierList({ modifiers, style }) {
   }
   if (!modifiers || modifiers.length === 0) return null;
 
-  const spacing = getToken('space.xs');
+  const spacing = requireToken('space.xs');
   return (
     <ul
       className="item-modifiers"

@@ -4,6 +4,16 @@ const Ajv = require('ajv');
 const schema = require('./schemas/ExpoHeader.schema.json');
 const { getToken } = require('../../src/utils/tokens.js');
 
+function requireToken(path) {
+  const value = getToken(path);
+  if (!value) {
+    const message = `Missing required token: ${path}`;
+    console.error(message);
+    throw new Error(message);
+  }
+  return value;
+}
+
 const ajv = new Ajv();
 const validate = ajv.compile(schema);
 
@@ -27,9 +37,9 @@ function ExpoHeader({ title, style }) {
     throw new Error(ajv.errorsText(validate.errors));
   }
 
-  const surface = getToken('color.surface');
-  const text = getToken('color.text');
-  const padding = getToken('space.md');
+  const surface = requireToken('color.surface');
+  const text = requireToken('color.text');
+  const padding = requireToken('space.md');
 
   return (
     <h1

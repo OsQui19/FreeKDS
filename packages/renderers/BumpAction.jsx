@@ -4,6 +4,16 @@ const Ajv = require('ajv');
 const schema = require('./schemas/BumpAction.schema.json');
 const { getToken } = require('../../src/utils/tokens.js');
 
+function requireToken(path) {
+  const value = getToken(path);
+  if (!value) {
+    const message = `Missing required token: ${path}`;
+    console.error(message);
+    throw new Error(message);
+  }
+  return value;
+}
+
 const ajv = new Ajv();
 const validate = ajv.compile(schema);
 
@@ -28,9 +38,9 @@ function BumpAction({ onBump, label = 'Bump', style }) {
     throw new Error(ajv.errorsText(validate.errors));
   }
 
-  const padding = getToken('space.sm');
-  const accent = getToken('color.accent');
-  const radius = getToken('radius.card');
+  const padding = requireToken('space.sm');
+  const accent = requireToken('color.accent');
+  const radius = requireToken('radius.card');
 
   return (
     <button

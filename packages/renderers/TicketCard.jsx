@@ -6,6 +6,16 @@ const { getToken } = require('../../src/utils/tokens.js');
 const ModifierList = require('./ModifierList.jsx');
 const BumpAction = require('./BumpAction.jsx');
 
+function requireToken(path) {
+  const value = getToken(path);
+  if (!value) {
+    const message = `Missing required token: ${path}`;
+    console.error(message);
+    throw new Error(message);
+  }
+  return value;
+}
+
 const ajv = new Ajv();
 const validate = ajv.compile(schema);
 
@@ -51,9 +61,9 @@ function TicketCard({
     throw new Error(ajv.errorsText(validate.errors));
   }
 
-  const surface = getToken('color.surface');
-  const radius = getToken('radius.card');
-  const padding = getToken('space.sm');
+  const surface = requireToken('color.surface');
+  const radius = requireToken('radius.card');
+  const padding = requireToken('space.sm');
   const date = new Date(createdTs * 1000);
   const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric' });
   return (

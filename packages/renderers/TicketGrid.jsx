@@ -7,6 +7,16 @@ const { getToken } = require('../../src/utils/tokens.js');
 const TicketCard = require('./TicketCard.jsx');
 const ExpoHeader = require('./ExpoHeader.jsx');
 
+function requireToken(path) {
+  const value = getToken(path);
+  if (!value) {
+    const message = `Missing required token: ${path}`;
+    console.error(message);
+    throw new Error(message);
+  }
+  return value;
+}
+
 const ajv = new Ajv({ schemas: [ticketSchema] });
 const validate = ajv.compile(gridSchema);
 
@@ -41,8 +51,8 @@ function TicketGrid({
     throw new Error(ajv.errorsText(validate.errors));
   }
 
-  const gap = getToken('space.md');
-  const background = getToken('color.background');
+  const gap = requireToken('space.md');
+  const background = requireToken('color.background');
 
   return (
     <div

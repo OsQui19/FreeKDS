@@ -8,15 +8,22 @@ const TicketGrid = require('./TicketGrid.jsx');
 const ajv = new Ajv();
 const validate = ajv.compile(schema);
 
+function requireToken(path) {
+  const value = getToken(path);
+  if (!value) {
+    const message = `Missing required token: ${path}`;
+    console.error(message);
+    throw new Error(message);
+  }
+  return value;
+}
+
 function resolveStyle(style = {}) {
   const out = {};
+  if (!style) return out;
   Object.entries(style).forEach(([k, v]) => {
-    try {
-      const token = getToken(v);
-      out[k] = token || v;
-    } catch {
-      out[k] = v;
-    }
+    const token = requireToken(v);
+    out[k] = token;
   });
   return out;
 }
@@ -24,30 +31,31 @@ function resolveStyle(style = {}) {
 function renderBlock(block, idx) {
   const { type, props = {}, blocks = [], style } = block;
   const children = blocks.map((b, i) => renderBlock(b, i));
-  const styles = resolveStyle(style);
+  const blockStyles = resolveStyle(style);
+  const propStyles = resolveStyle(props.style);
   switch (type) {
     case 'Grid':
       return React.createElement(
         'div',
-        { key: idx, style: { display: 'grid', ...styles, ...props.style } },
+        { key: idx, style: { display: 'grid', ...blockStyles, ...propStyles } },
         children,
       );
     case 'Stack':
       return React.createElement(
         'div',
-        { key: idx, style: { display: 'flex', flexDirection: 'column', ...styles, ...props.style } },
+        { key: idx, style: { display: 'flex', flexDirection: 'column', ...blockStyles, ...propStyles } },
         children,
       );
     case 'Tabs':
-      return React.createElement('div', { key: idx, style: styles }, children);
+      return React.createElement('div', { key: idx, style: { ...blockStyles, ...propStyles } }, children);
     case 'TicketList':
       return React.createElement(TicketGrid, { key: idx, ...props });
     case 'Filters':
-      return React.createElement('div', { key: idx, style: styles }, children);
+      return React.createElement('div', { key: idx, style: { ...blockStyles, ...propStyles } }, children);
     case 'Header':
-      return React.createElement('header', { key: idx, style: styles }, props.text, children);
+      return React.createElement('header', { key: idx, style: { ...blockStyles, ...propStyles } }, props.text, children);
     case 'Footer':
-      return React.createElement('footer', { key: idx, style: styles }, children);
+      return React.createElement('footer', { key: idx, style: { ...blockStyles, ...propStyles } }, children);
     default:
       return null;
   }
