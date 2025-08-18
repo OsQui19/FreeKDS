@@ -1,0 +1,13 @@
+{
+  "default": {
+    "colors": {
+      "background": "#000000",
+      "text": "#ffffff",
+      "primary": "#ff0000",
+      "accent": "#00ff00"
+    },
+    "fonts": {
+      "body": "Arial"
+    }
+  }
+}

@@ -1,13 +1,10 @@
 const express = require("express");
-const Ajv = require("ajv");
-const orderSchema = require("../../../schemas/order.schema@1.0.0.json");
 const logger = require("../../../utils/logger");
+const validators = require("../../../schemas/validate");
 const { logInventoryForOrder } = require("../../controllers/dbHelpers");
 const { backupDatabase } = require("../../controllers/dbBackup");
 
-delete orderSchema.$schema;
-const ajv = new Ajv({ allErrors: true });
-const validateOrder = ajv.compile(orderSchema);
+const validateOrder = validators.order;
 
 module.exports = (db, transports) => {
   const { io, sse } = transports;

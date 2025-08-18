@@ -14,11 +14,7 @@
     "validate-manifests": "node scripts/validateManifests.js",
     "generate:sdk": "node sdks/generate.mjs",
     "generate:docs": "redoc-cli bundle openapi.yaml -o docs/index.html",
-<<<<<<< ours
-    "lint:tokens": "node lintTokens.js",
-=======
     "lint:tokens": "node scripts/lintTokens.js",
->>>>>>> theirs
     "test": "npm run validate-manifests && npm run lint:tokens && mocha \"tests/**/*.test.js\""
   },
   "dependencies": {

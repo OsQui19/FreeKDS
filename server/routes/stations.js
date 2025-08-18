@@ -1,14 +1,11 @@
 const logger = require('../../utils/logger');
 const express = require("express");
-const Ajv = require("ajv");
-const stationSchema = require("../../schemas/station.schema@1.0.0.json");
+const validators = require("../../schemas/validate");
 const { getBumpedOrders } = require("../controllers/db/orders");
 const { getStations, getCategories } = require("../controllers/db/menu");
 const { roleHasAccess } = require("../controllers/accessControl");
 
-delete stationSchema.$schema;
-const ajv = new Ajv({ allErrors: true });
-const validateStation = ajv.compile(stationSchema);
+const validateStation = validators.station;
 module.exports = (db) => {
   const router = express.Router();
 

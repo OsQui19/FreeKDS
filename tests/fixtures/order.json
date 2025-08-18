@@ -1,0 +1,9 @@
+{
+  "order_number": "123",
+  "order_type": "dine-in",
+  "special_instructions": "none",
+  "allergy": false,
+  "items": [
+    { "menu_item_id": 1, "quantity": 2 }
+  ]
+}

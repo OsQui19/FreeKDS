@@ -1,0 +1,9 @@
+  "screens": [
+    {
+      "id": "main",
+      "blocks": [
+        { "type": "Grid" }
+      ]
+    }
+  ]
+}

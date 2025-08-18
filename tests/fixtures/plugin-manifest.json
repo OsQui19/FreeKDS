@@ -1,0 +1,16 @@
+{
+  "id": "sample-plugin",
+  "name": "Sample Plugin",
+  "version": "1.0.0",
+  "main": "index.js",
+  "activationEvents": ["onStartupFinished"],
+  "contributes": {
+    "adminPanels": [{"id": "main", "title": "Main"}],
+    "actions": [],
+    "routes": [],
+    "transforms": [],
+    "shortcuts": []
+  },
+  "license": "MIT",
+  "coreAPI": "1.0.0"
+}

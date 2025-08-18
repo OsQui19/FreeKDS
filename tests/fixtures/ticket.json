@@ -1,0 +1,18 @@
+{
+  "orderId": 1,
+  "orderNumber": 1,
+  "orderType": "dine-in",
+  "specialInstructions": "none",
+  "allergy": false,
+  "createdTs": 1700000000,
+  "items": [
+    {
+      "name": "Burger",
+      "quantity": 1,
+      "stationId": 1,
+      "modifiers": [],
+      "specialInstructions": "",
+      "allergy": false
+    }
+  ]
+}

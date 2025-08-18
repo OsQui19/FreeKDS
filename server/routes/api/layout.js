@@ -1,11 +1,8 @@
 const express = require('express');
-const Ajv = require('ajv');
-const layoutSchema = require('../../../schemas/layout.schema@1.0.0.json');
+const validators = require('../../../schemas/validate');
 const { query } = require('../../../utils/db');
 
-delete layoutSchema.$schema; // remove unsupported draft marker for Ajv v6
-const ajv = new Ajv({ allErrors: true });
-const validateLayout = ajv.compile(layoutSchema);
+const validateLayout = validators.layout;
 
 module.exports = (db) => {
   const router = express.Router();
