@@ -13,9 +13,9 @@ export default function AppNavbar() {
     resolveTokens().then(setTokens);
   }, []);
   if (!tokens) return null;
-  const surface = tokens.color.surface.value;
-  const text = tokens.color.text.value;
-  const accent = tokens.color.accent.value;
+  const surface = tokens.color.surface.$value;
+  const text = tokens.color.text.$value;
+  const accent = tokens.color.accent.$value;
   return (
     <Navbar expand="lg" className="mb-3" style={{ backgroundColor: surface, color: text }}>
       <Container>

@@ -20,7 +20,10 @@ const validate = ajv.compile(schema);
  * @param {() => void} props.onBump - Handler invoked when the ticket is bumped.
  * @param {string} [props.label] - Visible label for the button.
  */
-function BumpAction({ onBump, label = 'Bump' }) {
+function BumpAction({ onBump, label = 'Bump', style }) {
+  if (style !== undefined) {
+    throw new Error('style prop is not supported');
+  }
   if (!validate({ label })) {
     throw new Error(ajv.errorsText(validate.errors));
   }
@@ -34,7 +37,11 @@ function BumpAction({ onBump, label = 'Bump' }) {
       type="button"
       className="bump-action"
       onClick={onBump}
-      style={{ padding, backgroundColor: accent, borderRadius: radius }}
+      style={{
+        '--bump-action-padding': padding,
+        '--bump-action-bg': accent,
+        '--bump-action-radius': radius,
+      }}
     >
       {label}
     </button>
@@ -44,6 +51,12 @@ function BumpAction({ onBump, label = 'Bump' }) {
 BumpAction.propTypes = {
   onBump: PropTypes.func.isRequired,
   label: PropTypes.string,
+  style: (props, propName, componentName) => {
+    if (props[propName] !== undefined) {
+      return new Error(`Invalid prop \`${propName}\` supplied to \`${componentName}\`. Use tokens or className instead.`);
+    }
+    return null;
+  },
 };
 
 module.exports = BumpAction;

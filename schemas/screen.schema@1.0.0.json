@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.freekds.dev/screen.schema@1.0.0.json",
+  "title": "Screen",
+  "type": "object",
+  "properties": {
+    "id": { "type": "string" },
+    "blocks": {
+      "type": "array",
+      "items": { "$ref": "https://schemas.freekds.dev/layout-block.schema@1.0.0.json" }
+    },
+    "style": {
+      "type": "object",
+      "additionalProperties": { "type": ["string", "number"] }
+    }
+  },
+  "required": ["id", "blocks"],
+  "additionalProperties": false
+}

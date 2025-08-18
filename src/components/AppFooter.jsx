@@ -7,8 +7,8 @@ export default function AppFooter() {
     resolveTokens().then(setTokens);
   }, []);
   if (!tokens) return null;
-  const background = tokens.color.surface.value;
-  const text = tokens.color.text.value;
+  const background = tokens.color.surface.$value;
+  const text = tokens.color.text.$value;
   return (
     <footer
       style={{ backgroundColor: background, color: text }}

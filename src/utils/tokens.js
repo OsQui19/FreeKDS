@@ -21,7 +21,9 @@ export async function resolveTokens(options = {}) {
 
 export async function getToken(path, options) {
   const tokens = await resolveTokens(options);
-  return path.split('.').reduce((obj, part) => (obj ? obj[part] : undefined), tokens)?.value;
+  return path
+    .split('.')
+    .reduce((obj, part) => (obj ? obj[part] : undefined), tokens)?.$value;
 }
 
 export default { resolveTokens, getToken };

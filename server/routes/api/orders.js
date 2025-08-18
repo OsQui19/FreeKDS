@@ -1,18 +1,24 @@
 const express = require("express");
+const Ajv = require("ajv");
+const orderSchema = require("../../../schemas/order.schema@1.0.0.json");
 const logger = require("../../../utils/logger");
 const { logInventoryForOrder } = require("../../controllers/dbHelpers");
 const { backupDatabase } = require("../../controllers/dbBackup");
+
+delete orderSchema.$schema;
+const ajv = new Ajv({ allErrors: true });
+const validateOrder = ajv.compile(orderSchema);
 
 module.exports = (db, transports) => {
   const { io, sse } = transports;
   const router = express.Router();
 
   router.post("/", async (req, res, next) => {
+    if (!validateOrder(req.body)) {
+      return res.status(400).json({ errors: validateOrder.errors });
+    }
     const { order_number, order_type, items, special_instructions, allergy } =
       req.body;
-    if (!Array.isArray(items) || items.length === 0) {
-      return res.status(400).json({ error: "No items provided" });
-    }
 
     let conn;
     try {

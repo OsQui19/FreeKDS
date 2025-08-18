@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.freekds.dev/theme.schema@1.0.0.json",
+  "title": "Theme Configuration",
+  "type": "object",
+  "patternProperties": {
+    "^.*$": {
+      "type": "object",
+      "properties": {
+        "colors": {
+          "type": "object",
+          "properties": {
+            "background": { "type": "string" },
+            "text": { "type": "string" },
+            "primary": { "type": "string" },
+            "accent": { "type": "string" }
+          },
+          "required": ["background", "text", "primary", "accent"],
+          "additionalProperties": false
+        },
+        "fonts": {
+          "type": "object",
+          "properties": {
+            "body": { "type": "string" }
+          },
+          "required": ["body"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["colors", "fonts"],
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

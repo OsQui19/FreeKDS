@@ -1,18 +1,44 @@
-import React, { useMemo, useState, useRef } from 'react';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { usePlugins } from '@/plugins/PluginManager.jsx';
+import builtInPanels from '../../../packages/admin/index.js';
 
 export default function AdminPanels() {
   const { plugins } = usePlugins();
+  const [modules, setModules] = useState([]);
+
+  useEffect(() => {
+    async function fetchModules() {
+      try {
+        const res = await fetch('/api/modules');
+        if (res.ok) {
+          const data = await res.json();
+          setModules(data.modules || []);
+        }
+      } catch {
+        setModules([]);
+      }
+    }
+    fetchModules();
+  }, []);
+
   const panels = useMemo(() => {
     const list = [];
+    modules.forEach((m) => {
+      const panel = builtInPanels[m];
+      if (panel) list.push(panel);
+    });
     plugins.forEach(({ meta }) => {
       const contrib = meta?.contributes?.adminPanels || [];
       contrib.forEach((p) => list.push(p));
     });
     return list;
-  }, [plugins]);
+  }, [modules, plugins]);
 
-  const [active, setActive] = useState(panels[0]?.id);
+  const [active, setActive] = useState();
+  useEffect(() => {
+    if (!active && panels.length) setActive(panels[0].id);
+  }, [panels, active]);
+
   const tabRefs = useRef({});
 
   const onKeyDown = (e, idx) => {

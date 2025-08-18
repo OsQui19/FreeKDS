@@ -31,7 +31,11 @@ function TicketCard({
   items,
   stationType,
   onBump,
+  style,
 }) {
+  if (style !== undefined) {
+    throw new Error('style prop is not supported');
+  }
   if (
     !validate({
       orderId,
@@ -57,7 +61,11 @@ function TicketCard({
       className={`ticket ${orderType ? orderType.replace(/\s+/g, '-').toLowerCase() : ''}`}
       data-order-id={orderId}
       data-created-ts={createdTs}
-      style={{ backgroundColor: surface, borderRadius: radius, padding }}
+      style={{
+        '--ticket-surface': surface,
+        '--ticket-radius': radius,
+        '--ticket-padding': padding,
+      }}
     >
       <div className="ticket-header">
         {orderType && (
@@ -117,6 +125,12 @@ TicketCard.propTypes = {
     })
   ).isRequired,
   onBump: PropTypes.func,
+  style: (props, propName, componentName) => {
+    if (props[propName] !== undefined) {
+      return new Error(`Invalid prop \`${propName}\` supplied to \`${componentName}\`. Use tokens or className instead.`);
+    }
+    return null;
+  },
 };
 
 module.exports = TicketCard;

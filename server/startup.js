@@ -10,6 +10,7 @@ const {
   applyMigrations,
 } = require('./controllers/dbBackup');
 const accessControl = require('./controllers/accessControl');
+const { loadPluginManifests } = require('./controllers/pluginLoader');
 const config = require('../config');
 
 async function startServer(server, db) {
@@ -30,6 +31,7 @@ async function startServer(server, db) {
     unitConversion.loadUnits(db),
     accessControl.loadHierarchy(db),
     accessControl.loadPermissions(db),
+    loadPluginManifests(),
   ]);
   const settings = settingsCache.getSettings();
   if (settings.backup_dir) setBackupDir(settings.backup_dir);

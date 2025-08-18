@@ -19,7 +19,10 @@ const validate = ajv.compile(schema);
  * @param {object} props - See `ModifierList.schema.json`.
  * @param {string[]} props.modifiers - Resolved modifier names to display.
  */
-function ModifierList({ modifiers }) {
+function ModifierList({ modifiers, style }) {
+  if (style !== undefined) {
+    throw new Error('style prop is not supported');
+  }
   if (!validate({ modifiers })) {
     throw new Error(ajv.errorsText(validate.errors));
   }
@@ -27,7 +30,10 @@ function ModifierList({ modifiers }) {
 
   const spacing = getToken('space.xs');
   return (
-    <ul className="item-modifiers" style={{ paddingLeft: spacing }}>
+    <ul
+      className="item-modifiers"
+      style={{ '--modifier-list-padding': spacing }}
+    >
       {modifiers.map((m, i) => (
         <li key={i}>{m}</li>
       ))}
@@ -37,6 +43,12 @@ function ModifierList({ modifiers }) {
 
 ModifierList.propTypes = {
   modifiers: PropTypes.arrayOf(PropTypes.string).isRequired,
+  style: (props, propName, componentName) => {
+    if (props[propName] !== undefined) {
+      return new Error(`Invalid prop \`${propName}\` supplied to \`${componentName}\`. Use tokens or className instead.`);
+    }
+    return null;
+  },
 };
 
 module.exports = ModifierList;

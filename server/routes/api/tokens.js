@@ -8,8 +8,12 @@ const tokensDir = path.join(__dirname, '..', '..', '..', 'tokens');
 function deepMerge(target, source) {
   for (const key of Object.keys(source)) {
     const src = source[key];
-    if (src && typeof src === 'object' && !Array.isArray(src) && !('value' in src)) {
-      target[key] = deepMerge(target[key] || {}, src);
+    if (src && typeof src === 'object' && !Array.isArray(src)) {
+      if ('$value' in src) {
+        target[key] = { ...(target[key] || {}), ...src };
+      } else {
+        target[key] = deepMerge(target[key] || {}, src);
+      }
     } else {
       target[key] = src;
     }

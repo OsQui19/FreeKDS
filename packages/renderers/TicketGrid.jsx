@@ -32,7 +32,11 @@ function TicketGrid({
   density = 'comfortable',
   layout = 'grid',
   onBump,
+  style,
 }) {
+  if (style !== undefined) {
+    throw new Error('style prop is not supported');
+  }
   if (!validate({ tickets, stationType, density, layout })) {
     throw new Error(ajv.errorsText(validate.errors));
   }
@@ -41,7 +45,10 @@ function TicketGrid({
   const background = getToken('color.background');
 
   return (
-    <div className={`ticket-grid ${layout} ${density}`} style={{ gap, backgroundColor: background }}>
+    <div
+      className={`ticket-grid ${layout} ${density}`}
+      style={{ '--ticket-grid-gap': gap, '--ticket-grid-background': background }}
+    >
       {stationType === 'expo' && <ExpoHeader title="Expo" />}
       {tickets.map((t) => (
         <TicketCard key={t.orderId} stationType={stationType} onBump={onBump} {...t} />
@@ -56,6 +63,12 @@ TicketGrid.propTypes = {
   density: PropTypes.oneOf(['comfortable', 'compact']),
   layout: PropTypes.oneOf(['grid', 'list']),
   onBump: PropTypes.func,
+  style: (props, propName, componentName) => {
+    if (props[propName] !== undefined) {
+      return new Error(`Invalid prop \`${propName}\` supplied to \`${componentName}\`. Use tokens or className instead.`);
+    }
+    return null;
+  },
 };
 
 module.exports = TicketGrid;

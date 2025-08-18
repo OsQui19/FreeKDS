@@ -19,7 +19,10 @@ const validate = ajv.compile(schema);
  * @param {object} props - See `ExpoHeader.schema.json`.
  * @param {string} props.title - Title text displayed in the header.
  */
-function ExpoHeader({ title }) {
+function ExpoHeader({ title, style }) {
+  if (style !== undefined) {
+    throw new Error('style prop is not supported');
+  }
   if (!validate({ title })) {
     throw new Error(ajv.errorsText(validate.errors));
   }
@@ -29,7 +32,14 @@ function ExpoHeader({ title }) {
   const padding = getToken('space.md');
 
   return (
-    <h1 className="expo-header" style={{ backgroundColor: surface, color: text, padding }}>
+    <h1
+      className="expo-header"
+      style={{
+        '--expo-header-surface': surface,
+        '--expo-header-text': text,
+        '--expo-header-padding': padding,
+      }}
+    >
       {title}
     </h1>
   );
@@ -37,6 +47,12 @@ function ExpoHeader({ title }) {
 
 ExpoHeader.propTypes = {
   title: PropTypes.string.isRequired,
+  style: (props, propName, componentName) => {
+    if (props[propName] !== undefined) {
+      return new Error(`Invalid prop \`${propName}\` supplied to \`${componentName}\`. Use tokens or className instead.`);
+    }
+    return null;
+  },
 };
 
 module.exports = ExpoHeader;

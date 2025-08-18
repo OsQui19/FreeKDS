@@ -1,8 +1,14 @@
 const logger = require('../../utils/logger');
 const express = require("express");
+const Ajv = require("ajv");
+const stationSchema = require("../../schemas/station.schema@1.0.0.json");
 const { getBumpedOrders } = require("../controllers/db/orders");
 const { getStations, getCategories } = require("../controllers/db/menu");
 const { roleHasAccess } = require("../controllers/accessControl");
+
+delete stationSchema.$schema;
+const ajv = new Ajv({ allErrors: true });
+const validateStation = ajv.compile(stationSchema);
 module.exports = (db) => {
   const router = express.Router();
 
@@ -27,6 +33,10 @@ module.exports = (db) => {
   router.get("/stations", async (req, res) => {
     try {
       const rows = await getStations(db);
+      const valid = rows.every((st) => validateStation(st));
+      if (!valid) {
+        return res.status(500).json({ errors: validateStation.errors });
+      }
       res.json({ stations: rows });
     } catch (err) {
       logger.error("Error fetching stations:", err);
@@ -47,6 +57,10 @@ module.exports = (db) => {
           return res.status(404).send("Station not found");
         }
         const station = stRows[0];
+        if (!validateStation(station)) {
+          logger.error("Invalid station data:", validateStation.errors);
+          return res.status(500).json({ errors: validateStation.errors });
+        }
         const settings = res.locals.settings || {};
         const conditions = ["o.status = 'active'"];
         const orderParams = [];
@@ -138,6 +152,10 @@ module.exports = (db) => {
           return res.status(404).send("Station not found");
         }
         const station = stRows[0];
+        if (!validateStation(station)) {
+          logger.error("Invalid station data:", validateStation.errors);
+          return res.status(500).json({ errors: validateStation.errors });
+        }
         const settings = res.locals.settings || {};
 
         db.query(
