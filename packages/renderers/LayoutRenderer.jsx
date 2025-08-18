@@ -1,7 +1,7 @@
 const React = require('react');
 const PropTypes = require('prop-types');
 const Ajv = require('ajv');
-const schema = require('../../schemas/layout.schema.json');
+const schema = require('../../schemas/layout.schema@1.0.0.json');
 const { getToken } = require('../../src/utils/tokens.js');
 const TicketGrid = require('./TicketGrid.jsx');
 

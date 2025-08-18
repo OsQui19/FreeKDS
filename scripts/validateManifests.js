@@ -16,8 +16,14 @@ function findManifests(dir) {
 }
 
 function validate() {
-  const schemaPath = path.resolve(__dirname, "..", "plugin-manifest.schema.json");
+  const schemaPath = path.resolve(
+    __dirname,
+    "..",
+    "schemas",
+    "plugin-manifest.schema@1.0.0.json",
+  );
   const schema = JSON.parse(fs.readFileSync(schemaPath, "utf-8"));
+  delete schema.$schema;
   const ajv = new Ajv({ allErrors: true });
   const validate = ajv.compile(schema);
 

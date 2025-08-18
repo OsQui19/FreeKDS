@@ -1,20 +1,29 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.freekds.dev/layout.schema.json",
+  "$id": "https://schemas.freekds.dev/layout.schema@1.0.0.json",
   "title": "Layout",
   "type": "object",
   "properties": {
     "screens": {
       "type": "array",
-      "items": { "$ref": "#/definitions/screen" }
+      "items": {
+        "$ref": "#/definitions/screen"
+      }
     }
   },
-  "required": ["screens"],
+  "required": [
+    "screens"
+  ],
   "additionalProperties": false,
   "definitions": {
     "style": {
       "type": "object",
-      "additionalProperties": { "type": ["string", "number"] }
+      "additionalProperties": {
+        "type": [
+          "string",
+          "number"
+        ]
+      }
     },
     "block": {
       "type": "object",
@@ -30,27 +39,45 @@
             "Footer"
           ]
         },
-        "props": { "type": "object", "additionalProperties": true },
+        "props": {
+          "type": "object",
+          "additionalProperties": true
+        },
         "blocks": {
           "type": "array",
-          "items": { "$ref": "#/definitions/block" }
+          "items": {
+            "$ref": "#/definitions/block"
+          }
         },
-        "style": { "$ref": "#/definitions/style" }
+        "style": {
+          "$ref": "#/definitions/style"
+        }
       },
-      "required": ["type"],
+      "required": [
+        "type"
+      ],
       "additionalProperties": false
     },
     "screen": {
       "type": "object",
       "properties": {
-        "id": { "type": "string" },
+        "id": {
+          "type": "string"
+        },
         "blocks": {
           "type": "array",
-          "items": { "$ref": "#/definitions/block" }
+          "items": {
+            "$ref": "#/definitions/block"
+          }
         },
-        "style": { "$ref": "#/definitions/style" }
+        "style": {
+          "$ref": "#/definitions/style"
+        }
       },
-      "required": ["id", "blocks"],
+      "required": [
+        "id",
+        "blocks"
+      ],
       "additionalProperties": false
     }
   }

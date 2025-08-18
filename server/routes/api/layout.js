@@ -1,6 +1,6 @@
 const express = require('express');
 const Ajv = require('ajv');
-const layoutSchema = require('../../../schemas/layout.schema.json');
+const layoutSchema = require('../../../schemas/layout.schema@1.0.0.json');
 const { query } = require('../../../utils/db');
 
 delete layoutSchema.$schema; // remove unsupported draft marker for Ajv v6

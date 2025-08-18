@@ -2,5 +2,9 @@
   "https://schemas.freekds.dev/order.schema.json": "order.schema@1.0.0.json",
   "https://schemas.freekds.dev/ticket.schema.json": "ticket.schema@1.0.0.json",
   "https://schemas.freekds.dev/station.schema.json": "station.schema@1.0.0.json",
-  "https://schemas.freekds.dev/layout.schema.json": "layout.schema.json"
+  "https://schemas.freekds.dev/layout.schema@1.0.0.json": "layout.schema@1.0.0.json",
+  "https://schemas.freekds.dev/layout-block.schema@1.0.0.json": "layout-block.schema@1.0.0.json",
+  "https://schemas.freekds.dev/screen.schema@1.0.0.json": "screen.schema@1.0.0.json",
+  "https://schemas.freekds.dev/theme.schema@1.0.0.json": "theme.schema@1.0.0.json",
+  "https://schemas.freekds.dev/plugin-manifest.schema@1.0.0.json": "plugin-manifest.schema@1.0.0.json"
 }
