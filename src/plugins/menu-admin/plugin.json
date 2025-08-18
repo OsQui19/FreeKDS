@@ -1,5 +1,5 @@
 {
-  "$schema": "../../../schemas/plugin-manifest.schema@1.0.0.json",
+  "$schema": "../../../schemas/plugin-manifest.schema@1.1.0.json",
   "id": "menu-admin",
   "name": "Menu Administration",
   "version": "1.0.0",

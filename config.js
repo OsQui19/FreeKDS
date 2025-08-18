@@ -19,5 +19,5 @@ module.exports = {
     max: 1000,
   },
   githubRepo: process.env.GITHUB_REPO || '',
-  defaultTransport: 'ws',
+  defaultTransport: 'ws', /* see docs/realtime.md */
 };

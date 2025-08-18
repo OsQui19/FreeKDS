@@ -35,6 +35,9 @@ The server reads the port from the `PORT` environment variable, defaulting to `3
 
 </details>
 
+## 🔌 Realtime Updates
+See [docs/realtime.md](docs/realtime.md) for transport options, heartbeat intervals and reconnection behaviour.
+
 ## 🧪 Testing
 Run `npm test` to execute the automated test suite.
 

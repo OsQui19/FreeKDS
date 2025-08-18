@@ -1,4 +1,4 @@
-import presets from '../../config/kitchen-presets,js';
+import presets from '../../config/kitchen-presets.js';
 import { emit } from '../../src/plugins/lifecycle.js';
 import { clearTokenCache } from '../../src/utils/tokens.js';
 

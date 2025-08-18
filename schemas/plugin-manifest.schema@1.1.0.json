@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.freekds.dev/plugin-manifest.schema@1.0.0.json",
+  "$id": "https://schemas.freekds.dev/plugin-manifest.schema@1.1.0.json",
   "title": "FreeKDS Plugin Manifest",
   "type": "object",
   "required": [
@@ -50,7 +50,13 @@
       "type": "array",
       "description": "Events that trigger plugin activation.",
       "items": {
-        "type": "string"
+        "type": "string",
+        "enum": [
+          "onStartupFinished",
+          "onAdminOpen",
+          "onAdminClose",
+          "onTicketReceived"
+        ]
       }
     },
     "contributes": {

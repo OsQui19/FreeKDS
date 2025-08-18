@@ -40,6 +40,8 @@ module.exports = function (io, db, transports = {}) {
 
     socket.on("register", registerStation);
 
+    socket.on("ping", () => socket.emit("pong"));
+
     socket.on("bumpOrder", async ({ orderId }) => {
       if (!orderId) return;
       if (!socket.stationType) {

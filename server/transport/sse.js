@@ -1,4 +1,5 @@
 const clients = new Map();
+const HEARTBEAT_MS = 30000;
 
 function initSSE(app) {
   app.get('/sse', (req, res) => {
@@ -28,6 +29,12 @@ function initSSE(app) {
       // Failed to write to client; ignore
     }
   }
+
+  setInterval(() => {
+    for (const { res } of clients.values()) {
+      send(res, 'ping', Date.now());
+    }
+  }, HEARTBEAT_MS);
 
   return {
     emitToStation(id, event, data) {

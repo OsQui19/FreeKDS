@@ -20,7 +20,7 @@ function validate() {
     __dirname,
     "..",
     "schemas",
-    "plugin-manifest.schema@1.0.0.json",
+    "plugin-manifest.schema@1.1.0.json",
   );
   const schema = JSON.parse(fs.readFileSync(schemaPath, "utf-8"));
   delete schema.$schema;

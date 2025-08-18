@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
-
+const HEARTBEAT_MS = 30000;
 /**
  * Manage realtime transports with offline queuing, reconnection backoff and
  * stale indicators. Attempts the preferred transport first and falls back after
@@ -22,6 +22,8 @@ export default function useTransport({ type, fallback = 'sse', stationId }) {
   const timerRef = useRef(null);
   const backoffRef = useRef(1000);
   const attemptsRef = useRef(0);
+  const heartbeatRef = useRef(null);
+  const lastBeatRef = useRef(Date.now());
 
   const flushQueue = () => {
     if (transport === 'ws' && connRef.current) {
@@ -66,13 +68,27 @@ export default function useTransport({ type, fallback = 'sse', stationId }) {
           setStale(false);
           attemptsRef.current = 0;
           backoffRef.current = 1000;
+          lastBeatRef.current = Date.now();
+          heartbeatRef.current = setInterval(() => {
+            if (!active) return;
+            if (Date.now() - lastBeatRef.current > HEARTBEAT_MS * 2) {
+              handleDisconnect();
+              return;
+            }
+            socket.emit('ping');
+          }, HEARTBEAT_MS);
           flushQueue();
+        });
+
+        socket.on('pong', () => {
+          lastBeatRef.current = Date.now();
         });
 
         const handleDisconnect = () => {
           if (!active) return;
           setConnected(false);
           setStale(true);
+          if (heartbeatRef.current) clearInterval(heartbeatRef.current);
           socket.close();
           scheduleReconnect();
         };
@@ -89,12 +105,27 @@ export default function useTransport({ type, fallback = 'sse', stationId }) {
           setStale(false);
           attemptsRef.current = 0;
           backoffRef.current = 1000;
+          lastBeatRef.current = Date.now();
+          heartbeatRef.current = setInterval(() => {
+            if (!active) return;
+            if (Date.now() - lastBeatRef.current > HEARTBEAT_MS * 2) {
+              es.close();
+              setConnected(false);
+              setStale(true);
+              scheduleReconnect();
+            }
+          }, HEARTBEAT_MS);
         };
+
+        es.addEventListener('ping', () => {
+          lastBeatRef.current = Date.now();
+        });
 
         es.onerror = () => {
           if (!active) return;
           setConnected(false);
           setStale(true);
+          if (heartbeatRef.current) clearInterval(heartbeatRef.current);
           es.close();
           scheduleReconnect();
         };
@@ -106,11 +137,13 @@ export default function useTransport({ type, fallback = 'sse', stationId }) {
     return () => {
       active = false;
       if (timerRef.current) clearTimeout(timerRef.current);
+      if (heartbeatRef.current) clearInterval(heartbeatRef.current);
       const conn = connRef.current;
       if (conn) {
         if (transport === 'ws') {
           conn.off?.('disconnect');
           conn.off?.('connect_error');
+          conn.off?.('pong');
           conn.close?.();
         } else {
           conn.close();

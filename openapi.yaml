@@ -330,7 +330,13 @@ components:
         coreAPI: { type: string }
         activationEvents:
           type: array
-          items: { type: string }
+          items:
+            type: string
+            enum:
+              - onStartupFinished
+              - onAdminOpen
+              - onAdminClose
+              - onTicketReceived
         contributes:
           type: object
           properties:

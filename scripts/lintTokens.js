@@ -2,7 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const TOKENS_DIR = path.resolve(__dirname, '..', 'tokens');
+const TOKENS_DIR = path.resolve(__dirname, '../tokens');
 const REQUIRED_KEYS = ['value', 'type'];
 const ALLOWED_KEYS = ['value', 'type', 'description'];
 

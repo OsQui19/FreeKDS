@@ -12,14 +12,14 @@
     "check-perms": "node scripts/checkPermissions.js",
     "backup": "node scripts/backup.js",
     "validate-manifests": "node scripts/validateManifests.js",
-<<<<<<< ours
     "generate:sdk": "node sdks/generate.mjs",
     "generate:docs": "redoc-cli bundle openapi.yaml -o docs/index.html",
-    "test": "npm run validate-manifests && mocha \"tests/**/*.test.js\""
+<<<<<<< ours
+    "lint:tokens": "node lintTokens.js",
 =======
     "lint:tokens": "node scripts/lintTokens.js",
-    "test": "npm run validate-manifests && npm run lint:tokens && mocha \"tests/**/*.test.js\""
 >>>>>>> theirs
+    "test": "npm run validate-manifests && npm run lint:tokens && mocha \"tests/**/*.test.js\""
   },
   "dependencies": {
     "@craftjs/core": "^0.2.12",
@@ -71,3 +71,4 @@
   "author": "",
   "license": "ISC"
 }
+
