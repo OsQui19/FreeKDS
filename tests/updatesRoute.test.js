@@ -1,7 +1,7 @@
 const request = require('supertest');
 const { expect } = require('chai');
 const config = require('../config');
-const createApp = require('../src/app');
+const createApp = require('../server/app');
 
 process.env.NODE_ENV = 'test';
 
@@ -11,7 +11,7 @@ function buildApp(db = { promise: () => ({ query: async () => [] }), query: () =
 
 describe('GET /admin/updates/latest', () => {
   beforeEach(() => {
-    delete require.cache[require.resolve('../routes/admin')];
+    delete require.cache[require.resolve('../server/routes/admin')];
     config.githubRepo = 'owner/repo';
   });
 
@@ -49,7 +49,7 @@ describe.skip('POST /admin/updates/apply', () => {
   let childProc;
   let originalExec;
   beforeEach(() => {
-    delete require.cache[require.resolve('../routes/admin')];
+    delete require.cache[require.resolve('../server/routes/admin')];
     childProc = require('child_process');
     config.githubRepo = '';
     delete global.fetch;

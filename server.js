@@ -1,9 +1,9 @@
 const http = require('http');
 const logger = require('./utils/logger');
-const createApp = require('./src/app');
-const initSocket = require('./src/socket');
-const { connect } = require('./src/database');
-const { startServer } = require('./src/startup');
+const createApp = require('./server/app');
+const initSocket = require('./server/socket');
+const { connect } = require('./server/database');
+const { startServer } = require('./server/startup');
 
 connect()
   .then((db) => {

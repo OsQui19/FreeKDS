@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const { getBumpedOrders } = require('../controllers/db/orders');
+const { getBumpedOrders } = require('../server/controllers/db/orders');
 
 describe('db/orders', () => {
   it('getBumpedOrders aggregates results', async () => {

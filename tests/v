@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const { insertUnit } = require('../controllers/db/inventory');
+const { insertUnit } = require('../server/controllers/db/inventory');
 
 describe('db/inventory', () => {
   it('insertUnit returns new id', async () => {

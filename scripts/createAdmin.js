@@ -1,7 +1,7 @@
 const logger = require('../utils/logger');
 const mysql = require('mysql2');
 const bcrypt = require('bcrypt');
-const { ensureDefaults } = require('../controllers/accessControl');
+const { ensureDefaults } = require('../server/controllers/accessControl');
 const config = require('../config');
 
 async function main() {

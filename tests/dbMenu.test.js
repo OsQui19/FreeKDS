@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const { updateMenuItem } = require('../controllers/db/menu');
+const { updateMenuItem } = require('../server/controllers/db/menu');
 
 describe('db/menu', () => {
   it('updateMenuItem builds SQL and params', async () => {

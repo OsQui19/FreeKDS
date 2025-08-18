@@ -1,4 +1,4 @@
-const { backupDatabase } = require("../controllers/dbBackup");
+const { backupDatabase } = require("../server/controllers/dbBackup");
 
 backupDatabase((err) => {
   if (!err) return;

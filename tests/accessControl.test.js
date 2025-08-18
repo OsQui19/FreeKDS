@@ -4,7 +4,7 @@ const {
   savePermissions,
   getRolePermissions,
   roleHasAccess,
-} = require('../controllers/accessControl');
+} = require('../server/controllers/accessControl');
 
 describe('access control permissions', () => {
   const dbStub = {

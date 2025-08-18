@@ -1,7 +1,7 @@
 const request = require('supertest');
 const { expect } = require('chai');
-const accessControl = require('../controllers/accessControl');
-const createApp = require('../src/app');
+const accessControl = require('../server/controllers/accessControl');
+const createApp = require('../server/app');
 
 process.env.NODE_ENV = 'test';
 

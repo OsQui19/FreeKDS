@@ -1,6 +1,6 @@
 const logger = require('../utils/logger');
 const path = require('path');
-const { restoreDatabase } = require('../controllers/dbBackup');
+const { restoreDatabase } = require('../server/controllers/dbBackup');
 
 const file = process.argv[2];
 if (!file) {

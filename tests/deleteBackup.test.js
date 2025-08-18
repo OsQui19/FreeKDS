@@ -2,7 +2,7 @@ const { expect } = require("chai");
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
-const { deleteBackup, setBackupDir } = require("../controllers/dbBackup");
+const { deleteBackup, setBackupDir } = require("../server/controllers/dbBackup");
 const config = require("../config");
 
 describe("deleteBackup", () => {

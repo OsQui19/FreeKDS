@@ -1,5 +1,5 @@
 import React from 'react';
-import RecipeModal from '../../components/RecipeModal.jsx';
+import RecipeModal from '@/components/RecipeModal';
 import { AdminMenuProvider } from './components/AdminMenuContext.js';
 import IngredientList from './components/IngredientList.js';
 import ModifierList from './components/ModifierList.js';
