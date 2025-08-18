@@ -1,41 +1,29 @@
-export const presets = {
-  'fast-casual': {
-    tokens: 'tokens/presets/fast-casual.json',
-    layout: 'fast-casual',
-    routes: ['/orders', '/kds'],
-  },
-  'full-service': {
-    tokens: 'tokens/presets/full-service.json',
-    layout: 'full-service',
-    routes: ['/orders', '/stations', '/reports'],
-  },
-  barista: {
-    tokens: 'tokens/presets/barista.json',
-    layout: 'barista',
-    routes: ['/orders'],
-  },
-  qsr: {
-    tokens: 'tokens/presets/qsr.json',
-    layout: 'qsr',
-    routes: ['/orders', '/kds', '/stations'],
-  },
-};
+export const presetNames = [
+  'fast-casual',
+  'full-service',
+  'barista',
+  'qsr',
+];
 
 import { emit } from '../../src/plugins/lifecycle.js';
 import { clearTokenCache } from '../../src/utils/tokens.js';
 
 export async function applyKitchenPreset(name) {
-  const preset = presets[name];
-  if (!preset) throw new Error('Unknown preset');
+  const path = `tokens/presets/${name}.json`;
+  let preset;
+  try {
+    const resp = await fetch(`/${path}`);
+    preset = await resp.json();
+  } catch {
+    throw new Error('Unknown preset');
+  }
 
   try {
     if (preset.tokens) {
-      const resp = await fetch(`/${preset.tokens}`);
-      const data = await resp.json();
       await fetch('/api/tokens', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify(preset.tokens),
       });
       clearTokenCache();
     }
@@ -62,7 +50,7 @@ export async function applyKitchenPreset(name) {
   }
 
   try {
-    if (preset.routes) {
+    if (Array.isArray(preset.routes)) {
       await fetch('/api/routes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

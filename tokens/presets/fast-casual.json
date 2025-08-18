@@ -1,9 +1,21 @@
 {
+<<<<<<< ours
   "color": {
     "accent": {
       "type": "color",
       "value": "#ff7f50",
       "description": "Preset accent color for fast-casual restaurants"
+=======
+  "layout": "fast-casual",
+  "routes": ["/orders", "/kds"],
+  "tokens": {
+    "color": {
+      "accent": {
+        "value": "#ff7f50",
+        "type": "color",
+        "description": "Preset accent color for fast-casual restaurants"
+      }
+>>>>>>> theirs
     }
   }
 }

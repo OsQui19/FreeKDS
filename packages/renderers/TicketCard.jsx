@@ -40,6 +40,7 @@ function TicketCard({
   specialInstructions,
   items,
   stationType,
+  expeditor,
   onBump,
   style,
 }) {
@@ -56,6 +57,7 @@ function TicketCard({
       specialInstructions,
       items,
       stationType,
+      expeditor,
     })
   ) {
     throw new Error(ajv.errorsText(validate.errors));
@@ -68,7 +70,9 @@ function TicketCard({
   const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric' });
   return (
     <div
-      className={`ticket ${orderType ? orderType.replace(/\s+/g, '-').toLowerCase() : ''}`}
+      className={`ticket ${orderType ? orderType.replace(/\s+/g, '-').toLowerCase() : ''} ${
+        expeditor ? 'expeditor' : ''
+      }`}
       data-order-id={orderId}
       data-created-ts={createdTs}
       style={{
@@ -91,7 +95,13 @@ function TicketCard({
       )}
       <ul className={`items${stationType === 'expo' ? ' expo-items' : ''}`}>
         {items.map((item, idx) => (
-          <li key={idx} className={`item ${item.stationId ? 'station-' + item.stationId : ''}`}>
+          <li
+            key={idx}
+            className={`item ${item.stationId ? 'station-' + item.stationId : ''} ${
+              item.state ? 'state-' + item.state : ''
+            }`}
+            {...(item.rollupId ? { 'data-rollup-id': item.rollupId } : {})}
+          >
             <span className="qty">{item.quantity}×</span>
             <span
               className="item-name"
@@ -123,12 +133,21 @@ TicketCard.propTypes = {
   allergy: PropTypes.bool,
   specialInstructions: PropTypes.string,
   stationType: PropTypes.string,
+  expeditor: PropTypes.bool,
   items: PropTypes.arrayOf(
     PropTypes.shape({
       itemId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
       name: PropTypes.string.isRequired,
       quantity: PropTypes.number.isRequired,
       stationId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+      state: PropTypes.oneOf([
+        'queued',
+        'in-progress',
+        'ready',
+        'bumped',
+        'recalled',
+      ]),
+      rollupId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
       modifiers: PropTypes.arrayOf(PropTypes.string),
       specialInstructions: PropTypes.string,
       allergy: PropTypes.bool,

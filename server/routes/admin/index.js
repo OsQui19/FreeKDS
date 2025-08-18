@@ -5,6 +5,7 @@ const config = require("../../../config");
 const accessControl = require("../../controllers/accessControl");
 const menuDb = require("../../controllers/db/menu");
 const inventoryDb = require("../../controllers/db/inventory");
+const { stationLoad } = require("../../controllers/loadTracker");
 
 const backupsRoutes = require("./backups");
 const menuRoutes = require("./menu");
@@ -61,6 +62,10 @@ module.exports = (db, transports) => {
       logger.error("Error loading admin dashboard:", err);
       res.status(500).send("Server Error");
     }
+  });
+
+  router.get("/admin/station-load", (req, res) => {
+    res.json(stationLoad);
   });
 
   router.get("/admin/updates/latest", async (req, res) => {

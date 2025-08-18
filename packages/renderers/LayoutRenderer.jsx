@@ -28,6 +28,14 @@ function resolveStyle(style = {}) {
   return out;
 }
 
+function resolveText(text) {
+  const match = typeof text === 'string' && text.match(/{{(.*?)}}/);
+  if (match) {
+    return requireToken(match[1]);
+  }
+  return text;
+}
+
 function renderBlock(block, idx) {
   const { type, props = {}, blocks = [], style } = block;
   const children = blocks.map((b, i) => renderBlock(b, i));
@@ -53,9 +61,18 @@ function renderBlock(block, idx) {
     case 'Filters':
       return React.createElement('div', { key: idx, style: { ...blockStyles, ...propStyles } }, children);
     case 'Header':
-      return React.createElement('header', { key: idx, style: { ...blockStyles, ...propStyles } }, props.text, children);
+      return React.createElement(
+        'header',
+        { key: idx, style: { ...blockStyles, ...propStyles } },
+        resolveText(props.text),
+        children,
+      );
     case 'Footer':
-      return React.createElement('footer', { key: idx, style: { ...blockStyles, ...propStyles } }, children);
+      return React.createElement('footer', { key: idx, style: { ...blockStyles, ...propStyles } }, resolveText(props.text), children);
+    case 'AllDayAggregate':
+      return React.createElement('div', { key: idx, style: { ...blockStyles, ...propStyles } }, children);
+    case 'AllDayFilter':
+      return React.createElement('div', { key: idx, style: { ...blockStyles, ...propStyles } }, children);
     default:
       return null;
   }

@@ -12,8 +12,8 @@
     "check-perms": "node scripts/checkPermissions.js",
     "backup": "node scripts/backup.js",
     "validate-manifests": "node scripts/validateManifests.js",
-    "generate:sdk": "node sdks/generate.mjs",
-    "generate:docs": "redoc-cli bundle openapi.yaml -o docs/index.html",
+    "generate:sdk": "npx openapi-typescript-codegen --input openapi.yaml --output sdks/ts --client fetch --useOptions --useUnionTypes",
+    "docs": "redoc-cli bundle openapi.yaml -o docs/api/index.html",
     "lint:tokens": "node scripts/lintTokens.js",
     "validate:openapi": "redoc-cli lint openapi.yaml",
     "test": "npm run lint:tokens && npm run validate-manifests && mocha \"tests/**/*.test.js\""

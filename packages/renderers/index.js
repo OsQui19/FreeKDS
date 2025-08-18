@@ -4,4 +4,5 @@ module.exports = {
   ModifierList: require('./ModifierList.jsx'),
   ExpoHeader: require('./ExpoHeader.jsx'),
   BumpAction: require('./BumpAction.jsx'),
+  LayoutRenderer: require('./LayoutRenderer.jsx'),
 };

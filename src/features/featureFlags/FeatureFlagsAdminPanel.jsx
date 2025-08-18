@@ -160,8 +160,8 @@ export default function FeatureFlagsAdminPanel() {
 FeatureFlagsAdminPanel.meta = {
   id: 'feature-flags',
   title: 'Feature Flags',
-  dataDomains: [],
+  dataDomain: 'feature-flags',
   scopes: [],
-  latency: 'interactive',
+  latencyClass: 'interactive',
 };
 

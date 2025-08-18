@@ -26,9 +26,9 @@ export async function discoverPanels(plugins = []) {
       const meta = Component?.meta;
       if (
         meta &&
-        Array.isArray(meta.dataDomains) &&
+        typeof meta.dataDomain === 'string' &&
         Array.isArray(meta.scopes) &&
-        meta.latency
+        meta.latencyClass
       ) {
         catMap.get(g.category).panels.push({
           id: meta.id || m,
@@ -46,9 +46,9 @@ export async function discoverPanels(plugins = []) {
       const meta = Component?.meta;
       if (
         !meta ||
-        !Array.isArray(meta.dataDomains) ||
+        typeof meta.dataDomain !== 'string' ||
         !Array.isArray(meta.scopes) ||
-        !meta.latency
+        !meta.latencyClass
       )
         return;
       const cat = p.category || 'admin';

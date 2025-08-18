@@ -12,17 +12,18 @@ const unitConversion = require("../../controllers/unitConversion");
 const bcrypt = require("bcrypt");
 const accessControl = require("../../controllers/accessControl");
 const { pinLookup } = require("../../../utils/pin");
+const schemaValidator = require("../../middleware/schemaValidator");
 
 module.exports = (db, transports) => {
   const { io, sse } = transports;
   const router = express.Router();
 
-  router.post("/api/orders", async (req, res, next) => {
-    const { order_number, order_type, items, special_instructions, allergy } =
-      req.body;
-    if (!Array.isArray(items) || items.length === 0) {
-      return res.status(400).json({ error: "No items provided" });
-    }
+  router.post(
+    "/api/orders",
+    schemaValidator("order"),
+    async (req, res, next) => {
+      const { order_number, order_type, items, special_instructions, allergy } =
+        req.body;
 
     let conn;
     try {

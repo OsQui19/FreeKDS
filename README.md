@@ -43,20 +43,20 @@ Run `npm test` to execute the automated test suite.
 
 ## 📚 API spec & SDK
 The OpenAPI specification lives in `openapi.yaml`. Static docs are generated
-with Redoc and stored in `docs/index.html`. The TypeScript SDK used by the
-Admin/KDS and plugins is generated into `sdks/generated`.
+with Redoc and stored in `docs/api/index.html`. The TypeScript SDK used by the
+Admin/KDS and plugins is generated into `sdks/ts`.
 
 Regenerate the SDK and docs after changing the spec:
 
 ```bash
 npm run generate:sdk
-npm run generate:docs
+npm run docs
 ```
 
 Import services from the SDK in your code:
 
 ```ts
-import { OrdersService } from "./sdks/generated";
+import { OrdersService } from "./sdks/ts";
 ```
 
 ## 🔒 Security

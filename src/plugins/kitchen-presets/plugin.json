@@ -1,0 +1,26 @@
+{
+  "$schema": "../../../schemas/plugin-manifest.schema@1.1.0.json",
+  "id": "kitchen-presets",
+  "name": "Kitchen Presets",
+  "version": "1.0.0",
+  "main": "./index.js",
+  "route": "/admin/kitchen-presets",
+  "license": "MIT",
+  "coreAPI": "1.0.0",
+  "activationEvents": ["onStartupFinished", "onShiftChange"],
+  "contributes": {
+    "actions": [],
+    "routes": [],
+    "transforms": [],
+    "shortcuts": [],
+    "adminPanels": [
+      {
+        "id": "kitchen-presets",
+        "title": "Kitchen Presets",
+        "requiredDomains": ["layout"],
+        "requiredScopes": ["layout:write"],
+        "latency": "interactive"
+      }
+    ]
+  }
+}

@@ -17,7 +17,7 @@ export default function MenuEditor({ ingredients = [], units = [], modifiers = [
 MenuEditor.meta = {
   id: 'menu',
   title: 'Menu',
-  dataDomains: ['menu'],
+  dataDomain: 'menu',
   scopes: ['menu:read', 'menu:write'],
-  latency: 'interactive',
+  latencyClass: 'interactive',
 };

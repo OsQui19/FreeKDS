@@ -1,17 +1,6 @@
 const express = require('express');
-const Ajv = require('ajv');
-const layoutSchema = require('../../../schemas/layout.schema@1.0.0.json');
-const layoutBlockSchema = require('../../../schemas/layout-block.schema@1.0.0.json');
-const screenSchema = require('../../../schemas/screen.schema@1.0.0.json');
 const { query } = require('../../../utils/db');
-
-delete layoutSchema.$schema; // remove unsupported draft marker for Ajv v6
-delete layoutBlockSchema.$schema;
-delete screenSchema.$schema;
-const ajv = new Ajv({ allErrors: true });
-ajv.addSchema(layoutBlockSchema);
-const validateLayout = ajv.compile(layoutSchema);
-const validateScreen = ajv.compile(screenSchema);
+const schemaValidator = require('../../middleware/schemaValidator');
 
 module.exports = (db) => {
   const router = express.Router();
@@ -34,42 +23,46 @@ module.exports = (db) => {
     }
   });
 
-  router.post('/layout', async (req, res, next) => {
-    if (!req.session.user) return res.status(401).send('Unauthorized');
-    const { name = 'default', layout, stationId } = req.body || {};
-    if (typeof layout !== 'string') return res.status(400).send('Invalid layout');
-
-    let layoutObj;
-    try {
-      layoutObj = JSON.parse(layout);
-    } catch (err) {
-      return res.status(400).json({ errors: ['Invalid JSON'] });
-    }
-
-    const validate = stationId ? validateScreen : validateLayout;
-    if (!validate(layoutObj)) {
-      return res.status(400).json({ errors: validate.errors });
-    }
-
-    try {
-      if (stationId) {
-        await query(
-          db,
-          'INSERT INTO screen_definitions (station_id, definition) VALUES (?, ?) ON DUPLICATE KEY UPDATE definition=VALUES(definition)',
-          [stationId, layout],
-        );
-      } else {
-        await query(
-          db,
-          'INSERT INTO layouts (name, definition) VALUES (?, ?) ON DUPLICATE KEY UPDATE definition=VALUES(definition)',
-          [name, layout],
-        );
+  router.post(
+    '/layout',
+    (req, res, next) => {
+      if (!req.session.user) return res.status(401).send('Unauthorized');
+      const { layout } = req.body || {};
+      if (typeof layout !== 'string')
+        return res.status(400).json({ errors: ['Invalid layout'] });
+      try {
+        req.layoutObj = JSON.parse(layout);
+        next();
+      } catch (err) {
+        return res.status(400).json({ errors: ['Invalid JSON'] });
       }
-      res.json({ success: true });
-    } catch (err) {
-      next(err);
-    }
-  });
+    },
+    schemaValidator(
+      (req) => (req.body && req.body.stationId ? 'screen' : 'layout'),
+      (req) => req.layoutObj,
+    ),
+    async (req, res, next) => {
+      const { name = 'default', layout, stationId } = req.body || {};
+      try {
+        if (stationId) {
+          await query(
+            db,
+            'INSERT INTO screen_definitions (station_id, definition) VALUES (?, ?) ON DUPLICATE KEY UPDATE definition=VALUES(definition)',
+            [stationId, layout],
+          );
+        } else {
+          await query(
+            db,
+            'INSERT INTO layouts (name, definition) VALUES (?, ?) ON DUPLICATE KEY UPDATE definition=VALUES(definition)',
+            [name, layout],
+          );
+        }
+        res.json({ success: true });
+      } catch (err) {
+        next(err);
+      }
+    },
+  );
 
   return router;
 };

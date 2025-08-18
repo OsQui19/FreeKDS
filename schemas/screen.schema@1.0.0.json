@@ -9,11 +9,22 @@
       "type": "array",
       "items": { "$ref": "https://schemas.freekds.dev/layout-block.schema@1.0.0.json" }
     },
+    "layouts": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": { "$ref": "https://schemas.freekds.dev/layout-block.schema@1.0.0.json" }
+      }
+    },
+    "defaults": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
     "style": {
       "type": "object",
       "additionalProperties": { "type": ["string", "number"] }
     }
   },
-  "required": ["id", "blocks"],
+  "required": ["id"],
   "additionalProperties": false
 }

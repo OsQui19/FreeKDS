@@ -22,6 +22,7 @@ function toKey(url) {
 }
 
 Object.entries(index).forEach(([url, file]) => {
+  if (typeof file !== 'string') return;
   try {
     const schemaPath = path.join(schemaDir, file);
     const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf-8'));

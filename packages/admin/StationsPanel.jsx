@@ -7,9 +7,9 @@ function StationsPanel() {
 StationsPanel.meta = {
   id: 'stations',
   title: 'Stations',
-  dataDomains: ['stations'],
+  dataDomain: 'stations',
   scopes: ['stations:read', 'stations:write'],
-  latency: 'deferred',
+  latencyClass: 'deferred',
 };
 
 export default StationsPanel;

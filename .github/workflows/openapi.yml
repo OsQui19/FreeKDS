@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - openapi.yaml
+      - sdks/ts/**
+      - docs/api/**
 
 jobs:
   verify:
@@ -14,6 +16,7 @@ jobs:
         with:
           node-version: 18
       - run: npm ci
+      - run: npm run validate:openapi
       - run: npm run generate:sdk
-      - run: npm run generate:docs
+      - run: npm run docs
       - run: git diff --exit-code

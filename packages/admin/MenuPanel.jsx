@@ -7,9 +7,9 @@ function MenuPanel() {
 MenuPanel.meta = {
   id: 'menu',
   title: 'Menu',
-  dataDomains: ['menu'],
+  dataDomain: 'menu',
   scopes: ['menu:read', 'menu:write'],
-  latency: 'interactive',
+  latencyClass: 'interactive',
 };
 
 export default MenuPanel;

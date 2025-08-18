@@ -10,6 +10,14 @@ function LayoutAdminPanel() {
   );
 }
 
+LayoutAdminPanel.meta = {
+  id: 'layouts',
+  title: 'Layouts',
+  dataDomain: 'layouts',
+  scopes: ['layouts:read', 'layouts:write'],
+  latencyClass: 'interactive',
+};
+
 export const meta = {
   id: 'layout-admin',
   name: 'Layout Administration',
@@ -20,9 +28,6 @@ export const meta = {
         id: 'layouts',
         title: 'Layouts',
         Component: LayoutAdminPanel,
-        requiredDomains: ['layouts'],
-        requiredScopes: ['layouts:read', 'layouts:write'],
-        latency: 'interactive',
       },
     ],
   },

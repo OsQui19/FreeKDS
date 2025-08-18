@@ -3,6 +3,7 @@ const logger = require("../../../utils/logger");
 const validators = require("../../../schemas/validate");
 const { logInventoryForOrder } = require("../../controllers/dbHelpers");
 const { backupDatabase } = require("../../controllers/dbBackup");
+const { incrementLoad } = require("../../controllers/loadTracker");
 
 const validateOrder = validators.order;
 
@@ -118,6 +119,11 @@ module.exports = (db, transports) => {
         };
         io.to(`station-${id}`).emit("orderAdded", payload);
         sse && sse.emitToStation(id, "orderAdded", payload);
+        const stationItemCount = stationMap[id].reduce(
+          (sum, item) => sum + (item.quantity || 0),
+          0,
+        );
+        incrementLoad(id, stationItemCount);
       });
       const expoPayload = {
         orderId,

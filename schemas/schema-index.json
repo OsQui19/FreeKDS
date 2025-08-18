@@ -1,4 +1,11 @@
 {
+  "README": [
+    "Maps canonical JSON schema $id URLs to their corresponding versioned files.",
+    "Semver bump rules:",
+    "- Patch: backward-compatible fixes that do not change validation semantics.",
+    "- Minor: backward-compatible extensions such as adding optional properties.",
+    "- Major: backward-incompatible changes including removed or renamed properties."
+  ],
   "https://schemas.freekds.dev/order.schema.json": "order.schema@1.0.0.json",
   "https://schemas.freekds.dev/ticket.schema.json": "ticket.schema@1.0.0.json",
   "https://schemas.freekds.dev/station.schema.json": "station.schema@1.0.0.json",
