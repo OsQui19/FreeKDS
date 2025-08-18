@@ -36,7 +36,9 @@
             "TicketList",
             "Filters",
             "Header",
-            "Footer"
+            "Footer",
+            "AllDayAggregate",
+            "AllDayFilter"
           ]
         },
         "props": {

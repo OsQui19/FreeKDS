@@ -1,6 +1,6 @@
 import React from 'react';
 import { Editor, Frame, Element, useEditor } from '@craftjs/core';
-import { Container, Text } from './components';
+import * as Blocks from './components';
 import { useLayout } from '@/contexts/LayoutContext.jsx';
 
 function SaveButton() {
@@ -12,11 +12,11 @@ function SaveButton() {
 export default function Builder() {
   const { layout } = useLayout();
   return (
-    <Editor resolver={{ Container, Text }}>
+    <Editor resolver={Blocks}>
       <SaveButton />
       <Frame data={layout}>
-        <Element is={Container} canvas>
-          <Text text="Edit me" />
+        <Element is={Blocks.Grid} canvas>
+          <Blocks.Header text="Edit me" />
         </Element>
       </Frame>
     </Editor>

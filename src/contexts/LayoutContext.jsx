@@ -3,12 +3,15 @@ import { on } from '@/plugins/lifecycle.js';
 
 const LayoutContext = createContext();
 
-export function LayoutProvider({ children, name = 'default' }) {
+export function LayoutProvider({ children, name = 'default', stationId }) {
   const [layout, setLayout] = useState(null);
 
   const fetchLayout = async () => {
     try {
-      const res = await fetch(`/api/layout?name=${encodeURIComponent(name)}`);
+      const params = new URLSearchParams();
+      if (name) params.append('name', name);
+      if (stationId) params.append('stationId', stationId);
+      const res = await fetch(`/api/layout?${params.toString()}`);
       if (res.ok) {
         const data = await res.json();
         if (data.layout) setLayout(data.layout);
@@ -20,12 +23,12 @@ export function LayoutProvider({ children, name = 'default' }) {
 
   useEffect(() => {
     fetchLayout();
-  }, [name]);
+  }, [name, stationId]);
 
   useEffect(() => {
     const unsub = on('config-updated', fetchLayout);
     return unsub;
-  }, [name]);
+  }, [name, stationId]);
 
   const saveLayout = async (json) => {
     setLayout(json);
@@ -33,7 +36,7 @@ export function LayoutProvider({ children, name = 'default' }) {
       await fetch('/api/layout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ layout: json, name }),
+        body: JSON.stringify({ layout: json, name, stationId }),
       });
     } catch {
       /* ignore */

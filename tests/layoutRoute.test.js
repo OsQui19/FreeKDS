@@ -28,6 +28,24 @@ describe('Layout API', () => {
     expect(res.body.layout).to.equal('layout-json');
   });
 
+  it('returns screen layout by stationId', async () => {
+    const db = {
+      promise: () => ({
+        query: async (sql, params) => {
+          expect(sql).to.match(/SELECT definition FROM screen_definitions/);
+          expect(params[0]).to.equal(5);
+          return [[{ definition: 'screen-json' }], []];
+        },
+      }),
+    };
+    const app = buildApp(db);
+    const res = await request(app)
+      .get('/api/layout?stationId=5')
+      .set('x-test-role', 'admin');
+    expect(res.status).to.equal(200);
+    expect(res.body.layout).to.equal('screen-json');
+  });
+
   it('saves layout', async () => {
     const layout = JSON.stringify({ screens: [] });
     const db = {
@@ -44,6 +62,26 @@ describe('Layout API', () => {
       .post('/api/layout')
       .set('x-test-role', 'admin')
       .send({ layout });
+    expect(res.status).to.equal(200);
+    expect(res.body.success).to.be.true;
+  });
+
+  it('saves screen layout for a station', async () => {
+    const layout = JSON.stringify({ id: 'main', blocks: [] });
+    const db = {
+      promise: () => ({
+        query: async (sql, params) => {
+          expect(sql).to.match(/INSERT INTO screen_definitions/);
+          expect(params).to.deep.equal([5, layout]);
+          return [[], []];
+        },
+      }),
+    };
+    const app = buildApp(db);
+    const res = await request(app)
+      .post('/api/layout')
+      .set('x-test-role', 'admin')
+      .send({ layout, stationId: 5 });
     expect(res.status).to.equal(200);
     expect(res.body.success).to.be.true;
   });
@@ -78,6 +116,23 @@ describe('Layout API', () => {
       .post('/api/layout')
       .set('x-test-role', 'admin')
       .send({ layout: '{}' });
+    expect(res.status).to.equal(400);
+    expect(res.body.errors).to.exist;
+  });
+
+  it('rejects screen layout that fails schema validation', async () => {
+    const db = {
+      promise: () => ({
+        query: async () => {
+          throw new Error('should not be called');
+        },
+      }),
+    };
+    const app = buildApp(db);
+    const res = await request(app)
+      .post('/api/layout')
+      .set('x-test-role', 'admin')
+      .send({ layout: '{"not":"screen"}', stationId: 1 });
     expect(res.status).to.equal(400);
     expect(res.body.errors).to.exist;
   });

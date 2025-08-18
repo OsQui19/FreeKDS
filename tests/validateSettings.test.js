@@ -35,12 +35,12 @@ describe("validateSettings", () => {
     expect(errors).to.include("button_radius");
   });
 
-  it.skip("accepts valid brand_logo URLs", () => {
-    const url = "https://example.com/logo.png"\;
-    const { settings, errors } = validateSettings({ brand_logo: url });
-    expect(errors).to.have.lengthOf(0);
-    expect(settings.brand_logo).to.equal(url);
-  });
+    it.skip("accepts valid brand_logo URLs", () => {
+      const url = "https://example.com/logo.png"\;
+      const { settings, errors } = validateSettings({ brand_logo: url });
+      expect(errors).to.have.lengthOf(0);
+      expect(settings.brand_logo).to.equal(url);
+    });
 
   it.skip("rejects invalid brand_logo values", () => {
     const bad = validateSettings({ brand_logo: "ftp://example.com/logo.png" });

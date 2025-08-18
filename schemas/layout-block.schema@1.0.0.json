@@ -2,21 +2,145 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schemas.freekds.dev/layout-block.schema@1.0.0.json",
   "title": "Layout Block",
-  "type": "object",
-  "properties": {
-    "type": {
-      "enum": ["Grid", "Stack", "Tabs", "TicketList", "Filters", "Header", "Footer"]
-    },
-    "props": { "type": "object", "additionalProperties": true },
-    "blocks": {
-      "type": "array",
-      "items": { "$ref": "https://schemas.freekds.dev/layout-block.schema@1.0.0.json" }
-    },
-    "style": {
+  "oneOf": [
+    { "$ref": "#/$defs/Grid" },
+    { "$ref": "#/$defs/Stack" },
+    { "$ref": "#/$defs/Tabs" },
+    { "$ref": "#/$defs/TicketList" },
+    { "$ref": "#/$defs/Filters" },
+    { "$ref": "#/$defs/Header" },
+    { "$ref": "#/$defs/Footer" },
+    { "$ref": "#/$defs/AllDayAggregate" },
+    { "$ref": "#/$defs/AllDayFilter" }
+  ],
+  "$defs": {
+    "base": {
       "type": "object",
-      "additionalProperties": { "type": ["string", "number"] }
+      "properties": {
+        "type": { "type": "string" },
+        "props": { "type": "object", "additionalProperties": true },
+        "blocks": {
+          "type": "array",
+          "items": { "$ref": "https://schemas.freekds.dev/layout-block.schema@1.0.0.json" }
+        },
+        "style": {
+          "type": "object",
+          "additionalProperties": { "type": ["string", "number"] }
+        }
+      },
+      "required": ["type"],
+      "additionalProperties": false
+    },
+    "Grid": {
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        {
+          "properties": {
+            "type": { "const": "Grid" },
+            "props": {
+              "type": "object",
+              "properties": { "columns": { "type": "integer", "minimum": 1 } },
+              "required": ["columns"],
+              "additionalProperties": false
+            }
+          }
+        }
+      ]
+    },
+    "Stack": {
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        {
+          "properties": {
+            "type": { "const": "Stack" },
+            "props": {
+              "type": "object",
+              "properties": { "direction": { "enum": ["row", "column"] } },
+              "additionalProperties": false
+            }
+          }
+        }
+      ]
+    },
+    "Tabs": {
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        {
+          "properties": {
+            "type": { "const": "Tabs" },
+            "props": {
+              "type": "object",
+              "properties": { "tabs": { "type": "array", "items": { "type": "string" } } },
+              "required": ["tabs"],
+              "additionalProperties": false
+            }
+          }
+        }
+      ]
+    },
+    "TicketList": {
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        {
+          "properties": { "type": { "const": "TicketList" } }
+        }
+      ]
+    },
+    "Filters": {
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        {
+          "properties": { "type": { "const": "Filters" } }
+        }
+      ]
+    },
+    "Header": {
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        {
+          "properties": {
+            "type": { "const": "Header" },
+            "props": {
+              "type": "object",
+              "properties": { "text": { "type": "string" } },
+              "required": ["text"],
+              "additionalProperties": false
+            }
+          }
+        }
+      ]
+    },
+    "Footer": {
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        {
+          "properties": {
+            "type": { "const": "Footer" },
+            "props": {
+              "type": "object",
+              "properties": { "text": { "type": "string" } },
+              "required": ["text"],
+              "additionalProperties": false
+            }
+          }
+        }
+      ]
+    },
+    "AllDayAggregate": {
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        {
+          "properties": { "type": { "const": "AllDayAggregate" } }
+        }
+      ]
+    },
+    "AllDayFilter": {
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        {
+          "properties": { "type": { "const": "AllDayFilter" } }
+        }
+      ]
     }
-  },
-  "required": ["type"],
-  "additionalProperties": false
+  }
 }
