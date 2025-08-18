@@ -17,16 +17,10 @@ module.exports = function sessionMiddleware(db, config, logger) {
       },
     });
   } catch (err) {
-    logger.error('Failed to initialize MySQL session store', err);
-    return session({
-      secret: config.sessionSecret,
-      resave: false,
-      saveUninitialized: false,
-      cookie: {
-        httpOnly: true,
-        secure: secureCookie,
-        sameSite: 'lax',
-      },
-    });
+    logger.error(
+      'Failed to initialize MySQL session store. Check database connectivity and credentials.',
+      err
+    );
+    throw err;
   }
 };

@@ -1,11 +1,17 @@
 #!/bin/sh
+set -euo pipefail
 
 # Ensure log directory exists
 LOG_DIR="${LOG_DIR:-./logs}"
 mkdir -p "$LOG_DIR"
 
 # If a DB host is provided, wait for the database port to be reachable
-if [ -n "$DB_HOST" ]; then
+if [ -n "${DB_HOST:-}" ]; then
+  if ! command -v nc >/dev/null 2>&1; then
+    echo "Error: nc (netcat) is required but not installed." >&2
+    exit 1
+  fi
+
   DB_PORT="${DB_PORT:-3306}"
   DB_WAIT_TIMEOUT="${DB_WAIT_TIMEOUT:-60}"
   echo "Waiting for database at $DB_HOST:$DB_PORT (timeout: ${DB_WAIT_TIMEOUT}s)..."
@@ -22,7 +28,7 @@ if [ -n "$DB_HOST" ]; then
 fi
 
 # Build React assets in development containers if missing
-if [ -n "$DEV_CONTAINER" ] && [ ! -d "./public/dist" ]; then
+if [ -n "${DEV_CONTAINER:-}" ] && [ ! -d "./public/dist" ]; then
   npm run build
 fi
 
