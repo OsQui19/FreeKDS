@@ -7,6 +7,7 @@ import React, {
 } from "react";
 import { Link, Route } from "react-router-dom";
 import loadPlugins from "./index.js";
+import { on } from "./lifecycle.js";
 
 const PluginContext = createContext({ plugins: [], zones: {}, contributions: {} });
 
@@ -22,8 +23,10 @@ export function PluginProvider({ children }) {
       }
     }
     load();
+    const unsub = on("config-updated", load);
     return () => {
       active = false;
+      unsub();
     };
   }, []);
 

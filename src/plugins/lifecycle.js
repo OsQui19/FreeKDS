@@ -7,7 +7,10 @@ export function install(plugin) {
 
 export function enable(plugin) {
   const entry = registry.get(plugin.meta?.id);
-  if (entry) entry.enabled = true;
+  if (entry) {
+    entry.enabled = true;
+    emit('config-updated', { plugin: plugin.meta?.id });
+  }
 }
 
 export function activate(plugin) {

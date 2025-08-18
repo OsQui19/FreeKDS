@@ -73,3 +73,11 @@ export default function FeatureFlagsAdminPanel() {
   );
 }
 
+FeatureFlagsAdminPanel.meta = {
+  id: 'feature-flags',
+  title: 'Feature Flags',
+  dataDomains: [],
+  scopes: [],
+  latency: 'interactive',
+};
+

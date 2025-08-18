@@ -1,16 +1,15 @@
-const React = require('react');
+import React from 'react';
 
 function MenuPanel() {
-  return (
-    <div>Menu administration panel</div>
-  );
+  return <div>Menu administration panel</div>;
 }
 
-module.exports = {
+MenuPanel.meta = {
   id: 'menu',
   title: 'Menu',
-  Component: MenuPanel,
-  requiredDomains: ['menu'],
-  requiredScopes: ['menu:read', 'menu:write'],
+  dataDomains: ['menu'],
+  scopes: ['menu:read', 'menu:write'],
   latency: 'interactive',
 };
+
+export default MenuPanel;

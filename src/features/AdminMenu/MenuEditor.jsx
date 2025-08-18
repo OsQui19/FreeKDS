@@ -13,3 +13,11 @@ export default function MenuEditor({ ingredients = [], units = [], modifiers = [
     </AdminMenuProvider>
   );
 }
+
+MenuEditor.meta = {
+  id: 'menu',
+  title: 'Menu',
+  dataDomains: ['menu'],
+  scopes: ['menu:read', 'menu:write'],
+  latency: 'interactive',
+};

@@ -22,15 +22,35 @@ export async function discoverPanels(plugins = []) {
 
   groups.forEach((g) => {
     g.modules.forEach((m) => {
-      const panel = corePanels[m];
-      if (panel) catMap.get(g.category).panels.push(panel);
+      const Component = corePanels[m];
+      const meta = Component?.meta;
+      if (
+        meta &&
+        Array.isArray(meta.dataDomains) &&
+        Array.isArray(meta.scopes) &&
+        meta.latency
+      ) {
+        catMap.get(g.category).panels.push({
+          id: meta.id || m,
+          title: meta.title || m,
+          Component,
+        });
+      }
     });
   });
 
   plugins.forEach(({ meta }) => {
     const contrib = meta?.contributes?.adminPanels || [];
     contrib.forEach((p) => {
-      if (!p.requiredDomains || !p.requiredScopes || !p.latency) return;
+      const Component = p.Component;
+      const meta = Component?.meta;
+      if (
+        !meta ||
+        !Array.isArray(meta.dataDomains) ||
+        !Array.isArray(meta.scopes) ||
+        !meta.latency
+      )
+        return;
       const cat = p.category || 'admin';
       let group = catMap.get(cat);
       if (!group) {
@@ -38,7 +58,13 @@ export async function discoverPanels(plugins = []) {
         catMap.set(cat, group);
         categories.push(group);
       }
-      group.panels.push(p);
+      group.panels.push({
+        id: p.id || meta.id,
+        title: p.title || meta.title,
+        Component,
+        getProps: p.getProps,
+        props: p.props,
+      });
     });
   });
 
