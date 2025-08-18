@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { emit } from '@/plugins/lifecycle.js';
 
 /**
  * React hook to manage an EventSource connection.
@@ -16,6 +17,7 @@ export default function useEventSource(url) {
 
     es.onopen = () => setConnected(true);
     es.onerror = () => setConnected(false);
+    es.onmessage = (evt) => emit('onTicketReceived', evt.data);
 
     return () => {
       es.close();

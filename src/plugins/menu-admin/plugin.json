@@ -1,0 +1,20 @@
+{
+  "$schema": "../../../plugin-manifest.schema.json",
+  "id": "menu-admin",
+  "name": "Menu Administration",
+  "version": "1.0.0",
+  "main": "./index.js",
+  "route": "/admin/menu",
+  "activationEvents": ["onStartupFinished"],
+  "contributes": {
+    "adminPanels": [
+      {
+        "id": "menu",
+        "title": "Menu",
+        "requiredDomains": ["menu"],
+        "requiredScopes": ["menu:read", "menu:write"],
+        "latency": "interactive"
+      }
+    ]
+  }
+}

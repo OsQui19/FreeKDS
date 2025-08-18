@@ -2,13 +2,13 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 
 const LayoutContext = createContext();
 
-export function LayoutProvider({ children }) {
+export function LayoutProvider({ children, name = 'default' }) {
   const [layout, setLayout] = useState(null);
 
   useEffect(() => {
     const fetchLayout = async () => {
       try {
-        const res = await fetch('/api/layout');
+        const res = await fetch(`/api/layout?name=${encodeURIComponent(name)}`);
         if (res.ok) {
           const data = await res.json();
           if (data.layout) setLayout(data.layout);
@@ -18,15 +18,15 @@ export function LayoutProvider({ children }) {
       }
     };
     fetchLayout();
-  }, []);
+  }, [name]);
 
-  const saveLayout = async (json, scope = 'user', userId) => {
+  const saveLayout = async (json) => {
     setLayout(json);
     try {
       await fetch('/api/layout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ layout: json, scope, userId }),
+        body: JSON.stringify({ layout: json, name }),
       });
     } catch {
       /* ignore */

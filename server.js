@@ -3,7 +3,7 @@ const logger = require('./utils/logger');
 const createApp = require('./server/app');
 const initSocket = require('./server/transport/socket');
 const initSSE = require('./server/transport/sse');
-const { connect } = require('./server/database');
+const { connect } = require('./src/database');
 const { startServer } = require('./server/startup');
 
 connect()

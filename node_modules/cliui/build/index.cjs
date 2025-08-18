@@ -12,9 +12,7 @@ class UI {
     constructor(opts) {
         var _a;
         this.width = opts.width;
-        /* c8 ignore start */
         this.wrap = (_a = opts.wrap) !== null && _a !== void 0 ? _a : true;
-        /* c8 ignore stop */
         this.rows = [];
     }
     span(...args) {
@@ -108,10 +106,7 @@ class UI {
                     const fn = align[row[c].align];
                     ts = fn(ts, wrapWidth);
                     if (mixin.stringWidth(ts) < wrapWidth) {
-                        /* c8 ignore start */
-                        const w = width || 0;
-                        /* c8 ignore stop */
-                        ts += ' '.repeat(w - mixin.stringWidth(ts) - 1);
+                        ts += ' '.repeat((width || 0) - mixin.stringWidth(ts) - 1);
                     }
                 }
                 // apply border and padding to string.
@@ -143,11 +138,9 @@ class UI {
     // the target line, do so.
     renderInline(source, previousLine) {
         const match = source.match(/^ */);
-        /* c8 ignore start */
         const leadingWhitespace = match ? match[0].length : 0;
-        /* c8 ignore stop */
         const target = previousLine.text;
-        const targetTextWidth = mixin.stringWidth(target.trimEnd());
+        const targetTextWidth = mixin.stringWidth(target.trimRight());
         if (!previousLine.span) {
             return source;
         }
@@ -161,7 +154,7 @@ class UI {
             return source;
         }
         previousLine.hidden = true;
-        return target.trimEnd() + ' '.repeat(leadingWhitespace - targetTextWidth) + source.trimStart();
+        return target.trimRight() + ' '.repeat(leadingWhitespace - targetTextWidth) + source.trimLeft();
     }
     rasterize(row) {
         const rrows = [];
@@ -203,9 +196,7 @@ class UI {
         return rrows;
     }
     negatePadding(col) {
-        /* c8 ignore start */
         let wrapWidth = col.width || 0;
-        /* c8 ignore stop */
         if (col.padding) {
             wrapWidth -= (col.padding[left] || 0) + (col.padding[right] || 0);
         }
@@ -232,9 +223,7 @@ class UI {
             return undefined;
         });
         // any unset widths should be calculated.
-        /* c8 ignore start */
         const unsetWidth = unset ? Math.floor(remainingWidth / unset) : 0;
-        /* c8 ignore stop */
         return widths.map((w, i) => {
             if (w === undefined) {
                 return Math.max(unsetWidth, _minWidth(row[i]));
@@ -266,13 +255,12 @@ function _minWidth(col) {
     return minWidth;
 }
 function getWindowWidth() {
-    /* c8 ignore start */
+    /* istanbul ignore next: depends on terminal */
     if (typeof process === 'object' && process.stdout && process.stdout.columns) {
         return process.stdout.columns;
     }
     return 80;
 }
-/* c8 ignore stop */
 function alignRight(str, width) {
     str = str.trim();
     const strWidth = mixin.stringWidth(str);
@@ -284,28 +272,25 @@ function alignRight(str, width) {
 function alignCenter(str, width) {
     str = str.trim();
     const strWidth = mixin.stringWidth(str);
-    /* c8 ignore start */
+    /* istanbul ignore next */
     if (strWidth >= width) {
         return str;
     }
-    /* c8 ignore stop */
     return ' '.repeat((width - strWidth) >> 1) + str;
 }
 let mixin;
 function cliui(opts, _mixin) {
     mixin = _mixin;
     return new UI({
-        /* c8 ignore start */
         width: (opts === null || opts === void 0 ? void 0 : opts.width) || getWindowWidth(),
         wrap: opts === null || opts === void 0 ? void 0 : opts.wrap
-        /* c8 ignore stop */
     });
 }
 
 // Bootstrap cliui with CommonJS dependencies:
-const stringWidth = require('string-width-cjs');
-const stripAnsi = require('strip-ansi-cjs');
-const wrap = require('wrap-ansi-cjs');
+const stringWidth = require('string-width');
+const stripAnsi = require('strip-ansi');
+const wrap = require('wrap-ansi');
 function ui(opts) {
     return cliui(opts, {
         stringWidth,

@@ -10,40 +10,30 @@ function buildApp(db) {
 }
 
 describe('Layout API', () => {
-  it('returns restaurant layout', async () => {
+  it('returns layout by name', async () => {
     const db = {
       promise: () => ({
         query: async (sql, params) => {
-          expect(params[0]).to.equal('layout_restaurant');
-          return [[{ setting_value: 'rest-layout' }], []];
+          expect(sql).to.match(/SELECT definition FROM layouts/);
+          expect(params[0]).to.equal('default');
+          return [[{ definition: 'layout-json' }], []];
         },
       }),
     };
     const app = buildApp(db);
     const res = await request(app)
-      .get('/api/layout?scope=restaurant')
-      .set('x-test-role', 'FOH');
+      .get('/api/layout')
+      .set('x-test-user', '1');
     expect(res.status).to.equal(200);
-    expect(res.body.layout).to.equal('rest-layout');
+    expect(res.body.layout).to.equal('layout-json');
   });
 
-  it('forbids non-management from saving restaurant layout', async () => {
-    const db = { promise: () => ({ query: async () => [[], []] }) };
-    const app = buildApp(db);
-    const res = await request(app)
-      .post('/api/layout')
-      .set('x-test-role', 'FOH')
-      .send({ layout: 'x', scope: 'restaurant' });
-    expect(res.status).to.equal(403);
-  });
-
-  it('allows management to save restaurant layout', async () => {
-    let saved = {};
+  it('saves layout', async () => {
     const db = {
       promise: () => ({
         query: async (sql, params) => {
-          saved.key = params[0];
-          saved.val = params[1];
+          expect(sql).to.match(/INSERT INTO layouts/);
+          expect(params).to.deep.equal(['default', 'new-layout']);
           return [[], []];
         },
       }),
@@ -51,27 +41,9 @@ describe('Layout API', () => {
     const app = buildApp(db);
     const res = await request(app)
       .post('/api/layout')
-      .set('x-test-role', 'management')
-      .send({ layout: 'new-layout', scope: 'restaurant' });
+      .set('x-test-user', '1')
+      .send({ layout: 'new-layout' });
     expect(res.status).to.equal(200);
     expect(res.body.success).to.be.true;
-    expect(saved).to.deep.equal({ key: 'layout_restaurant', val: 'new-layout' });
-  });
-
-  it('falls back to restaurant layout when user layout missing', async () => {
-    const db = {
-      promise: () => ({
-        query: async (sql, params) => {
-          if (params[0] === 'layout_user_5') return [[], []];
-          return [[{ setting_value: 'rest-layout' }], []];
-        },
-      }),
-    };
-    const app = buildApp(db);
-    const res = await request(app)
-      .get('/api/layout?userId=5')
-      .set('x-test-role', 'management');
-    expect(res.status).to.equal(200);
-    expect(res.body.layout).to.equal('rest-layout');
   });
 });

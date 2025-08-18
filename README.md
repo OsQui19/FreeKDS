@@ -30,6 +30,8 @@ This project is a simplified kitchen display system. Below are basic steps to ru
 <summary>▶️ <strong>Running</strong></summary>
 
 Use `npm start` (or `./start.sh`) to start the server on `http://localhost:$PORT`.
+The server reads the port from the `PORT` environment variable, falling back to
+`APP_PORT` or `3000` if neither is set, with `PORT` taking precedence.
 `COOKIE_SECURE` defaults to `false`, so HTTPS isn't required for local testing.
 
 </details>

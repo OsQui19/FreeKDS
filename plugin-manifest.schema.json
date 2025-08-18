@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "FreeKDS Plugin Manifest",
+  "type": "object",
+  "required": ["id", "name", "version", "main", "activationEvents", "contributes"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for the plugin."
+    },
+    "name": {
+      "type": "string",
+      "description": "Human readable name of the plugin."
+    },
+    "version": {
+      "type": "string",
+      "description": "Plugin version in semver format."
+    },
+    "description": {
+      "type": "string",
+      "description": "Description of the plugin."
+    },
+    "main": {
+      "type": "string",
+      "description": "Path to the plugin\u2019s entry module relative to this manifest."
+    },
+    "route": {
+      "type": "string",
+      "description": "Optional route used for navigation."
+    },
+    "activationEvents": {
+      "type": "array",
+      "description": "Events that trigger plugin activation.",
+      "items": { "type": "string" }
+    },
+    "contributes": {
+      "type": "object",
+      "description": "Contribution points provided by the plugin.",
+      "properties": {
+        "adminPanels": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "title"],
+            "properties": {
+              "id": { "type": "string" },
+              "title": { "type": "string" },
+              "requiredDomains": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "requiredScopes": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "latency": { "type": "string" },
+              "route": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
