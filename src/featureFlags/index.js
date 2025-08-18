@@ -83,6 +83,11 @@ class JsonFileProvider extends Provider {
   }
 }
 
-OpenFeature.setProvider(new JsonFileProvider(flags));
+const provider = new JsonFileProvider(flags);
+OpenFeature.setProvider(provider);
+
+export function updateFeatureFlags(newFlags) {
+  provider.data = newFlags;
+}
 
 export const featureFlagClient = OpenFeature.getClient();

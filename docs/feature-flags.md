@@ -43,7 +43,7 @@ refresh cycle.
 Use the `useFeatureFlag` hook to read flag values and provenance:
 
 ```js
-const { value, source } = useFeatureFlag('transport.type', 'ws', {
+const { value, variant } = useFeatureFlag('transport.type', 'ws', {
   station: '1',
 });
 ```

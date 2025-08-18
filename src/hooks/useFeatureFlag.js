@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { featureFlagClient } from '../featureFlags';
 
 export default function useFeatureFlag(key, defaultValue, context = {}) {
-  const [state, setState] = useState({ value: defaultValue, source: 'default' });
+  const [state, setState] = useState({ value: defaultValue, variant: 'default' });
 
   useEffect(() => {
     let active = true;
@@ -39,7 +39,7 @@ export default function useFeatureFlag(key, defaultValue, context = {}) {
           );
       }
       if (active) {
-        setState({ value: result.value, source: result.variant || 'default' });
+        setState({ value: result.value, variant: result.variant || 'default' });
       }
     }
 
