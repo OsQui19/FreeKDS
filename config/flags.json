@@ -4,7 +4,9 @@
       "sampleFeature": false
     },
     "transport": {},
-    "perf": {}
+    "perf": {
+      "enableMetrics": false
+    }
   },
   "tenant": {},
   "station": {

@@ -1,0 +1,26 @@
+{
+  "$schema": "../../../schemas/plugin-manifest.schema@1.0.0.json",
+  "id": "feature-flags",
+  "name": "Feature Flags",
+  "version": "1.0.0",
+  "main": "./index.js",
+  "route": "/admin/flags",
+  "license": "MIT",
+  "coreAPI": "1.0.0",
+  "activationEvents": ["onStartupFinished"],
+  "contributes": {
+    "actions": [],
+    "routes": [],
+    "transforms": [],
+    "shortcuts": [],
+    "adminPanels": [
+      {
+        "id": "feature-flags",
+        "title": "Feature Flags",
+        "requiredDomains": [],
+        "requiredScopes": [],
+        "latency": "interactive"
+      }
+    ]
+  }
+}

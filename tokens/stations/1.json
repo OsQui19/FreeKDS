@@ -1,5 +1,9 @@
 {
   "color": {
-    "accent": { "$value": "#198754" }
+    "accent": {
+      "value": "#198754",
+      "type": "color",
+      "description": "Station-specific accent color"
+    }
   }
 }

@@ -1,23 +1,30 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { on } from '@/plugins/lifecycle.js';
 
 const LayoutContext = createContext();
 
 export function LayoutProvider({ children, name = 'default' }) {
   const [layout, setLayout] = useState(null);
 
-  useEffect(() => {
-    const fetchLayout = async () => {
-      try {
-        const res = await fetch(`/api/layout?name=${encodeURIComponent(name)}`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.layout) setLayout(data.layout);
-        }
-      } catch {
-        /* ignore */
+  const fetchLayout = async () => {
+    try {
+      const res = await fetch(`/api/layout?name=${encodeURIComponent(name)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.layout) setLayout(data.layout);
       }
-    };
+    } catch {
+      /* ignore */
+    }
+  };
+
+  useEffect(() => {
     fetchLayout();
+  }, [name]);
+
+  useEffect(() => {
+    const unsub = on('config-updated', fetchLayout);
+    return unsub;
   }, [name]);
 
   const saveLayout = async (json) => {

@@ -1,5 +1,9 @@
 {
   "color": {
-    "background": { "$value": "#e9ecef" }
+    "background": {
+      "value": "#e9ecef",
+      "type": "color",
+      "description": "Screen background override"
+    }
   }
 }

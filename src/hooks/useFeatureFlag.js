@@ -2,25 +2,54 @@ import { useEffect, useState } from 'react';
 import { featureFlagClient } from '../featureFlags';
 
 export default function useFeatureFlag(key, defaultValue, context = {}) {
-  const [value, setValue] = useState(defaultValue);
+  const [state, setState] = useState({ value: defaultValue, source: 'default' });
 
   useEffect(() => {
-    let result;
-    switch (typeof defaultValue) {
-      case 'string':
-        result = featureFlagClient.getStringValue(key, defaultValue, context);
-        break;
-      case 'number':
-        result = featureFlagClient.getNumberValue(key, defaultValue, context);
-        break;
-      case 'boolean':
-        result = featureFlagClient.getBooleanValue(key, defaultValue, context);
-        break;
-      default:
-        result = featureFlagClient.getObjectValue(key, defaultValue, context);
+    let active = true;
+
+    async function evaluate() {
+      let result;
+      switch (typeof defaultValue) {
+        case 'string':
+          result = await featureFlagClient.getStringDetails(
+            key,
+            defaultValue,
+            context
+          );
+          break;
+        case 'number':
+          result = await featureFlagClient.getNumberDetails(
+            key,
+            defaultValue,
+            context
+          );
+          break;
+        case 'boolean':
+          result = await featureFlagClient.getBooleanDetails(
+            key,
+            defaultValue,
+            context
+          );
+          break;
+        default:
+          result = await featureFlagClient.getObjectDetails(
+            key,
+            defaultValue,
+            context
+          );
+      }
+      if (active) {
+        setState({ value: result.value, source: result.variant || 'default' });
+      }
     }
-    setValue(result);
+
+    evaluate();
+    const interval = setInterval(evaluate, 1000);
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
   }, [key, defaultValue, context]);
 
-  return value;
+  return state;
 }

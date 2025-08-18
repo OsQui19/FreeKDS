@@ -12,13 +12,21 @@
     "check-perms": "node scripts/checkPermissions.js",
     "backup": "node scripts/backup.js",
     "validate-manifests": "node scripts/validateManifests.js",
+<<<<<<< ours
+    "generate:sdk": "node sdks/generate.mjs",
+    "generate:docs": "redoc-cli bundle openapi.yaml -o docs/index.html",
     "test": "npm run validate-manifests && mocha \"tests/**/*.test.js\""
+=======
+    "lint:tokens": "node scripts/lintTokens.js",
+    "test": "npm run validate-manifests && npm run lint:tokens && mocha \"tests/**/*.test.js\""
+>>>>>>> theirs
   },
   "dependencies": {
     "@craftjs/core": "^0.2.12",
     "@dnd-kit/core": "^6.0.7",
     "@dnd-kit/sortable": "^7.0.2",
     "@openfeature/js-sdk": "^1.6.1",
+    "ajv": "^6.12.6",
     "bcrypt": "^6.0.0",
     "bootstrap": "^5.3.3",
     "date-fns": "^2.30.0",
@@ -39,21 +47,23 @@
     "styled-components": "^6.1.19",
     "tinycolor2": "^1.6.0",
     "winston": "^3.17.0",
-    "winston-daily-rotate-file": "^5.0.0",
-    "ajv": "^6.12.6"
+    "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
     "@testing-library/react": "^14.1.2",
     "@vitejs/plugin-react": "^4.2.0",
     "chai": "^5.2.1",
     "cliui": "^8.0.1",
-    "eslint": "^9.29.0",
+    "debug": "^4.3.4",
     "esbuild-register": "^3.6.0",
+    "eslint": "^9.29.0",
     "jest-axe": "^10.0.0",
     "jsdom": "^24.0.0",
     "mocha": "^11.7.1",
     "nodemon": "^3.1.10",
+    "openapi-typescript-codegen": "^0.29.0",
     "prettier": "^3.5.3",
+    "redoc-cli": "^0.13.21",
     "supertest": "^6.3.3",
     "vite": "^7.0.3"
   },

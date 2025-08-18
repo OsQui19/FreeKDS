@@ -1,0 +1,366 @@
+openapi: 3.1.0
+info:
+  title: FreeKDS API
+  version: 1.0.0
+servers:
+  - url: /api
+paths:
+  /orders:
+    get:
+      summary: List orders
+      responses:
+        '200':
+          description: List of orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Order'
+    post:
+      summary: Create an order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Order'
+      responses:
+        '201':
+          description: Created order
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+  /tickets:
+    get:
+      summary: List tickets
+      responses:
+        '200':
+          description: List of tickets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Ticket'
+    post:
+      summary: Create a ticket
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Ticket'
+      responses:
+        '201':
+          description: Created ticket
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+  /stations:
+    get:
+      summary: List stations
+      responses:
+        '200':
+          description: List of stations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Station'
+    post:
+      summary: Create a station
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Station'
+      responses:
+        '201':
+          description: Created station
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Station'
+  /themes:
+    get:
+      summary: List themes
+      responses:
+        '200':
+          description: List of themes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Theme'
+    post:
+      summary: Create a theme
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Theme'
+      responses:
+        '201':
+          description: Created theme
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Theme'
+  /plugins:
+    get:
+      summary: List plugins
+      responses:
+        '200':
+          description: List of plugins
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Plugin'
+    post:
+      summary: Register a plugin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Plugin'
+      responses:
+        '201':
+          description: Registered plugin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Plugin'
+  /events:
+    get:
+      summary: Stream or list events
+      responses:
+        '200':
+          description: Event stream
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Event'
+    post:
+      summary: Publish an event
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Event'
+      responses:
+        '202':
+          description: Accepted event
+components:
+  schemas:
+    Order:
+      $schema: "https://json-schema.org/draft/2020-12/schema"
+      type: object
+      required:
+        - items
+      properties:
+        order_number:
+          type: [string, integer]
+        order_type:
+          type: string
+        special_instructions:
+          type: string
+        allergy:
+          type: boolean
+        items:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required:
+              - menu_item_id
+              - quantity
+            properties:
+              menu_item_id:
+                type: [integer, string]
+              quantity:
+                type: integer
+                minimum: 1
+              special_instructions:
+                type: string
+              allergy:
+                type: boolean
+              modifier_ids:
+                type: array
+                items:
+                  type: [integer, string]
+            additionalProperties: false
+      additionalProperties: false
+    Ticket:
+      $schema: "https://json-schema.org/draft/2020-12/schema"
+      type: object
+      required:
+        - orderId
+        - orderNumber
+        - createdTs
+        - items
+      properties:
+        orderId:
+          type: [integer, string]
+        orderNumber:
+          type: [integer, string]
+        orderType:
+          type: string
+        specialInstructions:
+          type: string
+        allergy:
+          type: boolean
+        createdTs:
+          type: integer
+        items:
+          type: array
+          items:
+            type: object
+            required:
+              - quantity
+              - name
+            properties:
+              itemId:
+                type: [integer, string]
+              name:
+                type: string
+              quantity:
+                type: integer
+                minimum: 1
+              stationId:
+                type: [integer, string]
+                nullable: true
+              modifiers:
+                type: array
+                items:
+                  type: string
+              specialInstructions:
+                type: string
+              allergy:
+                type: boolean
+            additionalProperties: false
+      additionalProperties: false
+    Station:
+      $schema: "https://json-schema.org/draft/2020-12/schema"
+      type: object
+      required:
+        - id
+        - name
+        - type
+      properties:
+        id:
+          type: [integer, string]
+        name:
+          type: string
+        type:
+          type: string
+        order_type_filter:
+          type: [string, 'null']
+        bg_color:
+          type: [string, 'null']
+          pattern: ^#?[0-9A-Fa-f]{6}$
+        primary_color:
+          type: [string, 'null']
+          pattern: ^#?[0-9A-Fa-f]{6}$
+        font_family:
+          type: [string, 'null']
+      additionalProperties: false
+    Theme:
+      $schema: "https://json-schema.org/draft/2020-12/schema"
+      type: object
+      additionalProperties:
+        type: object
+        required:
+          - colors
+          - fonts
+        properties:
+          colors:
+            type: object
+            required:
+              - background
+              - text
+              - primary
+              - accent
+            properties:
+              background: { type: string }
+              text: { type: string }
+              primary: { type: string }
+              accent: { type: string }
+            additionalProperties: false
+          fonts:
+            type: object
+            required:
+              - body
+            properties:
+              body: { type: string }
+            additionalProperties: false
+        additionalProperties: false
+    Plugin:
+      $schema: "https://json-schema.org/draft/2020-12/schema"
+      type: object
+      required:
+        - id
+        - name
+        - version
+        - main
+        - activationEvents
+        - contributes
+        - license
+        - coreAPI
+      properties:
+        id: { type: string }
+        name: { type: string }
+        version: { type: string }
+        description: { type: string }
+        main: { type: string }
+        route: { type: string }
+        license: { type: string }
+        coreAPI: { type: string }
+        activationEvents:
+          type: array
+          items: { type: string }
+        contributes:
+          type: object
+          properties:
+            actions: { type: array, items: { type: object } }
+            routes: { type: array, items: { type: object } }
+            transforms: { type: array, items: { type: object } }
+            shortcuts: { type: array, items: { type: object } }
+            adminPanels:
+              type: array
+              items:
+                type: object
+                required: [id, title]
+                properties:
+                  id: { type: string }
+                  title: { type: string }
+                  requiredDomains: { type: array, items: { type: string } }
+                  requiredScopes: { type: array, items: { type: string } }
+                  latency: { type: string }
+                  route: { type: string }
+        additionalProperties: false
+    Event:
+      $schema: "https://json-schema.org/draft/2020-12/schema"
+      type: object
+      required:
+        - id
+        - type
+        - timestamp
+      properties:
+        id: { type: [integer, string] }
+        type: { type: string }
+        timestamp: { type: string, format: date-time }
+        data: { type: object }
+      additionalProperties: false

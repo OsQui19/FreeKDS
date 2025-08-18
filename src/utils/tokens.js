@@ -26,4 +26,8 @@ export async function getToken(path, options) {
     .reduce((obj, part) => (obj ? obj[part] : undefined), tokens)?.$value;
 }
 
-export default { resolveTokens, getToken };
+export function clearTokenCache() {
+  Object.keys(tokenCache).forEach((key) => delete tokenCache[key]);
+}
+
+export default { resolveTokens, getToken, clearTokenCache };

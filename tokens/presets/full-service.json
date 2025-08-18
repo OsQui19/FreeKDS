@@ -1,3 +1,9 @@
 {
-  "color": { "accent": { "value": "#0d6efd" } }
+  "color": {
+    "accent": {
+      "value": "#0d6efd",
+      "type": "color",
+      "description": "Preset accent color for full-service restaurants"
+    }
+  }
 }

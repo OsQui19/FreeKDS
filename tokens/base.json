@@ -2,93 +2,209 @@
   "$schema": "https://beta.openui.org/schemas/design-tokens.json",
   "color": {
     "background": {
-      "$type": "color",
-      "$value": "#ffffff",
-      "$description": "Default app background"
+      "type": "color",
+      "value": "#ffffff",
+      "description": "Default app background"
     },
     "surface": {
-      "$type": "color",
-      "$value": "#f8f9fa",
-      "$description": "Card and surface background"
+      "type": "color",
+      "value": "#f8f9fa",
+      "description": "Card and surface background"
     },
     "text": {
-      "$type": "color",
-      "$value": "#212529",
-      "$description": "Primary text color"
+      "type": "color",
+      "value": "#212529",
+      "description": "Primary text color"
     },
     "accent": {
-      "$type": "color",
-      "$value": "#0d6efd",
-      "$description": "Primary brand color"
+      "type": "color",
+      "value": "#0d6efd",
+      "description": "Primary brand color"
     },
     "critical": {
-      "$type": "color",
-      "$value": "#dc3545",
-      "$description": "Destructive actions and errors"
+      "type": "color",
+      "value": "#dc3545",
+      "description": "Destructive actions and errors"
     },
     "warning": {
-      "$type": "color",
-      "$value": "#ffc107",
-      "$description": "Warnings and cautions"
+      "type": "color",
+      "value": "#ffc107",
+      "description": "Warnings and cautions"
     },
     "info": {
-      "$type": "color",
-      "$value": "#0dcaf0",
-      "$description": "Informational messages"
+      "type": "color",
+      "value": "#0dcaf0",
+      "description": "Informational messages"
     }
   },
   "radius": {
     "card": {
-      "$type": "dimension",
-      "$value": "0.5rem",
-      "$description": "Card corner radius"
+      "type": "dimension",
+      "value": "0.5rem",
+      "description": "Card corner radius"
     },
     "button": {
-      "$type": "dimension",
-      "$value": "0.25rem",
-      "$description": "Button corner radius"
+      "type": "dimension",
+      "value": "0.25rem",
+      "description": "Button corner radius"
     },
     "field": {
-      "$type": "dimension",
-      "$value": "0.25rem",
-      "$description": "Input field corner radius"
+      "type": "dimension",
+      "value": "0.25rem",
+      "description": "Input field corner radius"
     }
   },
   "space": {
-    "xs": { "$type": "dimension", "$value": "0.25rem" },
-    "sm": { "$type": "dimension", "$value": "0.5rem" },
-    "md": { "$type": "dimension", "$value": "1rem" },
-    "lg": { "$type": "dimension", "$value": "2rem" },
-    "xl": { "$type": "dimension", "$value": "4rem" }
+    "xs": {
+      "type": "dimension",
+      "value": "0.25rem"
+    },
+    "sm": {
+      "type": "dimension",
+      "value": "0.5rem"
+    },
+    "md": {
+      "type": "dimension",
+      "value": "1rem"
+    },
+    "lg": {
+      "type": "dimension",
+      "value": "2rem"
+    },
+    "xl": {
+      "type": "dimension",
+      "value": "4rem"
+    }
   },
   "font": {
     "size": {
-      "sm": { "$type": "fontSize", "$value": "0.875rem" },
-      "md": { "$type": "fontSize", "$value": "1rem" },
-      "lg": { "$type": "fontSize", "$value": "1.25rem" },
-      "xl": { "$type": "fontSize", "$value": "1.5rem" }
+      "sm": {
+        "type": "fontSize",
+        "value": "0.875rem"
+      },
+      "md": {
+        "type": "fontSize",
+        "value": "1rem"
+      },
+      "lg": {
+        "type": "fontSize",
+        "value": "1.25rem"
+      },
+      "xl": {
+        "type": "fontSize",
+        "value": "1.5rem"
+      }
     },
     "weight": {
-      "regular": { "$type": "fontWeight", "$value": "400" },
-      "medium": { "$type": "fontWeight", "$value": "500" },
-      "bold": { "$type": "fontWeight", "$value": "700" }
+      "regular": {
+        "type": "fontWeight",
+        "value": "400"
+      },
+      "medium": {
+        "type": "fontWeight",
+        "value": "500"
+      },
+      "bold": {
+        "type": "fontWeight",
+        "value": "700"
+      }
     }
   },
   "shadow": {
     "sm": {
-      "$type": "shadow",
-      "$value": "0 1px 2px rgba(0,0,0,0.05)",
-      "$description": "Subtle elevation"
+      "type": "shadow",
+      "value": "0 1px 2px rgba(0,0,0,0.05)",
+      "description": "Subtle elevation"
     },
     "md": {
-      "$type": "shadow",
-      "$value": "0 4px 6px rgba(0,0,0,0.1)",
-      "$description": "Card elevation"
+      "type": "shadow",
+      "value": "0 4px 6px rgba(0,0,0,0.1)",
+      "description": "Card elevation"
     },
     "lg": {
-      "$type": "shadow",
-      "$value": "0 10px 15px rgba(0,0,0,0.15)",
-      "$description": "Modal elevation"
+      "type": "shadow",
+      "value": "0 10px 15px rgba(0,0,0,0.15)",
+      "description": "Modal elevation"
+    }
+  },
+  "state": {
+    "timer": {
+      "info": {
+        "type": "color",
+        "value": "#0dcaf0",
+        "description": "Timers within target"
+      },
+      "warn": {
+        "type": "color",
+        "value": "#ffc107",
+        "description": "Timers approaching limit"
+      },
+      "critical": {
+        "type": "color",
+        "value": "#dc3545",
+        "description": "Timers over limit"
+      }
+    },
+    "held": {
+      "type": "color",
+      "value": "#6c757d",
+      "description": "Held tickets"
+    },
+    "late": {
+      "type": "color",
+      "value": "#fd7e14",
+      "description": "Late tickets"
+    },
+    "expedite": {
+      "type": "color",
+      "value": "#198754",
+      "description": "Expedited tickets"
+    }
+  },
+  "density": {
+    "comfortable": {
+      "type": "number",
+      "value": 1,
+      "description": "Base spacing scale"
+    },
+    "compact": {
+      "type": "number",
+      "value": 0.875,
+      "description": "Reduced spacing"
+    },
+    "cozy": {
+      "type": "number",
+      "value": 1.125,
+      "description": "Increased spacing"
+    }
+  },
+  "elevation": {
+    "raised": {
+      "type": "shadow",
+      "value": "{shadow.sm}",
+      "description": "Raised surface"
+    },
+    "overlay": {
+      "type": "shadow",
+      "value": "{shadow.md}",
+      "description": "Overlay surface"
+    },
+    "high": {
+      "type": "shadow",
+      "value": "{shadow.lg}",
+      "description": "Highest elevation"
+    }
+  },
+  "focus": {
+    "color": {
+      "type": "color",
+      "value": "#0d6efd",
+      "description": "Focus outline color"
+    },
+    "ring": {
+      "type": "shadow",
+      "value": "0 0 0 0.25rem rgba(13,110,253,0.25)",
+      "description": "Focus ring"
     }
   }
 }

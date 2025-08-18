@@ -38,6 +38,24 @@ The server reads the port from the `PORT` environment variable, defaulting to `3
 ## 🧪 Testing
 Run `npm test` to execute the automated test suite.
 
+## 📚 API spec & SDK
+The OpenAPI specification lives in `openapi.yaml`. Static docs are generated
+with Redoc and stored in `docs/index.html`. The TypeScript SDK used by the
+Admin/KDS and plugins is generated into `sdks/generated`.
+
+Regenerate the SDK and docs after changing the spec:
+
+```bash
+npm run generate:sdk
+npm run generate:docs
+```
+
+Import services from the SDK in your code:
+
+```ts
+import { OrdersService } from "./sdks/generated";
+```
+
 ## 🔒 Security
 The app now uses [helmet](https://github.com/helmetjs/helmet) and basic rate limiting. Set a strong `sessionSecret` in `config.js` for secure sessions. Use the `secureCookie` flag to control whether session cookies require HTTPS: set it to `true` when deploying over HTTPS, or `false` for local HTTP testing. Rate limiting thresholds can be adjusted in the `rateLimit` section of `config.js` if your deployment requires higher traffic.
 
