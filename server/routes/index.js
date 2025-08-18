@@ -5,6 +5,7 @@ module.exports = function registerRoutes(db, io) {
   router.use('/api', require('./auth')(db, io));
   router.use('/api', require('./admin')(db, io));
   router.use('/api', require('./stations')(db));
+  router.use('/api', require('./api/layout')(db));
   router.use(require('./api')(db, io));
   return router;
 };

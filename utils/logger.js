@@ -1,7 +1,16 @@
 const fs = require('fs');
 const path = require('path');
-const { createLogger, format, transports } = require('winston');
-const DailyRotateFile = require('winston-daily-rotate-file');
+let createLogger;
+let format;
+let transports;
+let DailyRotateFile;
+try {
+  ({ createLogger, format, transports } = require('winston'));
+  DailyRotateFile = require('winston-daily-rotate-file');
+} catch (err) {
+  module.exports = console;
+  return;
+}
 
 const logDir = process.env.LOG_DIR || path.join(__dirname, '..', 'logs');
 if (!fs.existsSync(logDir)) {

@@ -29,3 +29,4 @@ export default function KdsApp({ stationType }) {
   }, [socket]);
 
   return <OrderList orders={orders} stationType={stationType} />;
+}

@@ -6,13 +6,31 @@ export function LayoutProvider({ children }) {
   const [layout, setLayout] = useState(null);
 
   useEffect(() => {
-    const saved = localStorage.getItem('layout-schema');
-    if (saved) setLayout(saved);
+    const fetchLayout = async () => {
+      try {
+        const res = await fetch('/api/layout');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.layout) setLayout(data.layout);
+        }
+      } catch {
+        /* ignore */
+      }
+    };
+    fetchLayout();
   }, []);
 
-  const saveLayout = (json) => {
+  const saveLayout = async (json, scope = 'user', userId) => {
     setLayout(json);
-    localStorage.setItem('layout-schema', json);
+    try {
+      await fetch('/api/layout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ layout: json, scope, userId }),
+      });
+    } catch {
+      /* ignore */
+    }
   };
 
   return (

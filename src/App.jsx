@@ -4,7 +4,7 @@ import { PluginProvider, PluginRoutes, PluginZone } from './plugins/PluginManage
 import BaseLayout from '@/layouts/BaseLayout.jsx';
 import FlashMessage from './components/FlashMessage.jsx';
 import LoginPage from './features/login/LoginPage.jsx';
-import OrderPage from './features/order/OrderPage.jsx';
+import OrderEntryPage from './features/OrderEntry/OrderEntryPage.jsx';
 import StationsPage from './features/stations/StationsPage.jsx';
 
 function Home() {
@@ -30,7 +30,7 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/order" element={<OrderPage />} />
+            <Route path="/order" element={<OrderEntryPage />} />
             <Route path="/stations" element={<StationsPage />} />
             <PluginRoutes />
           </Routes>

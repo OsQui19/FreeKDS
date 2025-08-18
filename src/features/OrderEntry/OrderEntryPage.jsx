@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 
-export default function OrderPage() {
+export default function OrderEntryPage() {
   const [categories, setCategories] = useState([]);
   const [modGroups, setModGroups] = useState([]);
   const [table, setTable] = useState(null);

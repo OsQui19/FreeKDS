@@ -25,7 +25,6 @@ function createApp(db, io) {
   });
   app.use(authMiddleware(db));
   app.use(express.static(path.join(__dirname, '..', 'public')));
-  app.use(express.static(path.join(__dirname, '..', 'dist')));
   app.use((req, res, next) => {
     res.locals.settings = settingsCache.getSettings();
     next();
@@ -50,7 +49,7 @@ function createApp(db, io) {
     res.status(200).json({ status: 'ok' });
   });
   app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'dist', 'index.html'));
+    res.sendFile(path.join(__dirname, '..', 'public', 'dist', 'index.html'));
   });
   app.use((err, req, res, next) => {
     logger.error('Unhandled application error', err);
