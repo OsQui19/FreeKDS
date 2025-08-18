@@ -5,8 +5,14 @@
   "version": "1.0.0",
   "main": "./index.js",
   "route": "/admin/menu",
+  "license": "MIT",
+  "coreAPI": "1.0.0",
   "activationEvents": ["onStartupFinished"],
   "contributes": {
+    "actions": [],
+    "routes": [],
+    "transforms": [],
+    "shortcuts": [],
     "adminPanels": [
       {
         "id": "menu",

@@ -9,7 +9,7 @@ module.exports = {
     name: process.env.DB_NAME || 'kds_db',
     port: Number(process.env.DB_PORT) || 3306,
   },
-  port: process.env.PORT || process.env.APP_PORT || 3000,
+  port: Number(process.env.PORT) || 3000,
   sessionSecret: process.env.SESSION_SECRET || 'changeme',
   secureCookie: false,
   backupDir: path.join(__dirname, 'backups'),

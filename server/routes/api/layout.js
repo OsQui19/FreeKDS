@@ -1,5 +1,11 @@
 const express = require('express');
+const Ajv = require('ajv');
+const layoutSchema = require('../../../schemas/layout.schema.json');
 const { query } = require('../../../utils/db');
+
+delete layoutSchema.$schema; // remove unsupported draft marker for Ajv v6
+const ajv = new Ajv({ allErrors: true });
+const validateLayout = ajv.compile(layoutSchema);
 
 module.exports = (db) => {
   const router = express.Router();
@@ -20,6 +26,18 @@ module.exports = (db) => {
     if (!req.session.user) return res.status(401).send('Unauthorized');
     const { name = 'default', layout } = req.body || {};
     if (typeof layout !== 'string') return res.status(400).send('Invalid layout');
+
+    let layoutObj;
+    try {
+      layoutObj = JSON.parse(layout);
+    } catch (err) {
+      return res.status(400).json({ errors: ['Invalid JSON'] });
+    }
+
+    if (!validateLayout(layoutObj)) {
+      return res.status(400).json({ errors: validateLayout.errors });
+    }
+
     try {
       await query(
         db,

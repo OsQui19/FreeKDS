@@ -4,107 +4,51 @@ import React, {
   useEffect,
   useMemo,
   useState,
-<<<<<<< ours
 } from "react";
 import { Link, Route } from "react-router-dom";
 import loadPlugins from "./index.js";
-=======
-} from 'react';
-import { Link, Route } from 'react-router-dom';
-import pluginFiles from './index.js';
-import {
-  install,
-  enable,
-  activate as activatePlugin,
-  deactivate as deactivatePlugin,
-  on,
-} from './lifecycle.js';
->>>>>>> theirs
 
-const PluginContext = createContext({ plugins: [], zones: {} });
+const PluginContext = createContext({ plugins: [], zones: {}, contributions: {} });
 
 export function PluginProvider({ children }) {
   const [plugins, setPlugins] = useState([]);
 
-<<<<<<< ours
-    useEffect(() => {
-      let active = true;
-      async function load() {
-        const loaded = await loadPlugins();
-        if (active) {
-          setPlugins(loaded);
-        }
-      }
-      load();
-      return () => {
-        active = false;
-      };
-    }, []);
-=======
   useEffect(() => {
-    const disposers = [];
-    let cancelled = false;
+    let active = true;
     async function load() {
-      const loaded = await Promise.all(
-        pluginFiles.map(async (file) => {
-          try {
-            const mod = await import(/* @vite-ignore */ `./${file}`);
-            return { Component: mod.default, meta: mod.meta, activate: mod.activate, deactivate: mod.deactivate };
-          } catch (err) {
-            console.error(`Failed to load plugin: ${file}`, err);
-            return null;
-          }
-        })
-      );
-      if (cancelled) return;
-      loaded.filter(Boolean).forEach((plugin) => {
-        install(plugin);
-        enable(plugin);
-
-        const doActivate = () => {
-          setPlugins((prev) => {
-            if (prev.some((p) => p.meta.id === plugin.meta.id)) return prev;
-            activatePlugin(plugin);
-            return [...prev, plugin];
-          });
-        };
-
-        const doDeactivate = () => {
-          setPlugins((prev) => {
-            if (!prev.some((p) => p.meta.id === plugin.meta.id)) return prev;
-            deactivatePlugin(plugin);
-            return prev.filter((p) => p.meta.id !== plugin.meta.id);
-          });
-        };
-
-        const { activationEvents = [], deactivationEvents = [] } = plugin.meta || {};
-
-        if (activationEvents.length === 0) {
-          doActivate();
-        } else {
-          activationEvents.forEach((ev) => disposers.push(on(ev, doActivate)));
-        }
-        deactivationEvents.forEach((ev) => disposers.push(on(ev, doDeactivate)));
-      });
+      const loaded = await loadPlugins();
+      if (active) {
+        setPlugins(loaded);
+      }
     }
     load();
     return () => {
-      cancelled = true;
-      disposers.forEach((d) => d());
+      active = false;
     };
   }, []);
->>>>>>> theirs
 
   const value = useMemo(() => {
-    const zones = plugins.reduce((acc, plugin) => {
-      const zone = plugin.meta?.zone;
+    const zones = {};
+    const contributions = {
+      actions: [],
+      routes: [],
+      transforms: [],
+      shortcuts: [],
+      adminPanels: [],
+    };
+    plugins.forEach((plugin) => {
+      const { meta } = plugin;
+      const zone = meta?.zone;
       if (zone) {
-        acc[zone] = acc[zone] || [];
-        acc[zone].push(plugin);
+        zones[zone] = zones[zone] || [];
+        zones[zone].push(plugin);
       }
-      return acc;
-    }, {});
-    return { plugins, zones };
+      const contrib = meta?.contributes || {};
+      Object.keys(contributions).forEach((key) => {
+        (contrib[key] || []).forEach((item) => contributions[key].push(item));
+      });
+    });
+    return { plugins, zones, contributions };
   }, [plugins]);
 
   return (
@@ -143,3 +87,4 @@ export function PluginZone({ zone }) {
     </>
   );
 }
+

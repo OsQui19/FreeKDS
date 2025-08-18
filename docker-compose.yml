@@ -2,10 +2,10 @@ services:
   app:
     build: .
     ports:
-      - "${APP_HOST_PORT:-3000}:3000"
+      - "${PORT:-3000}:${PORT:-3000}"
     restart: unless-stopped
     environment:
-      APP_PORT: 3000
+      PORT: ${PORT:-3000}
       DB_HOST: mysql
       DB_PORT: ${DB_PORT:-3306}
       DB_USER: ${DB_USER:-freekds}
@@ -15,7 +15,7 @@ services:
       mysql:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:${PORT:-3000}/health"]
       interval: 30s
       timeout: 10s
       retries: 3

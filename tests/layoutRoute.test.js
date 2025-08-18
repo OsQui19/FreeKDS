@@ -23,17 +23,18 @@ describe('Layout API', () => {
     const app = buildApp(db);
     const res = await request(app)
       .get('/api/layout')
-      .set('x-test-user', '1');
+      .set('x-test-role', 'admin');
     expect(res.status).to.equal(200);
     expect(res.body.layout).to.equal('layout-json');
   });
 
   it('saves layout', async () => {
+    const layout = JSON.stringify({ screens: [] });
     const db = {
       promise: () => ({
         query: async (sql, params) => {
           expect(sql).to.match(/INSERT INTO layouts/);
-          expect(params).to.deep.equal(['default', 'new-layout']);
+          expect(params).to.deep.equal(['default', layout]);
           return [[], []];
         },
       }),
@@ -41,9 +42,43 @@ describe('Layout API', () => {
     const app = buildApp(db);
     const res = await request(app)
       .post('/api/layout')
-      .set('x-test-user', '1')
-      .send({ layout: 'new-layout' });
+      .set('x-test-role', 'admin')
+      .send({ layout });
     expect(res.status).to.equal(200);
     expect(res.body.success).to.be.true;
+  });
+
+  it('rejects invalid JSON layout', async () => {
+    const db = {
+      promise: () => ({
+        query: async () => {
+          throw new Error('should not be called');
+        },
+      }),
+    };
+    const app = buildApp(db);
+    const res = await request(app)
+      .post('/api/layout')
+      .set('x-test-role', 'admin')
+      .send({ layout: 'not-json' });
+    expect(res.status).to.equal(400);
+    expect(res.body.errors).to.exist;
+  });
+
+  it('rejects layout that fails schema validation', async () => {
+    const db = {
+      promise: () => ({
+        query: async () => {
+          throw new Error('should not be called');
+        },
+      }),
+    };
+    const app = buildApp(db);
+    const res = await request(app)
+      .post('/api/layout')
+      .set('x-test-role', 'admin')
+      .send({ layout: '{}' });
+    expect(res.status).to.equal(400);
+    expect(res.body.errors).to.exist;
   });
 });

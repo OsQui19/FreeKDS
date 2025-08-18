@@ -2,7 +2,16 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "FreeKDS Plugin Manifest",
   "type": "object",
-  "required": ["id", "name", "version", "main", "activationEvents", "contributes"],
+  "required": [
+    "id",
+    "name",
+    "version",
+    "main",
+    "activationEvents",
+    "contributes",
+    "license",
+    "coreAPI"
+  ],
   "properties": {
     "id": {
       "type": "string",
@@ -28,6 +37,14 @@
       "type": "string",
       "description": "Optional route used for navigation."
     },
+    "license": {
+      "type": "string",
+      "description": "SPDX identifier for the plugin's license."
+    },
+    "coreAPI": {
+      "type": "string",
+      "description": "Target version of the FreeKDS core plugin API."
+    },
     "activationEvents": {
       "type": "array",
       "description": "Events that trigger plugin activation.",
@@ -36,7 +53,24 @@
     "contributes": {
       "type": "object",
       "description": "Contribution points provided by the plugin.",
+      "required": ["adminPanels", "actions", "routes", "transforms", "shortcuts"],
       "properties": {
+        "actions": {
+          "type": "array",
+          "items": { "type": "object" }
+        },
+        "routes": {
+          "type": "array",
+          "items": { "type": "object" }
+        },
+        "transforms": {
+          "type": "array",
+          "items": { "type": "object" }
+        },
+        "shortcuts": {
+          "type": "array",
+          "items": { "type": "object" }
+        },
         "adminPanels": {
           "type": "array",
           "items": {
