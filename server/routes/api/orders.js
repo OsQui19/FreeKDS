@@ -3,7 +3,8 @@ const logger = require("../../../utils/logger");
 const { logInventoryForOrder } = require("../../controllers/dbHelpers");
 const { backupDatabase } = require("../../controllers/dbBackup");
 
-module.exports = (db, io) => {
+module.exports = (db, transports) => {
+  const { io, sse } = transports;
   const router = express.Router();
 
   router.post("/", async (req, res, next) => {
@@ -103,7 +104,7 @@ module.exports = (db, io) => {
       });
       const createdTs = Math.floor(Date.now() / 1000);
       Object.keys(stationMap).forEach((id) => {
-        io.to(`station-${id}`).emit("orderAdded", {
+        const payload = {
           orderId,
           orderNumber: order_number || orderId,
           orderType: order_type || "",
@@ -111,9 +112,11 @@ module.exports = (db, io) => {
           allergy: !!allergy,
           createdTs,
           items: stationMap[id],
-        });
+        };
+        io.to(`station-${id}`).emit("orderAdded", payload);
+        sse && sse.emitToStation(id, "orderAdded", payload);
       });
-      io.to("expo").emit("orderAdded", {
+      const expoPayload = {
         orderId,
         orderNumber: order_number || orderId,
         orderType: order_type || "",
@@ -128,7 +131,9 @@ module.exports = (db, io) => {
           specialInstructions: r.special_instructions || "",
           allergy: !!r.allergy,
         })),
-      });
+      };
+      io.to("expo").emit("orderAdded", expoPayload);
+      sse && sse.emitToExpo("orderAdded", expoPayload);
 
       io.emit("reportsUpdated");
 

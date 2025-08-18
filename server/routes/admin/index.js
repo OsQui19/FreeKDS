@@ -10,7 +10,8 @@ const backupsRoutes = require("./backups");
 const menuRoutes = require("./menu");
 const inventoryRoutes = require("./inventory");
 
-module.exports = (db, io) => {
+module.exports = (db, transports) => {
+  const { io } = transports;
   const router = express.Router();
 
   router.use("/", backupsRoutes(db));

@@ -1,6 +1,7 @@
 import ReactDOM from 'react-dom/client';
-import MenuEditor from './MenuEditor.jsx';
 import AdminLayout from '@/layouts/AdminLayout.jsx';
+import AdminPanels from './AdminPanels.jsx';
+import { PluginProvider } from '@/plugins/PluginManager.jsx';
 
 function mount() {
   const rootEl = document.getElementById('adminMenuApp');
@@ -18,11 +19,15 @@ function mount() {
     }
   }
 
+  window.__ADMIN_MENU_DATA__ = { ingredients, units };
+
   ReactDOM.createRoot(rootEl).render(
     <React.StrictMode>
-      <AdminLayout>
-        <MenuEditor ingredients={ingredients} units={units} />
-      </AdminLayout>
+      <PluginProvider>
+        <AdminLayout>
+          <AdminPanels />
+        </AdminLayout>
+      </PluginProvider>
     </React.StrictMode>
   );
 }

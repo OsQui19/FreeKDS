@@ -3,14 +3,18 @@ import { Navbar, Nav, Container, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { useTheme } from '@/contexts/ThemeContext.jsx';
 import { usePlugins } from '@/plugins/PluginManager.jsx';
+import { getToken } from '@/utils/tokens.js';
 
 export default function AppNavbar() {
   const { theme, toggleTheme } = useTheme();
   const { plugins } = usePlugins();
+  const surface = getToken('color.surface');
+  const text = getToken('color.text');
+  const accent = getToken('color.accent');
   return (
-    <Navbar bg="light" expand="lg" className="mb-3">
+    <Navbar expand="lg" className="mb-3" style={{ backgroundColor: surface, color: text }}>
       <Container>
-        <Navbar.Brand as={Link} to="/">
+        <Navbar.Brand as={Link} to="/" style={{ color: text }}>
           FreeKDS
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="app-navbar" />
@@ -26,7 +30,10 @@ export default function AppNavbar() {
               </Nav.Link>
             ))}
           </Nav>
-          <Button variant="secondary" onClick={toggleTheme}>
+          <Button
+            onClick={toggleTheme}
+            style={{ backgroundColor: accent, borderColor: accent }}
+          >
             {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
           </Button>
         </Navbar.Collapse>

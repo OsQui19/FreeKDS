@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import TicketCard from './TicketCard.jsx';
+import { TicketCard } from '../../../../packages/renderers/index.js';
 
 /**
  * Render a collection of orders as kitchen tickets.

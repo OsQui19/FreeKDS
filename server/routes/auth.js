@@ -16,7 +16,8 @@ function dashboardForRole(role) {
   return '/admin';
 }
 
-module.exports = (db, io) => {
+module.exports = (db, transports) => {
+  const { io } = transports;
   const router = express.Router();
 
   router.get('/login', (req, res) => {

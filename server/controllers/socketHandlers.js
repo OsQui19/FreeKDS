@@ -1,6 +1,7 @@
 const logger = require('../../utils/logger');
 const { query } = require('../../utils/db');
-module.exports = function (io, db) {
+module.exports = function (io, db, transports = {}) {
+  const { sse } = transports;
   io.on("connection", (socket) => {
     const registerStation = async (stationId) => {
       socket.stationId = parseInt(stationId, 10);
@@ -61,6 +62,7 @@ module.exports = function (io, db) {
             [socket.stationId, orderId, orderId],
           );
           io.emit("orderCompleted", { orderId });
+          sse && sse.emitAll("orderCompleted", { orderId });
           io.emit("reportsUpdated");
         } else {
           await query(
@@ -71,6 +73,10 @@ module.exports = function (io, db) {
             [socket.stationId, orderId, orderId],
           );
           io.to("expo").emit("stationDone", {
+            orderId,
+            stationId: socket.stationId,
+          });
+          sse && sse.emitToExpo("stationDone", {
             orderId,
             stationId: socket.stationId,
           });
@@ -137,8 +143,17 @@ module.exports = function (io, db) {
               createdTs,
               items: stationMap[id],
             });
+            sse && sse.emitToStation(id, "orderAdded", {
+              orderId,
+              orderNumber,
+              orderType,
+              specialInstructions,
+              allergy,
+              createdTs,
+              items: stationMap[id],
+            });
           });
-          io.to("expo").emit("orderAdded", {
+          const expoPayload = {
             orderId,
             orderNumber,
             orderType,
@@ -154,9 +169,15 @@ module.exports = function (io, db) {
               specialInstructions: r.item_instructions || "",
               allergy: !!r.item_allergy,
             })),
-          });
+          };
+          io.to("expo").emit("orderAdded", expoPayload);
+          sse && sse.emitToExpo("orderAdded", expoPayload);
         } else {
           io.to("expo").emit("stationUndo", {
+            orderId,
+            stationId: socket.stationId,
+          });
+          sse && sse.emitToExpo("stationUndo", {
             orderId,
             stationId: socket.stationId,
           });
@@ -176,8 +197,10 @@ module.exports = function (io, db) {
         const stationIds = rows.map((r) => r.station_id);
         stationIds.forEach((id) => {
           io.to(`station-${id}`).emit("orderUrgent", { orderId });
+          sse && sse.emitToStation(id, "orderUrgent", { orderId });
         });
         io.to("expo").emit("orderUrgent", { orderId });
+        sse && sse.emitToExpo("orderUrgent", { orderId });
       } catch (err) {
         logger.error("Error fetching stations for urgent:", err);
       }

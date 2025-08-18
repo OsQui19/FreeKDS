@@ -10,7 +10,7 @@ const sessionMiddleware = require('../src/middleware/session');
 const authMiddleware = require('./middleware/auth');
 const registerRoutes = require('./routes');
 
-function createApp(db, io) {
+function createApp(db, transports) {
   const app = express();
   app.use(helmetMiddleware());
   app.use(rateLimitMiddleware(config));
@@ -44,7 +44,7 @@ function createApp(db, io) {
     res.locals.user = req.session && req.session.user ? req.session.user : null;
     next();
   });
-  app.use(registerRoutes(db, io));
+  app.use(registerRoutes(db, transports));
   app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok' });
   });

@@ -1,0 +1,12 @@
+{
+  "global": {
+    "ui": {
+      "sampleFeature": false
+    },
+    "transport": {},
+    "perf": {}
+  },
+  "tenant": {},
+  "station": {},
+  "screen": {}
+}

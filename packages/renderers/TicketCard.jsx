@@ -1,18 +1,18 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+const React = require('react');
+const PropTypes = require('prop-types');
+const ModifierList = require('./ModifierList.jsx');
+const BumpAction = require('./BumpAction.jsx');
 
 /**
- * Render a single kitchen ticket.
+ * Display an individual kitchen ticket with items and modifiers.
  *
- * @param {Object} props
- * @param {number|string} props.orderId - Unique identifier for the order.
- * @param {string|number} props.orderNumber - Human readable ticket number.
- * @param {string} [props.orderType] - Optional type such as "DINE-IN" or "TO-GO".
- * @param {number} props.createdTs - Unix timestamp when the order was created.
- * @param {boolean} [props.allergy] - Whether the ticket is marked as an allergy.
- * @param {string} [props.specialInstructions] - Extra instructions for the whole ticket.
- * @param {Array} props.items - Line items to display on the ticket.
- * @param {string} [props.stationType] - Station type to influence item styling.
+ * Density: supports `comfortable` and `compact` for spacing.
+ * Layout: vertical card.
+ * Accessibility: high contrast labels, logical tab order ending on bump button.
+ * Performance: aim for <5ms render per ticket with up to 10 items.
+ *
+ * @param {object} props
+ * @param {(id: number|string) => void} [props.onBump] - Callback when bumping.
  */
 function TicketCard({
   orderId,
@@ -23,12 +23,12 @@ function TicketCard({
   specialInstructions,
   items,
   stationType,
+  onBump,
 }) {
   const date = new Date(createdTs * 1000);
   const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric' });
   return (
-    <div
-      className={`ticket ${orderType ? orderType.replace(/\s+/g, '-').toLowerCase() : ''}`}
+    <div className={`ticket ${orderType ? orderType.replace(/\s+/g, '-').toLowerCase() : ''}`}
       data-order-id={orderId}
       data-created-ts={createdTs}
     >
@@ -55,13 +55,7 @@ function TicketCard({
             >
               {item.name}
             </span>
-            {item.modifiers && item.modifiers.length > 0 && (
-              <ul className="item-modifiers">
-                {item.modifiers.map((m, i) => (
-                  <li key={i}>{m}</li>
-                ))}
-              </ul>
-            )}
+            <ModifierList modifiers={item.modifiers || []} />
             {item.specialInstructions && (
               <div className={`ticket-instructions${item.allergy ? ' allergy' : ''}`}>
                 {item.specialInstructions}
@@ -71,6 +65,7 @@ function TicketCard({
           </li>
         ))}
       </ul>
+      {onBump && <BumpAction onBump={() => onBump(orderId)} />}
     </div>
   );
 }
@@ -94,6 +89,7 @@ TicketCard.propTypes = {
       allergy: PropTypes.bool,
     })
   ).isRequired,
+  onBump: PropTypes.func,
 };
 
-export default TicketCard;
+module.exports = TicketCard;
