@@ -23,9 +23,15 @@ alternate transport (WebSocket ↔︎ SSE). Successful connections reset the
 backoff timer.
 
 ## Authentication
-Clients authenticate by providing a `stationId` query parameter when
-connecting. The server validates the station and assigns it to the
-appropriate rooms.
+Connections require two pieces of information:
+
+- `stationId` – identifies the station.
+- `token` – a 32‑character hex string shared with the server.
+
+The request's `Origin` header must also match one of the allowed origins.
+By default only `http://localhost:3000` is accepted. Requests with an
+unknown origin or an invalid token are rejected before the station is
+registered.
 
 ## Stale‑Data Indicators
 The UI exposes a `stale` flag from the transport hook. When `true`, the UI

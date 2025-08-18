@@ -15,11 +15,8 @@
     "generate:sdk": "node sdks/generate.mjs",
     "generate:docs": "redoc-cli bundle openapi.yaml -o docs/index.html",
     "lint:tokens": "node scripts/lintTokens.js",
-<<<<<<< ours
-    "test": "npm run validate-manifests && npm run lint:tokens && mocha \"tests/**/*.test.js\""
-=======
+    "validate:openapi": "redoc-cli lint openapi.yaml",
     "test": "npm run validate-manifests && mocha \"tests/**/*.test.js\""
->>>>>>> theirs
   },
   "dependencies": {
     "@craftjs/core": "^0.2.12",
@@ -71,4 +68,3 @@
   "author": "",
   "license": "ISC"
 }
-

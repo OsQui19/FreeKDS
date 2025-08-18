@@ -55,7 +55,8 @@
           "onStartupFinished",
           "onAdminOpen",
           "onAdminClose",
-          "onTicketReceived"
+          "onTicketReceived",
+          "onShiftChange"
         ]
       }
     },
@@ -100,7 +101,10 @@
             "type": "object",
             "required": [
               "id",
-              "title"
+              "title",
+              "requiredDomains",
+              "requiredScopes",
+              "latency"
             ],
             "properties": {
               "id": {

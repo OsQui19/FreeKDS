@@ -1,10 +1,4 @@
 const express = require('express');
-<<<<<<< ours
-const validators = require('../../../schemas/validate');
-const { query } = require('../../../utils/db');
-
-const validateLayout = validators.layout;
-=======
 const Ajv = require('ajv');
 const layoutSchema = require('../../../schemas/layout.schema@1.0.0.json');
 const layoutBlockSchema = require('../../../schemas/layout-block.schema@1.0.0.json');
@@ -18,7 +12,6 @@ const ajv = new Ajv({ allErrors: true });
 ajv.addSchema(layoutBlockSchema);
 const validateLayout = ajv.compile(layoutSchema);
 const validateScreen = ajv.compile(screenSchema);
->>>>>>> theirs
 
 module.exports = (db) => {
   const router = express.Router();
@@ -53,12 +46,9 @@ module.exports = (db) => {
       return res.status(400).json({ errors: ['Invalid JSON'] });
     }
 
-    if (stationId) {
-      if (!validateScreen(layoutObj)) {
-        return res.status(400).json({ errors: validateScreen.errors });
-      }
-    } else if (!validateLayout(layoutObj)) {
-      return res.status(400).json({ errors: validateLayout.errors });
+    const validate = stationId ? validateScreen : validateLayout;
+    if (!validate(layoutObj)) {
+      return res.status(400).json({ errors: validate.errors });
     }
 
     try {

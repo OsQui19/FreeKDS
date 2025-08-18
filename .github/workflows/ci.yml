@@ -4,7 +4,6 @@ on:
   pull_request:
     paths-ignore:
       - 'docs/**'
-      - 'openapi.yaml'
       - 'sdks/**'
 
 jobs:
@@ -17,4 +16,5 @@ jobs:
           node-version: 18
       - run: npm ci
       - run: npm run lint:tokens
+      - run: npm run validate:openapi
       - run: npm test

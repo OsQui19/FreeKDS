@@ -4,8 +4,6 @@ on:
   pull_request:
     paths:
       - openapi.yaml
-      - sdks/**
-      - docs/**
 
 jobs:
   verify:

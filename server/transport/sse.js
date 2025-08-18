@@ -1,10 +1,18 @@
 const clients = new Map();
 const HEARTBEAT_MS = 30000;
+const ALLOWED_ORIGINS = ['http://localhost:3000'];
+const VALID_TOKEN = process.env.REALTIME_TOKEN || 'devtoken';
 
 function initSSE(app) {
   app.get('/sse', (req, res) => {
     const stationId = parseInt(req.query.stationId, 10);
     const type = (req.query.type || '').toLowerCase();
+    const origin = req.get('Origin');
+    const token = req.query.token;
+    if (token !== VALID_TOKEN || !ALLOWED_ORIGINS.includes(origin)) {
+      res.status(401).end();
+      return;
+    }
     if (isNaN(stationId)) {
       res.status(400).end();
       return;

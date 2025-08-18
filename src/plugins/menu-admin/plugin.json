@@ -7,7 +7,7 @@
   "route": "/admin/menu",
   "license": "MIT",
   "coreAPI": "1.0.0",
-  "activationEvents": ["onStartupFinished"],
+  "activationEvents": ["onStartupFinished", "onShiftChange"],
   "contributes": {
     "actions": [],
     "routes": [],
