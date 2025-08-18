@@ -1,23 +1,16 @@
 import React from 'react';
-import { ThemeProvider, useTheme } from '@/contexts/ThemeContext';
-
-function ThemeToggleButton() {
-  const { theme, toggleTheme } = useTheme();
-  return (
-    <button className="btn btn-secondary" onClick={toggleTheme}>
-      {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
-    </button>
-  );
-}
+import 'bootstrap/dist/css/bootstrap.min.css';
+import { ThemeProvider } from '@/contexts/ThemeContext.jsx';
+import AppNavbar from '@/components/AppNavbar.jsx';
+import AppFooter from '@/components/AppFooter.jsx';
 
 export default function MainLayout({ children }) {
   return (
     <ThemeProvider>
       <div className="d-flex flex-column min-vh-100">
-        <header className="p-2">
-          <ThemeToggleButton />
-        </header>
-        <main className="flex-grow-1">{children}</main>
+        <AppNavbar />
+        {children}
+        <AppFooter />
       </div>
     </ThemeProvider>
   );

@@ -1,8 +1,8 @@
-const React = require('react');
+import React from 'react';
 
 const AdminMenuContext = React.createContext();
 
-function AdminMenuProvider({ ingredients = [], units = [], children }) {
+export function AdminMenuProvider({ ingredients = [], units = [], children }) {
   const [ingredientFields, setIngredientFields] = React.useState([
     { name: '', unitId: '', amount: '' },
   ]);
@@ -49,8 +49,6 @@ function AdminMenuProvider({ ingredients = [], units = [], children }) {
   return React.createElement(AdminMenuContext.Provider, { value }, children);
 }
 
-function useAdminMenu() {
+export function useAdminMenu() {
   return React.useContext(AdminMenuContext);
 }
-
-module.exports = { AdminMenuProvider, useAdminMenu };

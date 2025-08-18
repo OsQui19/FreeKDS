@@ -6,9 +6,22 @@ global.window = dom.window;
 global.document = dom.window.document;
 global.navigator = dom.window.navigator;
 const { render, screen, fireEvent } = require('@testing-library/react');
-const { AdminMenuProvider, useAdminMenu } = require('../src/features/AdminMenu/components/AdminMenuContext.js');
-const IngredientList = require('../src/features/AdminMenu/components/IngredientList.js');
-const ModifierList = require('../src/features/AdminMenu/components/ModifierList.js');
+let AdminMenuProvider;
+let useAdminMenu;
+let IngredientList;
+let ModifierList;
+
+before(async () => {
+  ({ AdminMenuProvider, useAdminMenu } = await import(
+    '../src/features/AdminMenu/components/AdminMenuContext.js'
+  ));
+  ({ default: IngredientList } = await import(
+    '../src/features/AdminMenu/components/IngredientList.js'
+  ));
+  ({ default: ModifierList } = await import(
+    '../src/features/AdminMenu/components/ModifierList.js'
+  ));
+});
 
 describe('AdminMenu components', () => {
   beforeEach(() => {

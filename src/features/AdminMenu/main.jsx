@@ -1,5 +1,6 @@
 import ReactDOM from 'react-dom/client';
 import MenuEditor from './MenuEditor.jsx';
+import AdminLayout from '@/layouts/AdminLayout.jsx';
 
 function mount() {
   const rootEl = document.getElementById('adminMenuApp');
@@ -19,7 +20,9 @@ function mount() {
 
   ReactDOM.createRoot(rootEl).render(
     <React.StrictMode>
-      <MenuEditor ingredients={ingredients} units={units} />
+      <AdminLayout>
+        <MenuEditor ingredients={ingredients} units={units} />
+      </AdminLayout>
     </React.StrictMode>
   );
 }

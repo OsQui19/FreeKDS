@@ -1,7 +1,7 @@
-const React = require('react');
-const { useAdminMenu } = require('./AdminMenuContext.js');
+import React from 'react';
+import { useAdminMenu } from './AdminMenuContext.js';
 
-function ModifierList({ modifiers = [] }) {
+export default function ModifierList({ modifiers = [] }) {
   const { toggleModifier, setModifierReplace, ingredientFields, modifiers: selected } =
     useAdminMenu();
   return React.createElement(
@@ -42,5 +42,3 @@ function ModifierList({ modifiers = [] }) {
     ),
   );
 }
-
-module.exports = ModifierList;

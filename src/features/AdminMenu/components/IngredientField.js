@@ -1,7 +1,7 @@
-const React = require('react');
-const { useAdminMenu } = require('./AdminMenuContext.js');
+import React from 'react';
+import { useAdminMenu } from './AdminMenuContext.js';
 
-function IngredientField({ index }) {
+export default function IngredientField({ index }) {
   const { ingredientFields, updateIngredient, removeIngredient, units } = useAdminMenu();
   const field = ingredientFields[index];
   return React.createElement(
@@ -35,5 +35,3 @@ function IngredientField({ index }) {
     ),
   );
 }
-
-module.exports = IngredientField;

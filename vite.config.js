@@ -19,6 +19,7 @@ export default defineConfig({
         onboarding: 'src/features/Employees/onboardingMain.jsx',
         hierarchy: 'src/features/Employees/hierarchyMain.jsx',
         adminMenu: 'src/features/AdminMenu/main.jsx',
+        app: 'src/main.jsx',
       },
       output: {
         entryFileNames: '[name].js',

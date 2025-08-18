@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import ScheduleApp from './ScheduleApp.jsx';
+import DashboardLayout from '@/layouts/DashboardLayout.jsx';
 
 function mountApp() {
   const rootEl = document.getElementById('scheduleApp');
@@ -10,7 +11,9 @@ function mountApp() {
   }
   ReactDOM.createRoot(rootEl).render(
     <React.StrictMode>
-      <ScheduleApp />
+      <DashboardLayout>
+        <ScheduleApp />
+      </DashboardLayout>
     </React.StrictMode>
   );
 }
