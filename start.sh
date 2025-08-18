@@ -21,8 +21,8 @@ if [ -n "$DB_HOST" ]; then
   done
 fi
 
-# Build React assets if missing
-if [ ! -d "./public/dist" ]; then
+# Build React assets in development containers if missing
+if [ -n "$DEV_CONTAINER" ] && [ ! -d "./public/dist" ]; then
   npm run build
 fi
 
