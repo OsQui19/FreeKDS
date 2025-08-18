@@ -1,12 +1,6 @@
-<<<<<<< ours
 import React, { useEffect, useRef, useState } from 'react';
 import OrderList from '../Orders/components/OrderList.jsx';
 import useTransport from '@/hooks/useTransport.js';
-=======
-import React, { useEffect, useState } from 'react';
-import { TicketGrid } from '../../../packages/renderers/index.js';
-import useSocket from '@/hooks/useSocket.js';
->>>>>>> theirs
 
 /**
  * KDS application component that renders incoming orders.
@@ -14,17 +8,16 @@ import useSocket from '@/hooks/useSocket.js';
  * @param {object} props
  * @param {string} [props.stationType]
  */
-export default function KdsApp({ stationType, stationId, transport = 'ws' }) {
+export default function KdsApp({ stationType, stationId, transport = 'ws', fallback }) {
   const [orders, setOrders] = useState([]);
-  const [stale, setStale] = useState(false);
   const queueRef = useRef([]);
-  const { connection, connected, on, off } = useTransport({
+  const { connection, connected, stale, on, off } = useTransport({
     type: transport,
+    fallback,
     stationId,
   });
 
   useEffect(() => {
-    setStale(!connected);
     if (connected && queueRef.current.length) {
       queueRef.current.forEach((evt) => {
         if (evt.type === 'add') {
@@ -61,14 +54,11 @@ export default function KdsApp({ stationType, stationId, transport = 'ws' }) {
     };
   }, [connection, connected, on, off]);
 
-<<<<<<< ours
   return (
     <>
       {stale && <div className="stale-indicator">Offline</div>}
       <OrderList orders={orders} stationType={stationType} />
     </>
   );
-=======
-  return <TicketGrid tickets={orders} stationType={stationType} />;
->>>>>>> theirs
 }
+

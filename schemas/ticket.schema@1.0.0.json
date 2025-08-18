@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.freekds.dev/ticket.schema.json",
+  "title": "Ticket",
+  "type": "object",
+  "required": ["orderId", "orderNumber", "createdTs", "items"],
+  "properties": {
+    "orderId": { "type": ["integer", "string"] },
+    "orderNumber": { "type": ["integer", "string"] },
+    "orderType": { "type": "string" },
+    "specialInstructions": { "type": "string" },
+    "allergy": { "type": "boolean" },
+    "createdTs": { "type": "integer" },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["quantity", "name"],
+        "properties": {
+          "itemId": { "type": ["integer", "string"] },
+          "name": { "type": "string" },
+          "quantity": { "type": "integer", "minimum": 1 },
+          "stationId": { "type": ["integer", "string"], "nullable": true },
+          "modifiers": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "specialInstructions": { "type": "string" },
+          "allergy": { "type": "boolean" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

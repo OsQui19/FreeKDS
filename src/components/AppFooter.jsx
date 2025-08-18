@@ -1,9 +1,14 @@
 import React from 'react';
-import { getToken } from '@/utils/tokens.js';
+import { resolveTokens } from '@/utils/tokens.js';
 
 export default function AppFooter() {
-  const background = getToken('color.surface');
-  const text = getToken('color.text');
+  const [tokens, setTokens] = React.useState(null);
+  React.useEffect(() => {
+    resolveTokens().then(setTokens);
+  }, []);
+  if (!tokens) return null;
+  const background = tokens.color.surface.value;
+  const text = tokens.color.text.value;
   return (
     <footer
       style={{ backgroundColor: background, color: text }}

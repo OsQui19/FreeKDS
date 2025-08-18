@@ -7,6 +7,13 @@
     "perf": {}
   },
   "tenant": {},
-  "station": {},
+  "station": {
+    "1": {
+      "transport": {
+        "type": "ws",
+        "fallback": "sse"
+      }
+    }
+  },
   "screen": {}
 }

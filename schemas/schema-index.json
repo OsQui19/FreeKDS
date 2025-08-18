@@ -1,0 +1,5 @@
+{
+  "https://schemas.freekds.dev/order.schema.json": "order.schema@1.0.0.json",
+  "https://schemas.freekds.dev/ticket.schema.json": "ticket.schema@1.0.0.json",
+  "https://schemas.freekds.dev/station.schema.json": "station.schema@1.0.0.json"
+}

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.freekds.dev/station.schema.json",
+  "title": "Station",
+  "type": "object",
+  "required": ["id", "name", "type"],
+  "properties": {
+    "id": { "type": ["integer", "string"] },
+    "name": { "type": "string" },
+    "type": { "type": "string" },
+    "order_type_filter": { "type": ["string", "null"] },
+    "bg_color": { "type": ["string", "null"], "pattern": "^#?[0-9A-Fa-f]{6}$" },
+    "primary_color": { "type": ["string", "null"], "pattern": "^#?[0-9A-Fa-f]{6}$" },
+    "font_family": { "type": ["string", "null"] }
+  },
+  "additionalProperties": false
+}

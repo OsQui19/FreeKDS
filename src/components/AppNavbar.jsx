@@ -3,14 +3,19 @@ import { Navbar, Nav, Container, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { useTheme } from '@/contexts/ThemeContext.jsx';
 import { usePlugins } from '@/plugins/PluginManager.jsx';
-import { getToken } from '@/utils/tokens.js';
+import { resolveTokens } from '@/utils/tokens.js';
 
 export default function AppNavbar() {
   const { theme, toggleTheme } = useTheme();
   const { plugins } = usePlugins();
-  const surface = getToken('color.surface');
-  const text = getToken('color.text');
-  const accent = getToken('color.accent');
+  const [tokens, setTokens] = React.useState(null);
+  React.useEffect(() => {
+    resolveTokens().then(setTokens);
+  }, []);
+  if (!tokens) return null;
+  const surface = tokens.color.surface.value;
+  const text = tokens.color.text.value;
+  const accent = tokens.color.accent.value;
   return (
     <Navbar expand="lg" className="mb-3" style={{ backgroundColor: surface, color: text }}>
       <Container>

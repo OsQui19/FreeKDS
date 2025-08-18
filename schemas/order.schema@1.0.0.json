@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.freekds.dev/order.schema.json",
+  "title": "Order",
+  "type": "object",
+  "required": ["items"],
+  "properties": {
+    "order_number": { "type": ["string", "integer"] },
+    "order_type": { "type": "string" },
+    "special_instructions": { "type": "string" },
+    "allergy": { "type": "boolean" },
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["menu_item_id", "quantity"],
+        "properties": {
+          "menu_item_id": { "type": ["integer", "string"] },
+          "quantity": { "type": "integer", "minimum": 1 },
+          "special_instructions": { "type": "string" },
+          "allergy": { "type": "boolean" },
+          "modifier_ids": {
+            "type": "array",
+            "items": { "type": ["integer", "string"] }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

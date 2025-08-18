@@ -1,17 +1,24 @@
 const React = require('react');
 const PropTypes = require('prop-types');
+const Ajv = require('ajv');
+const schema = require('./schemas/TicketCard.schema.json');
+const { getToken } = require('../../src/utils/tokens.js');
 const ModifierList = require('./ModifierList.jsx');
 const BumpAction = require('./BumpAction.jsx');
+
+const ajv = new Ajv();
+const validate = ajv.compile(schema);
 
 /**
  * Display an individual kitchen ticket with items and modifiers.
  *
+ * Schema: `TicketCard.schema.json` defines accepted properties.
  * Density: supports `comfortable` and `compact` for spacing.
  * Layout: vertical card.
  * Accessibility: high contrast labels, logical tab order ending on bump button.
  * Performance: aim for <5ms render per ticket with up to 10 items.
  *
- * @param {object} props
+ * @param {object} props - See `TicketCard.schema.json`.
  * @param {(id: number|string) => void} [props.onBump] - Callback when bumping.
  */
 function TicketCard({
@@ -25,12 +32,32 @@ function TicketCard({
   stationType,
   onBump,
 }) {
+  if (
+    !validate({
+      orderId,
+      orderNumber,
+      orderType,
+      createdTs,
+      allergy,
+      specialInstructions,
+      items,
+      stationType,
+    })
+  ) {
+    throw new Error(ajv.errorsText(validate.errors));
+  }
+
+  const surface = getToken('color.surface');
+  const radius = getToken('radius.card');
+  const padding = getToken('space.sm');
   const date = new Date(createdTs * 1000);
   const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric' });
   return (
-    <div className={`ticket ${orderType ? orderType.replace(/\s+/g, '-').toLowerCase() : ''}`}
+    <div
+      className={`ticket ${orderType ? orderType.replace(/\s+/g, '-').toLowerCase() : ''}`}
       data-order-id={orderId}
       data-created-ts={createdTs}
+      style={{ backgroundColor: surface, borderRadius: radius, padding }}
     >
       <div className="ticket-header">
         {orderType && (
