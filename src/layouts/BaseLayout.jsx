@@ -4,7 +4,7 @@ import { ThemeProvider } from '@/contexts/ThemeContext.jsx';
 import AppNavbar from '@/components/AppNavbar.jsx';
 import AppFooter from '@/components/AppFooter.jsx';
 
-export default function MainLayout({ children }) {
+export default function BaseLayout({ children }) {
   return (
     <ThemeProvider>
       <div className="d-flex flex-column min-vh-100">

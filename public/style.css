@@ -1,9 +1,5 @@
 /* style.css - Common styles for KDS station screens */
 body.station-screen {
-  margin: 0;
-  font-family: var(--font-family);
-  background: var(--bs-body-bg);
-  color: var(--bs-body-color);
   overflow-x: hidden;
 }
 .top-bar {

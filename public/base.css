@@ -1,5 +1,22 @@
 body {
+  margin: 0;
+  padding: 0;
   font-family: var(--font-family);
+  background: var(--bs-body-bg);
+  color: var(--bs-body-color);
+}
+
+/* Layout utilities */
+.u-center-screen {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-16);
+  background: var(--bs-body-bg);
+  background-size: cover;
+  background-position: center;
 }
 
 /* Shared button styles */

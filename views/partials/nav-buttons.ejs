@@ -30,14 +30,9 @@
       <i class="bi bi-clock-fill me-1" aria-hidden="true"></i>Clock
     </a>
     <form action="/logout" method="post" class="m-0">
-      <%- include('button', {
-        type: 'submit',
-        variant: 'btn-danger',
-        classes: 'btn-sm',
-        icon: 'bi bi-box-arrow-right me-1',
-        text: 'Log Out',
-        extra: 'aria-label="Log Out"'
-      }) %>
+      <button type="submit" class="btn btn-danger btn-sm" aria-label="Log Out">
+        <i class="bi bi-box-arrow-right me-1" aria-hidden="true"></i>Log Out
+      </button>
     </form>
   <% } else { %>
     <a href="/login" class="btn btn-secondary btn-sm" aria-label="Log In">

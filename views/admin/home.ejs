@@ -4,7 +4,6 @@
 <link rel="preload" as="script" href="/dist/schedule.js">
 <script defer src="/adminWindows.js" data-modules='<%- JSON.stringify(allowedModules || []) %>'></script>
 <%- contentFor('body') %>
-<%- include('partials/flashMessage') %>
 <div id="windowsContainer" class="windows-container flex-layout"></div>
 <% if ((allowedModules || []).includes('stations')) { %>
   <template id="tpl-stations"><%- include('partials/stationsTab') %></template>

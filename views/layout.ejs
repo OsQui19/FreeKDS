@@ -11,6 +11,7 @@
   <% if (typeof showNav === 'undefined' || showNav) { %>
     <%- include('partials/nav-buttons') %>
   <% } %>
+  <%- include('partials/flash-message') %>
   <%- typeof body !== 'undefined' ? body : '' %>
 </body>
 </html>

@@ -1,10 +1,10 @@
 import React from 'react';
-import MainLayout from './MainLayout.jsx';
+import BaseLayout from './BaseLayout.jsx';
 
 export default function AdminLayout({ children }) {
   return (
-    <MainLayout>
+    <BaseLayout>
       <main className="flex-grow-1 container py-3">{children}</main>
-    </MainLayout>
+    </BaseLayout>
   );
 }

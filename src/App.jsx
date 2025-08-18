@@ -1,6 +1,12 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import { PluginProvider, PluginRoutes, PluginNavLinks, PluginZone } from './plugins/PluginManager.jsx';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { PluginProvider, PluginRoutes, PluginZone } from './plugins/PluginManager.jsx';
+<<<<<<< ours
+import BaseLayout from '@/layouts/BaseLayout.jsx';
+=======
+import AppNavbar from './components/AppNavbar.jsx';
+import FlashMessage from './components/FlashMessage.jsx';
+>>>>>>> theirs
 
 function Home() {
   return (
@@ -12,21 +18,29 @@ function Home() {
 }
 
 export default function App() {
+  const params = new URLSearchParams(window.location.search);
+  const msg = params.get('msg');
+  const err = params.get('err');
+  const detail = params.get('detail');
+
   return (
     <PluginProvider>
       <Router>
-        <nav>
-          <ul>
-            <li>
-              <Link to="/">Home</Link>
-            </li>
-            <PluginNavLinks />
-          </ul>
-        </nav>
+<<<<<<< ours
+        <BaseLayout>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <PluginRoutes />
+          </Routes>
+        </BaseLayout>
+=======
+        <AppNavbar />
+        <FlashMessage message={msg} error={err} detail={detail} />
         <Routes>
           <Route path="/" element={<Home />} />
           <PluginRoutes />
         </Routes>
+>>>>>>> theirs
       </Router>
     </PluginProvider>
   );

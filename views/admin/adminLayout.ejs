@@ -13,6 +13,7 @@
   </head>
   <body class="admin-screen">
     <%- include('partials/header') %>
+    <%- include('../partials/flash-message') %>
     <%- include('partials/sidenav', { allowedModules }) %>
     <main class="container admin-container">
       <%- typeof body !== 'undefined' ? body : '' %>

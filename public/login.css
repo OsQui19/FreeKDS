@@ -1,16 +1,6 @@
 /* theme-vars (can also go in partials/theme-vars) */
 body.login-page {
-  margin: 0;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--spacing-16);
-  background: var(--bs-body-bg);
   background-image: var(--bg-image);
-  background-size: cover;
-  background-position: center;
-  font-family: var(--font-family);
 }
 
 .login-container {
