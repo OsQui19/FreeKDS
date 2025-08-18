@@ -30,5 +30,23 @@ and how a screen can override the background color.
   </div>
 </div>
 
-Each token entry now uses `type` and `value` fields with an optional `description`
-to document its purpose.
+Each token entry now uses `type`, `value`, and `description` fields to document its purpose.
+
+## Renderer usage
+
+| Token | Components |
+| --- | --- |
+| `color.background` | TicketGrid |
+| `color.surface` | TicketCard, ExpoHeader |
+| `color.accent` | BumpAction |
+| `color.text` | ExpoHeader |
+| `radius.card` | TicketCard, BumpAction |
+| `space.xs` | ModifierList |
+| `space.sm` | TicketCard, BumpAction |
+| `space.md` | TicketGrid, ExpoHeader |
+| `state.timer.info` | TicketCard |
+| `state.timer.warn` | TicketCard |
+| `state.timer.critical` | TicketCard |
+| `state.held` | TicketCard |
+| `state.late` | TicketCard |
+| `state.expedite` | TicketCard |

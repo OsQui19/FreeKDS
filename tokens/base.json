@@ -57,56 +57,68 @@
   "space": {
     "xs": {
       "type": "dimension",
-      "value": "0.25rem"
+      "value": "0.25rem",
+      "description": "Extra small spacing"
     },
     "sm": {
       "type": "dimension",
-      "value": "0.5rem"
+      "value": "0.5rem",
+      "description": "Small spacing"
     },
     "md": {
       "type": "dimension",
-      "value": "1rem"
+      "value": "1rem",
+      "description": "Medium spacing"
     },
     "lg": {
       "type": "dimension",
-      "value": "2rem"
+      "value": "2rem",
+      "description": "Large spacing"
     },
     "xl": {
       "type": "dimension",
-      "value": "4rem"
+      "value": "4rem",
+      "description": "Extra large spacing"
     }
   },
   "font": {
     "size": {
       "sm": {
         "type": "fontSize",
-        "value": "0.875rem"
+        "value": "0.875rem",
+        "description": "Small font size"
       },
       "md": {
         "type": "fontSize",
-        "value": "1rem"
+        "value": "1rem",
+        "description": "Medium font size"
       },
       "lg": {
         "type": "fontSize",
-        "value": "1.25rem"
+        "value": "1.25rem",
+        "description": "Large font size"
       },
       "xl": {
         "type": "fontSize",
-        "value": "1.5rem"
+        "value": "1.5rem",
+        "description": "Extra large font size"
       }
     },
     "weight": {
       "regular": {
         "type": "fontWeight",
-        "value": "400"
+        "value": "400",
+        "description": "Regular font weight"
       },
       "medium": {
         "type": "fontWeight",
-        "value": "500"
+        "value": "500",
+        "description": "Medium font weight"
       },
       "bold": {
         "type": "fontWeight",
-        "value": "700"
+        "value": "700",
+        "description": "Bold font weight"
       }
     }
   },
