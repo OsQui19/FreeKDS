@@ -20,11 +20,11 @@ module.exports = (db, io) => {
   const router = express.Router();
 
   router.get('/login', (req, res) => {
-    res.render('login');
+    res.json({});
   });
 
   router.get('/clock', (req, res) => {
-    res.render('clock');
+    res.json({});
   });
 
   router.post('/login', async (req, res) => {
@@ -129,7 +129,7 @@ module.exports = (db, io) => {
     } catch (err) {
       logger.error('Clock status check error', err);
     }
-    res.render('clock-dashboard', {
+    res.json({
       employee: req.session.clockUser,
       clockedIn,
     });

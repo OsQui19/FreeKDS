@@ -105,7 +105,7 @@ module.exports = (db) => {
         getIngredients(db),
         getUnits(db),
       ]);
-      res.render("admin/purchase_order_detail", {
+      res.json({
         order,
         items,
         ingredients,

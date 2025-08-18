@@ -27,7 +27,7 @@ module.exports = (db) => {
   router.get("/stations", async (req, res) => {
     try {
       const rows = await getStations(db);
-      res.render("stations", { stations: rows });
+      res.json({ stations: rows });
     } catch (err) {
       logger.error("Error fetching stations:", err);
       res.status(500).send("DB Error");
@@ -109,7 +109,7 @@ module.exports = (db) => {
           try {
             const bumpedOrders = await getBumpedOrders(db, stationId, 20);
             const stationRows = await getStations(db);
-            res.render("station", {
+            res.json({
               station,
               orders,
               settings,
@@ -148,7 +148,7 @@ module.exports = (db) => {
               logger.error("Error fetching recipes:", err3);
               return res.status(500).send("DB Error");
             }
-            res.render("wiki", { station, items: itemRows, settings });
+            res.json({ station, items: itemRows, settings });
           },
         );
       },
@@ -243,7 +243,19 @@ module.exports = (db) => {
                         });
                       }
                     });
+<<<<<<< ours
+                    if (template === 'order') {
+                    return res.json({
+                      categories: catMap,
+                      table,
+                      settings: res.locals.settings,
+                      modGroups: groups,
+                    });
+                    }
                     res.render(template, {
+=======
+                    res.json({
+>>>>>>> theirs
                       categories: catMap,
                       table,
                       settings: res.locals.settings,

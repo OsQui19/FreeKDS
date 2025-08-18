@@ -20,6 +20,7 @@ export default defineConfig({
         hierarchy: 'src/features/Employees/hierarchyMain.jsx',
         adminMenu: 'src/features/AdminMenu/main.jsx',
         app: 'src/main.jsx',
+        kds: 'src/features/kds/main.jsx',
       },
       output: {
         entryFileNames: '[name].js',

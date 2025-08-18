@@ -1,11 +1,13 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { PluginProvider, PluginRoutes, PluginZone } from './plugins/PluginManager.jsx';
-<<<<<<< ours
 import BaseLayout from '@/layouts/BaseLayout.jsx';
-=======
-import AppNavbar from './components/AppNavbar.jsx';
 import FlashMessage from './components/FlashMessage.jsx';
+<<<<<<< ours
+import LoginPage from './features/login/LoginPage.jsx';
+import OrderPage from './features/order/OrderPage.jsx';
+import StationsPage from './features/stations/StationsPage.jsx';
+=======
 >>>>>>> theirs
 
 function Home() {
@@ -27,20 +29,19 @@ export default function App() {
     <PluginProvider>
       <Router>
 <<<<<<< ours
+=======
+        <FlashMessage message={msg} error={err} detail={detail} />
+>>>>>>> theirs
         <BaseLayout>
+          <FlashMessage message={msg} error={err} detail={detail} />
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/order" element={<OrderPage />} />
+            <Route path="/stations" element={<StationsPage />} />
             <PluginRoutes />
           </Routes>
         </BaseLayout>
-=======
-        <AppNavbar />
-        <FlashMessage message={msg} error={err} detail={detail} />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <PluginRoutes />
-        </Routes>
->>>>>>> theirs
       </Router>
     </PluginProvider>
   );

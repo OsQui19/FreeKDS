@@ -212,7 +212,7 @@ function initRecipeModal() {
   const openModal = async (btn) => {
     currentForm = btn.closest("form");
     try {
-      const res = await fetch("/admin/ingredients/list");
+      const res = await fetch("/api/admin/ingredients/list");
       if (res.ok) {
         const data = await res.json();
         if (data && Array.isArray(data.ingredients)) {
@@ -349,7 +349,7 @@ function initDragAndDrop() {
       const newOrder = Array.from(
         document.querySelectorAll("#categories-container .category-section"),
       ).map((sec) => sec.getAttribute("data-category-id"));
-      fetch("/admin/categories/reorder", {
+      fetch("/api/admin/categories/reorder", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ order: newOrder }),
@@ -370,7 +370,7 @@ function initDragAndDrop() {
         const newOrder = Array.from(listEl.querySelectorAll(".menu-item")).map(
           (li) => li.getAttribute("data-item-id"),
         );
-        fetch("/admin/items/reorder", {
+        fetch("/api/admin/items/reorder", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ categoryId: catId, order: newOrder }),

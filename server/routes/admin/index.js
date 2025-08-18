@@ -55,7 +55,7 @@ module.exports = (db, io) => {
           logs: [],
         });
       }
-      res.render("admin/home", viewData);
+      res.json(viewData);
     } catch (err) {
       logger.error("Error loading admin dashboard:", err);
       res.status(500).send("Server Error");

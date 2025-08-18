@@ -1,0 +1,24 @@
+{
+  "light": {
+    "colors": {
+      "background": "#f8f8f8",
+      "text": "#000000",
+      "primary": "#4f46e5",
+      "accent": "#a78bfa"
+    },
+    "fonts": {
+      "body": "Arial, sans-serif"
+    }
+  },
+  "dark": {
+    "colors": {
+      "background": "#1e2030",
+      "text": "#e5e5e5",
+      "primary": "#0084ff",
+      "accent": "#6699ff"
+    },
+    "fonts": {
+      "body": "Arial, sans-serif"
+    }
+  }
+}

@@ -13,4 +13,9 @@ if [ -n "$DB_HOST" ]; then
   done
 fi
 
+# Build React assets if missing
+if [ ! -d "./public/dist" ]; then
+  npm run build
+fi
+
 exec npm start

@@ -1,13 +1,12 @@
 const express = require('express');
 const path = require('path');
-const expressLayouts = require('express-ejs-layouts');
 const settingsCache = require('./controllers/settingsCache');
 const accessControl = require('./controllers/accessControl');
 const config = require('../config');
 const logger = require('../utils/logger');
-const helmetMiddleware = require('./middleware/helmet');
-const rateLimitMiddleware = require('./middleware/rateLimit');
-const sessionMiddleware = require('./middleware/session');
+const helmetMiddleware = require('../src/middleware/helmet');
+const rateLimitMiddleware = require('../src/middleware/rateLimit');
+const sessionMiddleware = require('../src/middleware/session');
 const authMiddleware = require('./middleware/auth');
 const registerRoutes = require('./routes');
 
@@ -26,6 +25,7 @@ function createApp(db, io) {
   });
   app.use(authMiddleware(db));
   app.use(express.static(path.join(__dirname, '..', 'public')));
+  app.use(express.static(path.join(__dirname, '..', 'dist')));
   app.use((req, res, next) => {
     res.locals.settings = settingsCache.getSettings();
     next();
@@ -45,17 +45,12 @@ function createApp(db, io) {
     res.locals.user = req.session && req.session.user ? req.session.user : null;
     next();
   });
-  app.set('view engine', 'ejs');
-  app.set('views', path.join(__dirname, '..', 'views'));
-  app.use(expressLayouts);
-  app.set('layout', 'layout');
   app.use(registerRoutes(db, io));
   app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok' });
   });
-  app.get('/', (req, res) => {
-    if (!req.session.user) return res.redirect('/clock');
-    res.render('home');
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'dist', 'index.html'));
   });
   app.use((err, req, res, next) => {
     logger.error('Unhandled application error', err);

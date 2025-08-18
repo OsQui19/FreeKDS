@@ -1,43 +1,22 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { ThemeProvider as StyledThemeProvider } from 'styled-components';
+import themeConfig from '../config/theme.json';
 
 const ThemeContext = createContext();
 
-const themes = {
-  light: {
-    '--color-bg': '#f8f8f8',
-    '--color-text': '#000000',
-    '--color-primary': '#4f46e5',
-    '--color-accent': '#a78bfa'
-  },
-  dark: {
-    '--color-bg': '#1e2030',
-    '--color-text': '#e5e5e5',
-    '--color-primary': '#0084ff',
-    '--color-accent': '#6699ff'
-  }
-};
-
-function applyTheme(themeName) {
-  const root = document.documentElement;
-  const vars = themes[themeName];
-  Object.entries(vars).forEach(([key, value]) => {
-    root.style.setProperty(key, value);
-  });
-}
-
 export function ThemeProvider({ children }) {
-  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
+  const [themeName, setThemeName] = useState(() => localStorage.getItem('theme') || 'light');
+  const [themes] = useState(themeConfig);
 
   useEffect(() => {
-    applyTheme(theme);
-    localStorage.setItem('theme', theme);
-  }, [theme]);
+    localStorage.setItem('theme', themeName);
+  }, [themeName]);
 
-  const toggleTheme = () => setTheme(t => (t === 'light' ? 'dark' : 'light'));
+  const value = { themeName, setThemeName };
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>
-      {children}
+    <ThemeContext.Provider value={value}>
+      <StyledThemeProvider theme={themes[themeName]}>{children}</StyledThemeProvider>
     </ThemeContext.Provider>
   );
 }
