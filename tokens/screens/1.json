@@ -1,8 +1,8 @@
 {
   "color": {
     "background": {
-      "value": "#e9ecef",
       "type": "color",
+      "value": "#e9ecef",
       "description": "Screen background override"
     }
   }

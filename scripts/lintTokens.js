@@ -3,8 +3,9 @@ const fs = require('fs');
 const path = require('path');
 
 const TOKENS_DIR = path.resolve(__dirname, '../tokens');
-const REQUIRED_KEYS = ['value', 'type', 'description'];
-const ALLOWED_KEYS = ['value', 'type', 'description'];
+const ORDERED_KEYS = ['type', 'value', 'description'];
+const REQUIRED_KEYS = ORDERED_KEYS;
+const ALLOWED_KEYS = ORDERED_KEYS;
 
 function isObject(val) {
   return val && typeof val === 'object' && !Array.isArray(val);
@@ -22,12 +23,16 @@ function walk(obj, trail = [], errors = []) {
       errors.push(`${nextTrail.join('.')} should be an object`);
       continue;
     }
-    for (const req of REQUIRED_KEYS) {
+    const keys = Object.keys(val);
+    ORDERED_KEYS.forEach((req, idx) => {
       if (!(req in val)) {
         errors.push(`${nextTrail.join('.')} missing required key: ${req}`);
       }
-    }
-    for (const k of Object.keys(val)) {
+      if (keys[idx] !== req) {
+        errors.push(`${nextTrail.join('.')} keys must be ordered as ${ORDERED_KEYS.join(', ')}`);
+      }
+    });
+    for (const k of keys) {
       if (!ALLOWED_KEYS.includes(k)) {
         errors.push(`${nextTrail.join('.')} has unknown key: ${k}`);
       }

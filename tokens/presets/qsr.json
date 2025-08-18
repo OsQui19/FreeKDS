@@ -1,8 +1,8 @@
 {
   "color": {
     "accent": {
-      "value": "#28a745",
       "type": "color",
+      "value": "#28a745",
       "description": "Preset accent color for quick-serve restaurants"
     }
   }

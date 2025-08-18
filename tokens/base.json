@@ -140,22 +140,20 @@
     }
   },
   "state": {
-    "timer": {
-      "info": {
-        "type": "color",
-        "value": "#0dcaf0",
-        "description": "Timers within target"
-      },
-      "warn": {
-        "type": "color",
-        "value": "#ffc107",
-        "description": "Timers approaching limit"
-      },
-      "critical": {
-        "type": "color",
-        "value": "#dc3545",
-        "description": "Timers over limit"
-      }
+    "info": {
+      "type": "color",
+      "value": "{color.info}",
+      "description": "Timers within target"
+    },
+    "warn": {
+      "type": "color",
+      "value": "{color.warning}",
+      "description": "Timers approaching limit"
+    },
+    "critical": {
+      "type": "color",
+      "value": "{color.critical}",
+      "description": "Timers over limit"
     },
     "held": {
       "type": "color",
@@ -210,7 +208,7 @@
   "focus": {
     "color": {
       "type": "color",
-      "value": "#0d6efd",
+      "value": "{color.accent}",
       "description": "Focus outline color"
     },
     "ring": {

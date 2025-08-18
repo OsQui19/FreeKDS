@@ -1,8 +1,8 @@
 {
   "color": {
     "accent": {
-      "value": "#198754",
       "type": "color",
+      "value": "#198754",
       "description": "Station-specific accent color"
     }
   }

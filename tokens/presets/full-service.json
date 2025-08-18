@@ -1,8 +1,8 @@
 {
   "color": {
     "accent": {
-      "value": "#0d6efd",
       "type": "color",
+      "value": "#0d6efd",
       "description": "Preset accent color for full-service restaurants"
     }
   }

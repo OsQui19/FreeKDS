@@ -1,8 +1,8 @@
 {
   "color": {
     "accent": {
-      "value": "#ff7f50",
       "type": "color",
+      "value": "#ff7f50",
       "description": "Preset accent color for fast-casual restaurants"
     }
   }

@@ -1,8 +1,8 @@
 {
   "color": {
     "accent": {
-      "value": "#6f4e37",
       "type": "color",
+      "value": "#6f4e37",
       "description": "Preset accent color for barista kiosks"
     }
   }
