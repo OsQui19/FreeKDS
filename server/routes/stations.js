@@ -243,19 +243,7 @@ module.exports = (db) => {
                         });
                       }
                     });
-<<<<<<< ours
-                    if (template === 'order') {
-                    return res.json({
-                      categories: catMap,
-                      table,
-                      settings: res.locals.settings,
-                      modGroups: groups,
-                    });
-                    }
-                    res.render(template, {
-=======
                     res.json({
->>>>>>> theirs
                       categories: catMap,
                       table,
                       settings: res.locals.settings,

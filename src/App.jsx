@@ -3,12 +3,9 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { PluginProvider, PluginRoutes, PluginZone } from './plugins/PluginManager.jsx';
 import BaseLayout from '@/layouts/BaseLayout.jsx';
 import FlashMessage from './components/FlashMessage.jsx';
-<<<<<<< ours
 import LoginPage from './features/login/LoginPage.jsx';
 import OrderPage from './features/order/OrderPage.jsx';
 import StationsPage from './features/stations/StationsPage.jsx';
-=======
->>>>>>> theirs
 
 function Home() {
   return (
@@ -28,10 +25,6 @@ export default function App() {
   return (
     <PluginProvider>
       <Router>
-<<<<<<< ours
-=======
-        <FlashMessage message={msg} error={err} detail={detail} />
->>>>>>> theirs
         <BaseLayout>
           <FlashMessage message={msg} error={err} detail={detail} />
           <Routes>
