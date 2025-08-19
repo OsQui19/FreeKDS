@@ -26,7 +26,7 @@ function matchSnapshot(html, name) {
 
 describe('LayoutRenderer', () => {
   before(async () => {
-    ({ LayoutRenderer } = (await import('../../packages/renderers/index.js')).default);
+    ({ LayoutRenderer } = await import('../../packages/renderers/index.js'));
   });
 
   it('renders simple layout', async () => {

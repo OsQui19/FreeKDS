@@ -1,11 +1,11 @@
-const React = require('react');
-const PropTypes = require('prop-types');
-const Ajv = require('ajv');
-const gridSchema = require('./schemas/TicketGrid.schema.json');
-const ticketSchema = require('./schemas/TicketCard.schema.json');
-const { getToken } = require('../../src/utils/tokens.js');
-const TicketCard = require('./TicketCard.jsx');
-const ExpoHeader = require('./ExpoHeader.jsx');
+import React from 'react';
+import PropTypes from 'prop-types';
+import Ajv from 'ajv';
+import gridSchema from './schemas/TicketGrid.schema.json';
+import ticketSchema from './schemas/TicketCard.schema.json';
+import { getToken } from '../../src/utils/tokens.js';
+import TicketCard from './TicketCard.jsx';
+import ExpoHeader from './ExpoHeader.jsx';
 
 function requireToken(path) {
   const value = getToken(path);
@@ -81,4 +81,4 @@ TicketGrid.propTypes = {
   },
 };
 
-module.exports = TicketGrid;
+export default TicketGrid;

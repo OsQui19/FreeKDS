@@ -26,7 +26,7 @@ function matchSnapshot(html, name) {
 
 describe('TicketGrid renderer', () => {
   before(async () => {
-    ({ TicketGrid } = (await import('../../packages/renderers/index.js')).default);
+    ({ TicketGrid } = await import('../../packages/renderers/index.js'));
   });
 
   it('matches snapshot and has no a11y violations', async () => {

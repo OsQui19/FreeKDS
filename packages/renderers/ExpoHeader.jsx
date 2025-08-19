@@ -1,8 +1,8 @@
-const React = require('react');
-const PropTypes = require('prop-types');
-const Ajv = require('ajv');
-const schema = require('./schemas/ExpoHeader.schema.json');
-const { getToken } = require('../../src/utils/tokens.js');
+import React from 'react';
+import PropTypes from 'prop-types';
+import Ajv from 'ajv';
+import schema from './schemas/ExpoHeader.schema.json';
+import { getToken } from '../../src/utils/tokens.js';
 
 function requireToken(path) {
   const value = getToken(path);
@@ -65,4 +65,4 @@ ExpoHeader.propTypes = {
   },
 };
 
-module.exports = ExpoHeader;
+export default ExpoHeader;

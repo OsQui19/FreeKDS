@@ -1,10 +1,10 @@
-const React = require('react');
-const PropTypes = require('prop-types');
-const Ajv = require('ajv');
-const schema = require('./schemas/TicketCard.schema.json');
-const { getToken } = require('../../src/utils/tokens.js');
-const ModifierList = require('./ModifierList.jsx');
-const BumpAction = require('./BumpAction.jsx');
+import React from 'react';
+import PropTypes from 'prop-types';
+import Ajv from 'ajv';
+import schema from './schemas/TicketCard.schema.json';
+import { getToken } from '../../src/utils/tokens.js';
+import ModifierList from './ModifierList.jsx';
+import BumpAction from './BumpAction.jsx';
 
 function requireToken(path) {
   const value = getToken(path);
@@ -162,4 +162,4 @@ TicketCard.propTypes = {
   },
 };
 
-module.exports = TicketCard;
+export default TicketCard;

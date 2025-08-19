@@ -1,9 +1,9 @@
-const React = require('react');
-const PropTypes = require('prop-types');
-const Ajv = require('ajv');
-const schema = require('../../schemas/layout.schema@1.0.0.json');
-const { getToken } = require('../../src/utils/tokens.js');
-const TicketGrid = require('./TicketGrid.jsx');
+import React from 'react';
+import PropTypes from 'prop-types';
+import Ajv from 'ajv';
+import schema from '../../schemas/layout.schema@1.0.0.json';
+import { getToken } from '../../src/utils/tokens.js';
+import TicketGrid from './TicketGrid.jsx';
 
 const ajv = new Ajv();
 const validate = ajv.compile(schema);
@@ -95,4 +95,4 @@ LayoutRenderer.propTypes = {
   layout: PropTypes.oneOfType([PropTypes.object, PropTypes.string]).isRequired,
 };
 
-module.exports = LayoutRenderer;
+export default LayoutRenderer;
