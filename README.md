@@ -107,6 +107,10 @@ docker compose up --build  # `docker-compose` also works on older versions
 - **app** – the Node.js server defined by the Dockerfile.
 - **mysql** – a MySQL 8 instance with persistent storage.
 
+The app image includes a health check that polls `http://localhost:$PORT/health`
+to determine when the server is ready. Docker Compose relies on this built-in
+check without redefining it.
+
 The application container installs the MySQL client so commands like schema
 creation and backups work inside the container.
 

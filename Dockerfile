@@ -1,4 +1,4 @@
-FROM node:lts AS builder
+FROM node:20 AS builder
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
@@ -6,7 +6,7 @@ COPY . .
 RUN npm run build
 RUN npm prune --production
 
-FROM node:lts
+FROM node:20
 
 # Install system packages as root so the MySQL client is available
 USER root
@@ -25,5 +25,6 @@ USER node
 ENV PORT=3000
 ENV NODE_ENV=production
 EXPOSE 3000
+# Container healthcheck: ensure the server responds before marking healthy
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s CMD curl -f http://localhost:$PORT/health || exit 1
 CMD ["./start.sh"]
