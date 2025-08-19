@@ -1,13 +1,15 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
+import rollupNodePolyFill from 'rollup-plugin-node-polyfills';
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), rollupNodePolyFill()],
   publicDir: false,
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src'),
+      events: 'events',
     },
   },
   build: {
