@@ -15,9 +15,9 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       input: {
-        schedule: 'src/features/Schedule/main.jsx',
-        onboarding: 'src/features/Employees/onboardingMain.jsx',
-        hierarchy: 'src/features/Employees/hierarchyMain.jsx',
+        schedule: 'src/schedule/main.jsx',
+        onboarding: 'src/employees/onboardingMain.jsx',
+        hierarchy: 'src/employees/hierarchyMain.jsx',
         adminMenu: 'src/features/AdminMenu/main.jsx',
         app: 'src/main.jsx',
         kds: 'src/features/kds/main.jsx',

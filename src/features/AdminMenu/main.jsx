@@ -1,6 +1,6 @@
 import ReactDOM from 'react-dom/client';
 import AdminLayout from '@/layouts/AdminLayout.jsx';
-import AdminPanels from '../admin/AdminPanels.jsx';
+import AdminPanels from './AdminPanels.jsx';
 import { PluginProvider } from '@/plugins/PluginManager.jsx';
 
 function mount() {
