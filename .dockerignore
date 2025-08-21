@@ -1,0 +1,11 @@
+node_modules
+npm-debug.log
+.git
+.github
+docs
+tests
+scripts
+sdks
+logs
+Dockerfile
+docker-compose.yml
