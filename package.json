@@ -69,6 +69,9 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "engines": {
+    "node": "^22.0.0"
+  },
   "overrides": {
     "redoc-cli": {
       "@babel/runtime": "^7.28.3",

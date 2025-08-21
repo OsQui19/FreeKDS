@@ -3,7 +3,7 @@
 This file explains how to set up and run the project for Codex or anyone else cloning the repository.
 
 ## 1. Environment setup
-1. Install **Node.js** (v18+ works) and a **MySQL** server.
+1. Install **Node.js** (v22+ required) and a **MySQL** server.
 2. From the repository root, install dependencies:
    ```bash
    npm install

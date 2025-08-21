@@ -1,4 +1,4 @@
-FROM node:20 AS builder
+FROM node:22 AS builder
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
@@ -6,7 +6,7 @@ COPY . .
 RUN npm run build
 RUN npm prune --production
 
-FROM node:20
+FROM node:22
 
 # Install system packages as root so the MySQL client is available
 USER root
