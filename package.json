@@ -48,6 +48,7 @@
     "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^28.0.6",
     "@testing-library/react": "^14.1.2",
     "@vitejs/plugin-react": "^4.2.0",
     "chai": "^5.2.1",
@@ -62,7 +63,6 @@
     "openapi-typescript-codegen": "^0.29.0",
     "prettier": "^3.5.3",
     "redoc-cli": "^0.8.5",
-    "rollup-plugin-node-polyfills": "^0.2.1",
     "supertest": "^6.3.3",
     "vite": "^7.0.3"
   },

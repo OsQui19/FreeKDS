@@ -1,10 +1,10 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import rollupNodePolyFill from 'rollup-plugin-node-polyfills';
+import commonjs from '@rollup/plugin-commonjs';
 
 export default defineConfig({
-  plugins: [react(), rollupNodePolyFill()],
+  plugins: [react(), commonjs()],
   publicDir: false,
   resolve: {
     alias: {
@@ -15,6 +15,9 @@ export default defineConfig({
   build: {
     outDir: 'public/dist',
     emptyOutDir: true,
+    commonjsOptions: {
+      defaultIsModuleExports: true,
+    },
     rollupOptions: {
       input: {
         schedule: 'src/schedule/main.jsx',
