@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.freekds.dev/bump-action.schema.json",
+  "title": "BumpAction",
+  "type": "object",
+  "properties": {
+    "label": { "type": "string" }
+  },
+  "additionalProperties": false
+}

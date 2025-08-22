@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.freekds.dev/modifier-list.schema.json",
+  "title": "ModifierList",
+  "type": "object",
+  "required": ["modifiers"],
+  "properties": {
+    "modifiers": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "additionalProperties": false
+}

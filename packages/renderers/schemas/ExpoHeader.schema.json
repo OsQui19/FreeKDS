@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.freekds.dev/ExpoHeader.schema.json",
+  "title": "ExpoHeader",
+  "type": "object",
+  "required": ["title"],
+  "properties": {
+    "title": { "type": "string" }
+  },
+  "additionalProperties": false
+}

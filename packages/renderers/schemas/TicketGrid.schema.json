@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.freekds.dev/ticket-grid.schema.json",
+  "title": "TicketGrid",
+  "type": "object",
+  "required": ["tickets"],
+  "properties": {
+    "tickets": {
+      "type": "array",
+      "items": { "$ref": "https://schemas.freekds.dev/ticket.schema.json" }
+    },
+    "stationType": { "type": "string" },
+    "density": { "type": "string", "enum": ["comfortable", "compact"] },
+    "layout": { "type": "string", "enum": ["grid", "list"] }
+  },
+  "additionalProperties": false
+}
