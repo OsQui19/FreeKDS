@@ -1,10 +1,9 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import commonjs from '@rollup/plugin-commonjs';
 
 export default defineConfig({
-  plugins: [react(), commonjs()],
+  plugins: [react()],
   publicDir: false,
   resolve: {
     alias: {
@@ -17,6 +16,8 @@ export default defineConfig({
     emptyOutDir: true,
     commonjsOptions: {
       defaultIsModuleExports: true,
+      requireReturnsDefault: 'auto',
+      include: [/node_modules/, 'node_modules/invariant/**'],
     },
     rollupOptions: {
       input: {
