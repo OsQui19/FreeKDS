@@ -4,7 +4,7 @@ export default function LoginPage() {
       <div className="login-container text-center">
         <div className="auth-card card shadow-sm p-4">
           <h1 className="mb-4">Employee Login</h1>
-          <form method="post" action="/login">
+          <form method="post" action="/api/login">
             <div className="mb-3">
               <input
                 type="text"

@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const settingsCache = require('./controllers/settingsCache');
 const accessControl = require('./controllers/accessControl');
 const config = require('../config');
@@ -12,6 +13,18 @@ const registerRoutes = require('./routes');
 
 function createApp(db, transports) {
   const app = express();
+  const spaIndexPath = path.join(
+    __dirname,
+    '..',
+    'public',
+    'dist',
+    'index.html',
+  );
+  if (!fs.existsSync(spaIndexPath)) {
+    logger.error(
+      `Missing ${spaIndexPath}. Run "npm run build" to generate client assets.`,
+    );
+  }
   app.use(helmetMiddleware());
   // Serve static assets before any rate limiting, sessions, or auth middleware
   app.use(express.static(path.join(__dirname, '..', 'public')));
@@ -49,13 +62,6 @@ function createApp(db, transports) {
   app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok' });
   });
-  const spaIndexPath = path.join(
-    __dirname,
-    '..',
-    'public',
-    'dist',
-    'index.html',
-  );
   // Deliver the SPA for any remaining routes such as /login
   app.get('*', (req, res) => {
     res.sendFile(spaIndexPath);
