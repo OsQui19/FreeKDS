@@ -19,11 +19,6 @@ function dashboardForRole(role) {
 module.exports = (db, transports) => {
   const { io } = transports;
   const router = express.Router();
-
-  router.get('/login', (req, res) => {
-    res.json({});
-  });
-
   router.get('/clock', (req, res) => {
     res.json({});
   });

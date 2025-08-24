@@ -23,8 +23,8 @@ function createApp(db, transports) {
     }
     next();
   });
-  app.use(authMiddleware(db));
   app.use(express.static(path.join(__dirname, '..', 'public')));
+  app.use(authMiddleware(db));
   app.use((req, res, next) => {
     res.locals.settings = settingsCache.getSettings();
     next();
@@ -48,8 +48,16 @@ function createApp(db, transports) {
   app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok' });
   });
+  const spaIndexPath = path.join(
+    __dirname,
+    '..',
+    'public',
+    'dist',
+    'index.html',
+  );
+  // Deliver the SPA for any remaining routes such as /login
   app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'public', 'dist', 'index.html'));
+    res.sendFile(spaIndexPath);
   });
   app.use((err, req, res, next) => {
     logger.error('Unhandled application error', err);
