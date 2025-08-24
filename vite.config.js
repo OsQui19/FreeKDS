@@ -28,6 +28,7 @@ export default defineConfig({
   build: {
     outDir: 'public/dist',
     emptyOutDir: true,
+    assetsDir: '',
     commonjsOptions: {
       defaultIsModuleExports: true,
       requireReturnsDefault: 'auto',

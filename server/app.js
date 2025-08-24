@@ -13,6 +13,8 @@ const registerRoutes = require('./routes');
 function createApp(db, transports) {
   const app = express();
   app.use(helmetMiddleware());
+  // Serve static assets before any rate limiting, sessions, or auth middleware
+  app.use(express.static(path.join(__dirname, '..', 'public')));
   app.use(rateLimitMiddleware(config));
   app.use(express.urlencoded({ extended: true }));
   app.use(express.json());
@@ -23,7 +25,6 @@ function createApp(db, transports) {
     }
     next();
   });
-  app.use(express.static(path.join(__dirname, '..', 'public')));
   app.use(authMiddleware(db));
   app.use((req, res, next) => {
     res.locals.settings = settingsCache.getSettings();
