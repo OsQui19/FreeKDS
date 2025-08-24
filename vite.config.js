@@ -1,9 +1,23 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
+import fs from 'fs';
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    {
+      name: 'copy-index-html',
+      closeBundle() {
+        const destDir = path.resolve(__dirname, 'public', 'dist');
+        fs.mkdirSync(destDir, { recursive: true });
+        fs.copyFileSync(
+          path.resolve(__dirname, 'index.html'),
+          path.join(destDir, 'index.html')
+        );
+      },
+    },
+  ],
   publicDir: false,
   resolve: {
     alias: {

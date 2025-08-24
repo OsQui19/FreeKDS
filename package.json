@@ -4,7 +4,7 @@
   "description": "Simplified kitchen display system",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "./start.sh",
     "dev": "vite",
     "build": "vite build",
     "seed": "node tests/seed.js",

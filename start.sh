@@ -31,4 +31,4 @@ if [ -n "${DEV_CONTAINER:-}" ] && [ ! -d "./public/dist" ]; then
   npm run build
 fi
 
-exec npm start
+exec node server.js
