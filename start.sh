@@ -26,8 +26,8 @@ if [ -n "${DB_HOST:-}" ] && [ -z "${SKIP_DB_WAIT:-}" ]; then
   fi
 fi
 
-# Build React assets in development containers if missing
-if [ -n "${DEV_CONTAINER:-}" ] && [ ! -d "./public/dist" ]; then
+# Build React assets if missing
+if [ ! -d "./public/dist" ]; then
   npm run build
 fi
 

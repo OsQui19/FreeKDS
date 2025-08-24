@@ -28,7 +28,8 @@ module.exports = function authMiddleware(db) {
     if (
       req.session.user ||
       publicPaths.includes(req.path) ||
-      req.path.startsWith('/vendor/')
+      req.path.startsWith('/vendor/') ||
+      req.path.startsWith('/dist/')
     ) {
       return next();
     }
