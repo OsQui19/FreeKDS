@@ -1,11 +1,12 @@
-import { OpenFeature, Provider } from '@openfeature/js-sdk';
+import { OpenFeature } from '@openfeature/web-sdk';
 import flags from '../../config/flags.json';
 
 const NAMESPACES = ['ui', 'transport', 'perf'];
 
-class JsonFileProvider extends Provider {
+class JsonFileProvider {
+  runsOn = 'client';
+
   constructor(data) {
-    super();
     this.data = data;
   }
 

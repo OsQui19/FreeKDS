@@ -22,7 +22,7 @@
     "@craftjs/core": "^0.2.12",
     "@dnd-kit/core": "^6.0.7",
     "@dnd-kit/sortable": "^7.0.2",
-    "@openfeature/js-sdk": "^1.6.1",
+    "@openfeature/web-sdk": "^1.6.1",
     "ajv": "^6.12.6",
     "bcrypt": "^6.0.0",
     "bootstrap": "^5.3.3",
