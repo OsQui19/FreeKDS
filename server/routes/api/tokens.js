@@ -22,6 +22,22 @@ function deepMerge(target, source) {
   return target;
 }
 
+function normalizeValues(obj) {
+  if (obj && typeof obj === 'object') {
+    for (const key of Object.keys(obj)) {
+      const val = obj[key];
+      if (val && typeof val === 'object' && !Array.isArray(val)) {
+        normalizeValues(val);
+        if ('value' in val && !('$value' in val)) {
+          val.$value = val.value;
+          delete val.value;
+        }
+      }
+    }
+  }
+  return obj;
+}
+
 async function loadJson(filePath) {
   try {
     const raw = await fs.readFile(filePath, 'utf-8');
@@ -42,7 +58,7 @@ router.get('/tokens', async (req, res, next) => {
     if (screenId) {
       tokens = deepMerge(tokens, await loadJson(path.join(tokensDir, 'screens', `${screenId}.json`)));
     }
-    res.json(tokens);
+    res.json(normalizeValues(tokens));
   } catch (err) {
     next(err);
   }

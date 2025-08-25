@@ -8,6 +8,16 @@ require('esbuild-register/dist/node').register({
   define: { 'import.meta.env.DEV': 'true' },
 });
 
+const path = require('path');
+const Module = require('module');
+const resolve = Module._resolveFilename;
+Module._resolveFilename = function (request, parent, isMain, options) {
+  if (request.startsWith('@/')) {
+    request = path.join(__dirname, '..', 'src', request.slice(2));
+  }
+  return resolve.call(this, request, parent, isMain, options);
+};
+
 const dom = new JSDOM('<!doctype html><html><body></body></html>');
 global.window = dom.window;
 global.document = dom.window.document;
@@ -18,12 +28,10 @@ describe('Login page token fallback', () => {
   let LoginPage;
   let MemoryRouter;
 
-  before(async () => {
-    ({ default: BaseLayout } = await import('../src/layouts/BaseLayout.jsx'));
-    ({ default: LoginPage } = await import(
-      '../src/features/login/LoginPage.jsx'
-    ));
-    ({ MemoryRouter } = await import('react-router-dom'));
+  before(() => {
+    ({ default: BaseLayout } = require('../src/layouts/BaseLayout.jsx'));
+    ({ default: LoginPage } = require('../src/features/login/LoginPage.jsx'));
+    ({ MemoryRouter } = require('react-router-dom'));
   });
 
   beforeEach(() => {

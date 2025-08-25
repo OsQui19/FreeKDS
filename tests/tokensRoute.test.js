@@ -12,8 +12,26 @@ function buildApp() {
   return createApp(db, io);
 }
 
+function normalize(obj) {
+  if (obj && typeof obj === 'object') {
+    for (const key of Object.keys(obj)) {
+      const val = obj[key];
+      if (val && typeof val === 'object' && !Array.isArray(val)) {
+        normalize(val);
+        if ('value' in val && !('$value' in val)) {
+          val.$value = val.value;
+          delete val.value;
+        }
+      }
+    }
+  }
+  return obj;
+}
+
 describe('Tokens API', () => {
-  const baseTokens = require('../tokens/base.json');
+  const baseTokens = normalize(
+    JSON.parse(JSON.stringify(require('../tokens/base.json')))
+  );
 
   it('returns base tokens when base file is unreadable', async () => {
     const original = fs.promises.readFile;
