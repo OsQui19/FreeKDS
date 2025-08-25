@@ -22,11 +22,11 @@ export default defineConfig({
     },
     rollupOptions: {
       input: {
+        app: 'index.html',
         schedule: 'src/schedule/main.jsx',
         onboarding: 'src/employees/onboardingMain.jsx',
         hierarchy: 'src/employees/hierarchyMain.jsx',
         adminMenu: 'src/features/AdminMenu/main.jsx',
-        app: 'src/main.jsx',
         kds: 'src/features/kds/main.jsx',
       },
       output: {

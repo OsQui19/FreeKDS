@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const settingsCache = require('./controllers/settingsCache');
 const accessControl = require('./controllers/accessControl');
 const config = require('../config');
@@ -54,9 +55,14 @@ function createApp(db, transports) {
     }
     next();
   });
-  app.get('*', (req, res) =>
-    res.sendFile(path.join(__dirname, '../dist/index.html'))
-  );
+  app.get('*', (req, res) => {
+    const indexPath = path.join(__dirname, '../dist/index.html');
+    if (fs.existsSync(indexPath)) {
+      return res.sendFile(indexPath);
+    }
+    logger.warn('Front-end assets not built');
+    res.status(500).send('Front-end assets not built');
+  });
   app.use((err, req, res, next) => {
     logger.error('Unhandled application error', err);
     if (res.headersSent) return next(err);
