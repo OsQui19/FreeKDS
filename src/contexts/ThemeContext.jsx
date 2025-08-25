@@ -14,6 +14,9 @@ export function ThemeProvider({ children }) {
   });
   const [themes] = useState(themeConfig);
 
+  const toggleTheme = () =>
+    setThemeName((prev) => (prev === 'light' ? 'dark' : 'light'));
+
   useEffect(() => {
     try {
       localStorage.setItem('theme', themeName);
@@ -22,7 +25,7 @@ export function ThemeProvider({ children }) {
     }
   }, [themeName]);
 
-  const value = { themeName, setThemeName };
+  const value = { themeName, setThemeName, toggleTheme };
 
   return (
     <ThemeContext.Provider value={value}>

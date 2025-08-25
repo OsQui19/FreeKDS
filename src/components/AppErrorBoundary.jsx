@@ -39,7 +39,7 @@ export default class AppErrorBoundary extends React.Component {
         <div style={{ padding: '2rem', textAlign: 'center' }}>
           <h1>Something went wrong.</h1>
           <p>We're sorry, but the application encountered an unexpected error.</p>
-          {process.env.NODE_ENV === 'development' && this.state.error && (
+          {import.meta.env.DEV && this.state.error && (
             <details style={{ whiteSpace: 'pre-wrap', marginTop: '1rem' }}>
               {this.state.error.toString()}
               <br />
