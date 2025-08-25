@@ -25,7 +25,12 @@ export default function AppNavbar() {
     const loadTokens = async (retries = 3) => {
       try {
         const t = await resolveTokens();
-        if (isMounted) setTokens(t);
+        const merged = {
+          ...DEFAULT_TOKENS,
+          ...t,
+          color: { ...DEFAULT_TOKENS.color, ...(t?.color || {}) },
+        };
+        if (isMounted) setTokens(merged);
       } catch (err) {
         if (retries > 0) {
           setTimeout(() => loadTokens(retries - 1), 500);
@@ -42,9 +47,9 @@ export default function AppNavbar() {
     };
   }, []);
 
-  const surface = tokens.color.surface.$value;
-  const text = tokens.color.text.$value;
-  const accent = tokens.color.accent.$value;
+  const surface = tokens.color?.surface?.$value ?? DEFAULT_TOKENS.color.surface.$value;
+  const text = tokens.color?.text?.$value ?? DEFAULT_TOKENS.color.text.$value;
+  const accent = tokens.color?.accent?.$value ?? DEFAULT_TOKENS.color.accent.$value;
   return (
     <Navbar expand="lg" className="mb-3" style={{ backgroundColor: surface, color: text }}>
       <Container>

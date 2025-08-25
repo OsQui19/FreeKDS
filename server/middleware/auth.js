@@ -18,6 +18,7 @@ const publicPaths = [
   '/health',
   '/api/login',
   '/api/tokens',
+  '/api/log',
 ];
 
 // Requests for static assets should be allowed through without requiring

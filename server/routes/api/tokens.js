@@ -4,6 +4,7 @@ const path = require('path');
 
 const router = express.Router();
 const tokensDir = path.join(__dirname, '..', '..', '..', 'tokens');
+const baseTokens = require(path.join(tokensDir, 'base.json'));
 
 function deepMerge(target, source) {
   for (const key of Object.keys(source)) {
@@ -26,7 +27,8 @@ async function loadJson(filePath) {
     const raw = await fs.readFile(filePath, 'utf-8');
     return JSON.parse(raw);
   } catch (err) {
-    return {};
+    console.warn(`Could not read token file at ${filePath}`, err);
+    return JSON.parse(JSON.stringify(baseTokens));
   }
 }
 

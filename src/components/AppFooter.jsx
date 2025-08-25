@@ -16,7 +16,12 @@ export default function AppFooter() {
     const loadTokens = async (retries = 3) => {
       try {
         const t = await resolveTokens();
-        if (isMounted) setTokens(t);
+        const merged = {
+          ...DEFAULT_TOKENS,
+          ...t,
+          color: { ...DEFAULT_TOKENS.color, ...(t?.color || {}) },
+        };
+        if (isMounted) setTokens(merged);
       } catch (err) {
         if (retries > 0) {
           setTimeout(() => loadTokens(retries - 1), 500);
@@ -31,8 +36,9 @@ export default function AppFooter() {
       isMounted = false;
     };
   }, []);
-  const background = tokens.color.surface.$value;
-  const text = tokens.color.text.$value;
+  const background =
+    tokens.color?.surface?.$value ?? DEFAULT_TOKENS.color.surface.$value;
+  const text = tokens.color?.text?.$value ?? DEFAULT_TOKENS.color.text.$value;
   return (
     <footer
       style={{ backgroundColor: background, color: text }}
