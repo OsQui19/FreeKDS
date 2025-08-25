@@ -24,6 +24,7 @@ function createApp(db, transports) {
     }
     next();
   });
+  app.use(express.static(path.join(__dirname, '../dist')));
   app.use(authMiddleware(db));
   app.use((req, res, next) => {
     res.locals.settings = settingsCache.getSettings();
@@ -44,7 +45,6 @@ function createApp(db, transports) {
     res.locals.user = req.session && req.session.user ? req.session.user : null;
     next();
   });
-  app.use(express.static(path.join(__dirname, '../dist')));
   app.use(registerRoutes(db, transports));
   app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok' });

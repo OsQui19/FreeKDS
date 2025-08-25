@@ -23,7 +23,17 @@ const publicPaths = [
 // Requests for static assets should be allowed through without requiring
 // authentication. Add any public asset path prefixes here so that missing
 // files return a 404 instead of a redirect to the login page.
-const publicAssetPrefixes = ['/vendor/', '/dist/', '/assets/'];
+const publicAssetPrefixes = [
+  '/vendor/',
+  '/dist/',
+  '/assets/',
+  '/app',
+  '/schedule',
+  '/onboarding',
+  '/hierarchy',
+  '/adminMenu',
+  '/kds',
+];
 
 module.exports = function authMiddleware(db) {
   return (req, res, next) => {
