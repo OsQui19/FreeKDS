@@ -16,6 +16,7 @@ const publicPaths = [
   '/order.css',
   '/bootstrap-vars.css',
   '/health',
+  '/api/login',
   '/api/tokens',
 ];
 

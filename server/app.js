@@ -48,6 +48,12 @@ function createApp(db, transports) {
   app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok' });
   });
+  app.use((req, res, next) => {
+    if (req.path.startsWith('/api')) {
+      return res.status(404).json({ error: 'Not found' });
+    }
+    next();
+  });
   app.get('*', (req, res) =>
     res.sendFile(path.join(__dirname, '../dist/index.html'))
   );

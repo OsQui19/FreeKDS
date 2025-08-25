@@ -25,6 +25,7 @@ RUN mkdir -p /app/logs && chown -R node:node /app
 USER node
 ENV PORT=3000
 ENV NODE_ENV=production
+ENV SKIP_BUILD=1
 EXPOSE 3000
 # Container healthcheck: ensure the server responds before marking healthy
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s CMD curl -f http://localhost:$PORT/health || exit 1
