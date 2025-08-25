@@ -23,15 +23,22 @@ This project is a simplified kitchen display system. Below are basic steps to ru
 6. Session data is stored in MySQL using
    [`express-mysql-session`](https://www.npmjs.com/package/express-mysql-session).
    The required table is created automatically on first run.
+7. Set `VITE_API_URL` to the Express server's base URL when running or building the React frontend.
 
 </details>
 
 <details>
 <summary>▶️ <strong>Running</strong></summary>
 
-Use `npm start` (or `./start.sh`) to start the server on `http://localhost:$PORT`.
-The server reads the port from the `PORT` environment variable, defaulting to `3000`.
-`COOKIE_SECURE` defaults to `false`, so HTTPS isn't required for local testing.
+Use `npm start` (or `./start.sh`) to start the Express API on `http://localhost:$PORT`.
+Start the React frontend separately:
+
+```bash
+VITE_API_URL=http://localhost:$PORT npm run dev   # Development
+VITE_API_URL=http://localhost:$PORT npm run build # Production build
+```
+
+Serve the generated `public/dist` directory with any static host or proxy.
 
 When `DB_HOST` is set, `start.sh` waits for the database using `nc` from
 `netcat-openbsd`. Set `SKIP_DB_WAIT=1` to skip this step. If `nc` isn't
@@ -136,10 +143,10 @@ the MySQL container automatically initializes the schema using `schema.sql`.
 The Dockerfile installs system packages, including the MySQL client and
 `netcat-openbsd`, as the `root` user. `netcat-openbsd` allows `start.sh` to
 wait for the database during container startup. After the project files are
-copied it runs `npm run build` to
-generate the `public/dist` assets. Permissions are then adjusted so the files
-belong to the unprivileged `node` user, and the container switches to that user
-so the application runs without full container privileges.
+copied, permissions are adjusted so the files belong to the unprivileged
+`node` user, and the container switches to that user so the application runs
+without full container privileges. The container only runs the Express API;
+serve the React build from a separate static host or proxy.
 
 </details>
 

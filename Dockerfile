@@ -4,7 +4,6 @@ COPY package*.json ./
 RUN npm ci
 COPY . .
 RUN npm run generate:sdk
-RUN npm run build
 RUN npm prune --production
 
 FROM node:22

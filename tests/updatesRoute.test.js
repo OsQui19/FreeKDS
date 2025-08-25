@@ -30,7 +30,7 @@ describe('GET /admin/updates/latest', () => {
     });
 
     const app = buildApp();
-    const res = await request(app).get('/admin/updates/latest');
+    const res = await request(app).get('/api/admin/updates/latest');
     expect(res.status).to.equal(200);
     expect(res.body.tag_name).to.equal('v1.0.0');
     expect(res.body.html_url).to.be.a('string');
@@ -39,7 +39,7 @@ describe('GET /admin/updates/latest', () => {
   it('handles errors', async () => {
     global.fetch = async () => ({ ok: false, status: 500, json: async () => ({}) });
     const app = buildApp();
-    const res = await request(app).get('/admin/updates/latest');
+    const res = await request(app).get('/api/admin/updates/latest');
     expect(res.status).to.equal(500);
     expect(res.body).to.have.property('error');
   });

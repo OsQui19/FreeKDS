@@ -36,7 +36,7 @@ describe("validateSettings", () => {
   });
 
     it.skip("accepts valid brand_logo URLs", () => {
-      const url = "https://example.com/logo.png"\;
+      const url = "https://example.com/logo.png";
       const { settings, errors } = validateSettings({ brand_logo: url });
       expect(errors).to.have.lengthOf(0);
       expect(settings.brand_logo).to.equal(url);

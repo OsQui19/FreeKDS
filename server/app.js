@@ -1,6 +1,4 @@
 const express = require('express');
-const path = require('path');
-const fs = require('fs');
 const settingsCache = require('./controllers/settingsCache');
 const accessControl = require('./controllers/accessControl');
 const config = require('../config');
@@ -13,6 +11,7 @@ const registerRoutes = require('./routes');
 
 function createApp(db, transports) {
   const app = express();
+<<<<<<< ours
   const spaIndexPath = path.join(
     __dirname,
     '..',
@@ -25,9 +24,9 @@ function createApp(db, transports) {
     logger.error(msg);
     throw new Error(msg);
   }
+=======
+>>>>>>> theirs
   app.use(helmetMiddleware());
-  // Serve static assets before any rate limiting, sessions, or auth middleware
-  app.use(express.static(path.join(__dirname, '..', 'public')));
   app.use(rateLimitMiddleware(config));
   app.use(express.urlencoded({ extended: true }));
   app.use(express.json());
@@ -62,6 +61,7 @@ function createApp(db, transports) {
   app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok' });
   });
+<<<<<<< ours
   // Deliver the SPA for any remaining routes such as /login
   app.get('*', (req, res, next) => {
     res.sendFile(spaIndexPath, (err) => {
@@ -78,6 +78,8 @@ function createApp(db, transports) {
     }
     next(err);
   });
+=======
+>>>>>>> theirs
   app.use((err, req, res, next) => {
     logger.error('Unhandled application error', err);
     if (res.headersSent) return next(err);
