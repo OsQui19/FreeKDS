@@ -16,6 +16,7 @@ const publicPaths = [
   '/order.css',
   '/bootstrap-vars.css',
   '/health',
+  '/api/tokens',
 ];
 
 // Requests for static assets should be allowed through without requiring
