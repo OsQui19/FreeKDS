@@ -26,4 +26,7 @@ if [ -n "${DB_HOST:-}" ] && [ -z "${SKIP_DB_WAIT:-}" ]; then
   fi
 fi
 
+# Build frontend assets before starting the server
+npm run build
+
 exec node server.js

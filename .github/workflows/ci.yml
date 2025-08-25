@@ -15,6 +15,7 @@ jobs:
         with:
           node-version: 22
       - run: npm ci
+      - run: npm run build
       - run: npm run lint:tokens
       - run: npm run validate:openapi
       - run: npm test

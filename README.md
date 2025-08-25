@@ -17,21 +17,23 @@ This project is a simplified kitchen display system. Below are basic steps to ru
 
 1. Install Node.js (v18+) and MySQL.
 2. Run `npm install` to install dependencies.
-3. Update `config.js` with your database credentials and session settings.
-4. Import `schema.sql` into your MySQL server.
-5. (Optional) Set `GITHUB_REPO` in `config.js` to enable GitHub update checks.
-6. Session data is stored in MySQL using
+3. Run `npm run build` to compile the frontend assets.
+4. Update `config.js` with your database credentials and session settings.
+5. Import `schema.sql` into your MySQL server.
+6. (Optional) Set `GITHUB_REPO` in `config.js` to enable GitHub update checks.
+7. Session data is stored in MySQL using
    [`express-mysql-session`](https://www.npmjs.com/package/express-mysql-session).
    The required table is created automatically on first run.
-7. Set `VITE_API_URL` to the Express server's base URL when running or building the React frontend.
+8. Set `VITE_API_URL` to the Express server's base URL when running or building the React frontend.
 
 </details>
 
 <details>
 <summary>▶️ <strong>Running</strong></summary>
 
-Use `npm start` (or `./start.sh`) to start the Express API on `http://localhost:$PORT`.
-Start the React frontend separately:
+Use `npm start` (or `./start.sh`) to build the frontend and start the Express API on `http://localhost:$PORT`. If you start the server directly with `node server.js`, run `npm run build` beforehand.
+
+For frontend development or manual builds, start the React frontend separately:
 
 ```bash
 VITE_API_URL=http://localhost:$PORT npm run dev   # Development

@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const settingsCache = require('./controllers/settingsCache');
 const accessControl = require('./controllers/accessControl');
 const config = require('../config');
@@ -42,10 +43,14 @@ function createApp(db, transports) {
     res.locals.user = req.session && req.session.user ? req.session.user : null;
     next();
   });
+  app.use(express.static(path.join(__dirname, '../dist')));
   app.use(registerRoutes(db, transports));
   app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok' });
   });
+  app.get('*', (req, res) =>
+    res.sendFile(path.join(__dirname, '../dist/index.html'))
+  );
   app.use((err, req, res, next) => {
     logger.error('Unhandled application error', err);
     if (res.headersSent) return next(err);
