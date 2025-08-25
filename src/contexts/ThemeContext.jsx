@@ -5,11 +5,21 @@ import themeConfig from '../config/theme.json';
 const ThemeContext = createContext();
 
 export function ThemeProvider({ children }) {
-  const [themeName, setThemeName] = useState(() => localStorage.getItem('theme') || 'light');
+  const [themeName, setThemeName] = useState(() => {
+    try {
+      return localStorage.getItem('theme') || 'light';
+    } catch {
+      return 'light';
+    }
+  });
   const [themes] = useState(themeConfig);
 
   useEffect(() => {
-    localStorage.setItem('theme', themeName);
+    try {
+      localStorage.setItem('theme', themeName);
+    } catch {
+      // Skip write if localStorage is unavailable
+    }
   }, [themeName]);
 
   const value = { themeName, setThemeName };

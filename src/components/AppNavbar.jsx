@@ -14,7 +14,7 @@ const DEFAULT_TOKENS = {
 };
 
 export default function AppNavbar() {
-  const { theme, toggleTheme } = useTheme();
+  const { themeName, toggleTheme } = useTheme();
   const { plugins } = usePlugins();
   const [tokens, setTokens] = React.useState(DEFAULT_TOKENS);
   const [error, setError] = React.useState(false);
@@ -71,7 +71,7 @@ export default function AppNavbar() {
             onClick={toggleTheme}
             style={{ backgroundColor: accent, borderColor: accent }}
           >
-            {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+            {themeName === 'light' ? 'Dark Mode' : 'Light Mode'}
           </Button>
         </Navbar.Collapse>
       </Container>

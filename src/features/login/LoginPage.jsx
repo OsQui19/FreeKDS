@@ -1,3 +1,5 @@
+import React from 'react';
+
 export default function LoginPage() {
   return (
     <main className="login-page u-center-screen">
