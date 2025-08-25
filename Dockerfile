@@ -4,9 +4,10 @@ COPY package*.json ./
 RUN npm ci
 COPY . .
 RUN npm run generate:sdk
+RUN npm run build
 RUN npm prune --production
 
-FROM node:22
+FROM node:22 AS api
 
 # Install system packages as root so the MySQL client is available
 USER root
@@ -28,3 +29,6 @@ EXPOSE 3000
 # Container healthcheck: ensure the server responds before marking healthy
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s CMD curl -f http://localhost:$PORT/health || exit 1
 CMD ["./start.sh"]
+
+FROM nginx:alpine AS client
+COPY --from=builder /app/dist /usr/share/nginx/html

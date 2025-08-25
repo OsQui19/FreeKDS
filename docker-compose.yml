@@ -1,6 +1,8 @@
 services:
-  app:
-    build: .
+  api:
+    build:
+      context: .
+      target: api
     ports:
       - "${PORT:-3000}:${PORT:-3000}"
     restart: unless-stopped
@@ -19,6 +21,13 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+  client:
+    build:
+      context: .
+      target: client
+    ports:
+      - "8080:80"
+    restart: unless-stopped
   mysql:
     image: mysql:8
     restart: unless-stopped

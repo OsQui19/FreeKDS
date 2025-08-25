@@ -11,21 +11,6 @@ const registerRoutes = require('./routes');
 
 function createApp(db, transports) {
   const app = express();
-<<<<<<< ours
-  const spaIndexPath = path.join(
-    __dirname,
-    '..',
-    'public',
-    'dist',
-    'index.html',
-  );
-  if (!fs.existsSync(spaIndexPath)) {
-    const msg = `Missing ${spaIndexPath}. Run "npm run build" to generate client assets.`;
-    logger.error(msg);
-    throw new Error(msg);
-  }
-=======
->>>>>>> theirs
   app.use(helmetMiddleware());
   app.use(rateLimitMiddleware(config));
   app.use(express.urlencoded({ extended: true }));
@@ -61,25 +46,6 @@ function createApp(db, transports) {
   app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok' });
   });
-<<<<<<< ours
-  // Deliver the SPA for any remaining routes such as /login
-  app.get('*', (req, res, next) => {
-    res.sendFile(spaIndexPath, (err) => {
-      if (err) next(err);
-    });
-  });
-
-  app.use((err, req, res, next) => {
-    if (err.code === 'ENOENT' && err.path === spaIndexPath) {
-      logger.error('Missing SPA build at %s', spaIndexPath);
-      return res
-        .status(503)
-        .send('Frontend build is missing. Run "npm run build".');
-    }
-    next(err);
-  });
-=======
->>>>>>> theirs
   app.use((err, req, res, next) => {
     logger.error('Unhandled application error', err);
     if (res.headersSent) return next(err);
