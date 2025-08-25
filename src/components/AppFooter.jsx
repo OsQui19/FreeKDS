@@ -1,12 +1,36 @@
 import React from 'react';
 import { resolveTokens } from '@/utils/tokens.js';
 
+const DEFAULT_TOKENS = {
+  color: {
+    surface: { $value: '#f8f9fa' },
+    text: { $value: '#212529' },
+  },
+};
+
 export default function AppFooter() {
-  const [tokens, setTokens] = React.useState(null);
+  const [tokens, setTokens] = React.useState(DEFAULT_TOKENS);
+  const [error, setError] = React.useState(false);
   React.useEffect(() => {
-    resolveTokens().then(setTokens);
+    let isMounted = true;
+    const loadTokens = async (retries = 3) => {
+      try {
+        const t = await resolveTokens();
+        if (isMounted) setTokens(t);
+      } catch (err) {
+        if (retries > 0) {
+          setTimeout(() => loadTokens(retries - 1), 500);
+        } else {
+          console.error('Failed to load tokens', err);
+          if (isMounted) setError(true);
+        }
+      }
+    };
+    loadTokens();
+    return () => {
+      isMounted = false;
+    };
   }, []);
-  if (!tokens) return null;
   const background = tokens.color.surface.$value;
   const text = tokens.color.text.$value;
   return (
@@ -15,6 +39,9 @@ export default function AppFooter() {
       className="text-center py-3 mt-auto"
     >
       <small>&copy; {new Date().getFullYear()} FreeKDS</small>
+      {error && (
+        <div className="text-warning small">Default theme applied</div>
+      )}
     </footer>
   );
 }

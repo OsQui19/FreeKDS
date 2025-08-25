@@ -27,8 +27,14 @@ if [ -n "${DB_HOST:-}" ] && [ -z "${SKIP_DB_WAIT:-}" ]; then
 fi
 
 # Build React assets if missing
-if [ ! -d "./public/dist" ]; then
+if [ ! -f "./public/dist/app.js" ]; then
   npm run build
+fi
+
+# Verify built bundle exists
+if [ ! -f "./public/dist/app.js" ]; then
+  echo "Error: public/dist/app.js not found. Run 'npm run build' to generate frontend assets." >&2
+  exit 1
 fi
 
 exec node server.js

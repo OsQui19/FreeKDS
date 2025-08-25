@@ -5,14 +5,43 @@ import { useTheme } from '@/contexts/ThemeContext.jsx';
 import { usePlugins } from '@/plugins/PluginManager.jsx';
 import { resolveTokens } from '@/utils/tokens.js';
 
+const DEFAULT_TOKENS = {
+  color: {
+    surface: { $value: '#f8f9fa' },
+    text: { $value: '#212529' },
+    accent: { $value: '#0d6efd' },
+  },
+};
+
 export default function AppNavbar() {
   const { theme, toggleTheme } = useTheme();
   const { plugins } = usePlugins();
-  const [tokens, setTokens] = React.useState(null);
+  const [tokens, setTokens] = React.useState(DEFAULT_TOKENS);
+  const [error, setError] = React.useState(false);
+
   React.useEffect(() => {
-    resolveTokens().then(setTokens);
+    let isMounted = true;
+
+    const loadTokens = async (retries = 3) => {
+      try {
+        const t = await resolveTokens();
+        if (isMounted) setTokens(t);
+      } catch (err) {
+        if (retries > 0) {
+          setTimeout(() => loadTokens(retries - 1), 500);
+        } else {
+          console.error('Failed to load tokens', err);
+          if (isMounted) setError(true);
+        }
+      }
+    };
+
+    loadTokens();
+    return () => {
+      isMounted = false;
+    };
   }, []);
-  if (!tokens) return null;
+
   const surface = tokens.color.surface.$value;
   const text = tokens.color.text.$value;
   const accent = tokens.color.accent.$value;
@@ -22,6 +51,9 @@ export default function AppNavbar() {
         <Navbar.Brand as={Link} to="/" style={{ color: text }}>
           FreeKDS
         </Navbar.Brand>
+        {error && (
+          <div className="ms-2 text-warning small">Default theme applied</div>
+        )}
         <Navbar.Toggle aria-controls="app-navbar" />
         <Navbar.Collapse id="app-navbar">
           <Nav className="me-auto">

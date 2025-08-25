@@ -11,10 +11,10 @@ export default defineConfig({
       closeBundle() {
         const destDir = path.resolve(__dirname, 'public', 'dist');
         fs.mkdirSync(destDir, { recursive: true });
-        fs.copyFileSync(
-          path.resolve(__dirname, 'index.html'),
-          path.join(destDir, 'index.html')
-        );
+        const srcPath = path.resolve(__dirname, 'index.html');
+        let html = fs.readFileSync(srcPath, 'utf-8');
+        html = html.replace('/src/main.jsx', '/dist/app.js');
+        fs.writeFileSync(path.join(destDir, 'index.html'), html);
       },
     },
   ],
