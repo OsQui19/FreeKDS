@@ -12,9 +12,14 @@ export async function resolveTokens(options = {}) {
   if (options.stationId) params.append('stationId', options.stationId);
   if (options.screenId) params.append('screenId', options.screenId);
   const qs = params.toString();
-  const res = await fetch(`/api/tokens${qs ? `?${qs}` : ''}`);
-  if (!res.ok) throw new Error('Failed to load tokens');
-  const tokens = await res.json();
+  let tokens = {};
+  try {
+    const res = await fetch(`/api/tokens${qs ? `?${qs}` : ''}`);
+    if (!res.ok) throw new Error('Failed to load tokens');
+    tokens = await res.json();
+  } catch (err) {
+    console.error(err);
+  }
   tokenCache[key] = tokens;
   return tokens;
 }

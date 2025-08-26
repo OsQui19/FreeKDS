@@ -13,22 +13,16 @@ export default function AppFooter() {
   const [error, setError] = React.useState(false);
   React.useEffect(() => {
     let isMounted = true;
-    const loadTokens = async (retries = 3) => {
-      try {
-        const t = await resolveTokens();
-        const merged = {
-          ...DEFAULT_TOKENS,
-          ...t,
-          color: { ...DEFAULT_TOKENS.color, ...(t?.color || {}) },
-        };
-        if (isMounted) setTokens(merged);
-      } catch (err) {
-        if (retries > 0) {
-          setTimeout(() => loadTokens(retries - 1), 500);
-        } else {
-          console.error('Failed to load tokens', err);
-          if (isMounted) setError(true);
-        }
+    const loadTokens = async () => {
+      const t = await resolveTokens();
+      const merged = {
+        ...DEFAULT_TOKENS,
+        ...t,
+        color: { ...DEFAULT_TOKENS.color, ...(t?.color || {}) },
+      };
+      if (isMounted) {
+        setTokens(merged);
+        setError(Object.keys(t).length === 0);
       }
     };
     loadTokens();
