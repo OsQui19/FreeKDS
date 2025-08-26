@@ -17,9 +17,16 @@ export function PluginProvider({ children }) {
   useEffect(() => {
     let active = true;
     async function load() {
-      const loaded = await loadPlugins();
-      if (active) {
-        setPlugins(loaded);
+      try {
+        const loaded = await loadPlugins();
+        if (active) {
+          setPlugins(loaded);
+        }
+      } catch (err) {
+        console.error("Failed to load plugins", err);
+        if (active) {
+          setPlugins([]);
+        }
       }
     }
     load();
