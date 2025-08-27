@@ -15,8 +15,7 @@ export async function resolveTokens(options = {}) {
   let tokens = {};
   try {
     const res = await fetch(`/api/tokens${qs ? `?${qs}` : ''}`);
-    if (!res.ok) throw new Error('Failed to load tokens');
-    tokens = await res.json();
+    tokens = res.ok ? await res.json() : {};
   } catch (err) {
     console.error(err);
   }

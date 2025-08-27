@@ -14,7 +14,7 @@ export default function AppFooter() {
   React.useEffect(() => {
     let isMounted = true;
     const loadTokens = async () => {
-      const t = await resolveTokens();
+      const t = (await resolveTokens()) || {};
       const merged = {
         ...DEFAULT_TOKENS,
         ...t,

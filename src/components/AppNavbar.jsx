@@ -23,7 +23,7 @@ export default function AppNavbar() {
     let isMounted = true;
 
     const loadTokens = async () => {
-      const t = await resolveTokens();
+      const t = (await resolveTokens()) || {};
       const merged = {
         ...DEFAULT_TOKENS,
         ...t,
