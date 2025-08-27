@@ -21,7 +21,10 @@ export default class AppErrorBoundary extends React.Component {
       fetch('/api/log', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ error: error.toString(), errorInfo }),
+        body: JSON.stringify({
+          message: error.toString(),
+          stack: errorInfo?.componentStack,
+        }),
       });
     } catch (loggingError) {
       // Ignore logging errors to avoid infinite loops

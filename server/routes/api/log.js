@@ -8,11 +8,7 @@ const router = express.Router();
 // can report issues without triggering security warnings.
 router.post('/log', (req, res) => {
   const { message, stack, ...meta } = req.body || {};
-  if (message) {
-    logger.error(message, { stack, ...meta });
-  } else {
-    logger.error('Client error', req.body);
-  }
+  logger.error(message || 'Client error', { stack, ...meta });
   res.json({ success: true });
 });
 
