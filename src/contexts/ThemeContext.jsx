@@ -1,6 +1,12 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { ThemeProvider as StyledThemeProvider } from 'styled-components';
 import themeConfig from '../config/theme.json';
+
+let StyledThemeProvider;
+try {
+  StyledThemeProvider = (await import('styled-components')).ThemeProvider;
+} catch {
+  StyledThemeProvider = null;
+}
 
 // Provide sane defaults so consumers can still render if the provider is absent
 const ThemeContext = createContext({
