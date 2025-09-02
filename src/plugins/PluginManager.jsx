@@ -72,23 +72,43 @@ export function usePlugins() {
 
 export function PluginRoutes() {
   const { plugins } = usePlugins();
-  return plugins.map(({ Component, meta }) => (
-    <Route key={meta.id} path={meta.route} element={<Component />} />
-  ));
+  return plugins
+    .filter(
+      (p) =>
+        p &&
+        typeof p.Component === "function" &&
+        p.meta &&
+        p.meta.id &&
+        p.meta.route
+    )
+    .map(({ Component, meta }) => (
+      <Route key={meta.id} path={meta.route} element={<Component />} />
+    ));
 }
 
 export function PluginNavLinks() {
   const { plugins } = usePlugins();
-  return plugins.map(({ meta }) => (
-    <li key={meta.id}>
-      <Link to={meta.route}>{meta.name}</Link>
-    </li>
-  ));
+  return plugins
+    .filter(
+      (p) =>
+        p &&
+        typeof p.Component === "function" &&
+        p.meta &&
+        p.meta.id &&
+        p.meta.route
+    )
+    .map(({ meta }) => (
+      <li key={meta.id}>
+        <Link to={meta.route}>{meta.name}</Link>
+      </li>
+    ));
 }
 
 export function PluginZone({ zone }) {
   const { zones } = usePlugins();
-  const zonePlugins = zones[zone] || [];
+  const zonePlugins = (zones[zone] || []).filter(
+    (p) => p && typeof p.Component === "function" && p.meta && p.meta.id
+  );
   return (
     <>
       {zonePlugins.map(({ Component, meta }) => (

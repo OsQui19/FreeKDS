@@ -1,13 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import themeConfig from '../config/theme.json';
 
-let StyledThemeProvider;
-try {
-  StyledThemeProvider = (await import('styled-components')).ThemeProvider;
-} catch {
-  StyledThemeProvider = null;
-}
-
 // Provide sane defaults so consumers can still render if the provider is absent
 const ThemeContext = createContext({
   themeName: 'light',
@@ -16,6 +9,7 @@ const ThemeContext = createContext({
 });
 
 function ThemeProviderWithStyled({ children }) {
+  const [StyledThemeProvider, setStyledThemeProvider] = useState(null);
   const [themeName, setThemeName] = useState(() => {
     try {
       return localStorage.getItem('theme') || 'light';
@@ -24,6 +18,20 @@ function ThemeProviderWithStyled({ children }) {
     }
   });
   const [themes] = useState(themeConfig);
+
+  useEffect(() => {
+    let active = true;
+    import('styled-components')
+      .then((mod) => {
+        if (active) setStyledThemeProvider(() => mod.ThemeProvider);
+      })
+      .catch(() => {
+        if (active) setStyledThemeProvider(null);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const toggleTheme = () =>
     setThemeName((prev) => (prev === 'light' ? 'dark' : 'light'));
@@ -42,11 +50,13 @@ function ThemeProviderWithStyled({ children }) {
   }
   const value = { themeName, setThemeName, toggleTheme };
 
+  const ProviderComponent = StyledThemeProvider || FallbackThemeProvider;
+
   return (
     <ThemeContext.Provider value={value}>
-      <StyledThemeProvider theme={currentTheme || themes.light}>
+      <ProviderComponent theme={currentTheme || themes.light}>
         {children}
-      </StyledThemeProvider>
+      </ProviderComponent>
     </ThemeContext.Provider>
   );
 }
@@ -55,10 +65,7 @@ export function FallbackThemeProvider({ children }) {
   return <>{children}</>;
 }
 
-// Export the appropriate provider depending on whether styled-components is available
-export const ThemeProvider = StyledThemeProvider
-  ? ThemeProviderWithStyled
-  : FallbackThemeProvider;
+export const ThemeProvider = ThemeProviderWithStyled;
 
 export function useTheme() {
   return useContext(ThemeContext);

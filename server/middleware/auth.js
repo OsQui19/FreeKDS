@@ -2,7 +2,6 @@ const { logSecurityEvent } = require('../controllers/securityLog');
 
 const publicPaths = [
   '/login',
-  '/login.css',
   '/style.css',
   '/base.css',
   '/clock.css',

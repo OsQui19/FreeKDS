@@ -9,6 +9,12 @@ export default async function loadPlugins() {
       const base = path.replace(/plugin\.json$/, "");
       try {
         const mod = await import(/* @vite-ignore */ `${base}${manifest.main}`);
+        if (typeof mod.default !== "function") {
+          console.error(
+            `Plugin missing valid default export: ${manifest.id || path}`
+          );
+          return null;
+        }
         const contributes = {
           actions: [],
           routes: [],
