@@ -44,6 +44,13 @@ module.exports = (db) => {
     async (req, res, next) => {
       const { name = 'default', layout, stationId } = req.body || {};
       try {
+        // Save a version snapshot before updating
+        if (!stationId) {
+          const [prev] = await query(db, 'SELECT definition FROM layouts WHERE name=?', [name]);
+          if (prev.length) {
+            await query(db, 'INSERT INTO layout_versions (name, definition) VALUES (?, ?)', [name, prev[0].definition]);
+          }
+        }
         if (stationId) {
           await query(
             db,
@@ -63,6 +70,31 @@ module.exports = (db) => {
       }
     },
   );
+
+  router.get('/layout/versions', async (req, res, next) => {
+    const name = req.query.name || 'default';
+    try {
+      const [rows] = await query(db, 'SELECT id, name, created_at FROM layout_versions WHERE name=? ORDER BY created_at DESC LIMIT 50', [name]);
+      res.json({ versions: rows });
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  router.post('/layout/restore', async (req, res, next) => {
+    const id = parseInt(req.body.id, 10);
+    const name = req.body.name || 'default';
+    if (!id) return res.status(400).send('Invalid id');
+    try {
+      const [rows] = await query(db, 'SELECT definition FROM layout_versions WHERE id=?', [id]);
+      if (!rows.length) return res.status(404).send('Not found');
+      const definition = rows[0].definition;
+      await query(db, 'INSERT INTO layouts (name, definition) VALUES (?, ?) ON DUPLICATE KEY UPDATE definition=VALUES(definition)', [name, definition]);
+      res.json({ success: true });
+    } catch (err) {
+      next(err);
+    }
+  });
 
   return router;
 };

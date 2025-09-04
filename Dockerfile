@@ -1,7 +1,7 @@
 FROM node:22 AS builder
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci
+RUN npm install
 COPY . .
 RUN npm run generate:sdk
 RUN npm run build

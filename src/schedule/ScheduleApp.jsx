@@ -6,7 +6,7 @@ import React, {
   useMemo,
 } from "react";
 import { Calendar, dateFnsLocalizer, Views } from "react-big-calendar";
-import withDragAndDrop from "react-big-calendar/lib/addons/dragAndDrop";
+import * as dnd from "react-big-calendar/lib/addons/dragAndDrop";
 import { format, parse, startOfWeek, getDay } from "date-fns";
 import "react-big-calendar/lib/addons/dragAndDrop/styles.css";
 import "react-big-calendar/lib/css/react-big-calendar.css";
@@ -19,7 +19,14 @@ const localizer = dateFnsLocalizer({
   getDay,
   locales,
 });
-const DnDCalendar = withDragAndDrop(Calendar);
+// Handle different module interop shapes gracefully
+const withDragAndDropFn =
+  (typeof dnd === 'function' && dnd) ||
+  (dnd && typeof dnd.default === 'function' && dnd.default) ||
+  (dnd && typeof dnd.withDragAndDrop === 'function' && dnd.withDragAndDrop) ||
+  null;
+
+const DnDCalendar = withDragAndDropFn ? withDragAndDropFn(Calendar) : Calendar;
 
 export default function ScheduleApp() {
   const [employees, setEmployees] = useState([]);

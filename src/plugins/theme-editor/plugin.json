@@ -1,0 +1,21 @@
+{
+  "$schema": "../../../schemas/plugin-manifest.schema@1.1.0.json",
+  "id": "theme-editor",
+  "name": "Theme Editor",
+  "version": "1.0.0",
+  "main": "./index.js",
+  "route": "/admin/theme",
+  "license": "MIT",
+  "coreAPI": "1.0.0",
+  "activationEvents": ["onStartupFinished"],
+  "contributes": {
+    "actions": [],
+    "routes": [],
+    "transforms": [],
+    "shortcuts": [],
+    "adminPanels": [
+      { "id": "theme-editor", "title": "Theme Editor", "requiredDomains": ["tokens"], "requiredScopes": ["tokens:write"], "latency": "interactive" }
+    ]
+  }
+}
+

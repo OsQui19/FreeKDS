@@ -60,21 +60,7 @@ export default function AppNavbar() {
               Dashboard
             </Nav.Link>
             <Nav.Link as={Link} to="/admin">Admin</Nav.Link>
-            {plugins
-              .filter((p) => {
-                if (!p.meta?.route) {
-                  console.warn(
-                    `Plugin "${p.meta?.id || 'unknown'}" missing meta.route`
-                  );
-                  return false;
-                }
-                return true;
-              })
-              .map(({ meta }) => (
-                <Nav.Link key={meta.id} as={Link} to={meta.route}>
-                  {meta.name}
-                </Nav.Link>
-              ))}
+            {/* Plugin page links are disabled while we stabilize routing */}
           </Nav>
           <Button
             onClick={toggleTheme}
@@ -87,4 +73,3 @@ export default function AppNavbar() {
     </Navbar>
   );
 }
-

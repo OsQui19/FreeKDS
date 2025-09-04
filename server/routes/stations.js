@@ -120,12 +120,16 @@ module.exports = (db) => {
           try {
             const bumpedOrders = await getBumpedOrders(db, stationId, 20);
             const stationRows = await getStations(db);
+            const [visRows] = await db
+              .promise()
+              .query('SELECT category_id FROM station_categories WHERE station_id=?', [stationId]);
             res.json({
               station,
               orders,
               settings,
               allStations: stationRows,
               bumpedOrders,
+              visibleCategories: visRows.map((r) => r.category_id),
             });
           } catch (err4) {
             logger.error("Error fetching stations list or bumped orders:", err4);
@@ -173,6 +177,7 @@ module.exports = (db) => {
   function renderOrder() {
     return (req, res) => {
       const table = req.query.table || "";
+      const filterStationId = req.query.stationId ? parseInt(req.query.stationId, 10) : null;
       const sqlItems =
         "SELECT id, name, price, image_url, category_id, is_available, stock FROM menu_items ORDER BY category_id, sort_order, id";
       const sqlItemMods = "SELECT * FROM item_modifiers";
@@ -232,6 +237,7 @@ module.exports = (db) => {
                       if (modMap[im.modifier_id])
                         itemModsMap[im.menu_item_id].push(modMap[im.modifier_id]);
                     });
+                    // Build categories
                     const catMap = cats.map((c) => ({
                       id: c.id,
                       name: c.name,
@@ -247,6 +253,8 @@ module.exports = (db) => {
                         it.is_available &&
                         (it.stock === null || it.stock > 0)
                       ) {
+                        // If a stationId filter is provided, only include items prepared by that station
+                        if (filterStationId && it.station_id !== filterStationId) return;
                         idx[it.category_id].items.push({
                           id: it.id,
                           name: it.name,
@@ -258,12 +266,31 @@ module.exports = (db) => {
                         });
                       }
                     });
-                    res.json({
+                    // Filter categories by station-category visibility if requested
+                    let visibleCatIds = null;
+                    if (filterStationId) {
+                      // Load allowed category ids for this station synchronously by reusing existing DB connection
+                      // Note: This callback scope is already inside several async nested callbacks; keep minimal
+                    }
+                    const payload = {
                       categories: catMap,
                       table,
                       settings: res.locals.settings,
                       modGroups: groups,
-                    });
+                    };
+                    if (filterStationId) {
+                      db.query('SELECT category_id FROM station_categories WHERE station_id=?', [filterStationId], (err6, visRows) => {
+                        if (!err6 && visRows && visRows.length) {
+                          const allowed = new Set(visRows.map((r) => r.category_id));
+                          payload.categories = catMap
+                            .filter((c) => allowed.has(c.id))
+                            .map((c) => ({ ...c, items: c.items }));
+                        }
+                        res.json(payload);
+                      });
+                    } else {
+                      res.json(payload);
+                    }
                   });
                 });
               });

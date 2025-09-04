@@ -10,6 +10,8 @@ const { stationLoad } = require("../../controllers/loadTracker");
 const backupsRoutes = require("./backups");
 const menuRoutes = require("./menu");
 const inventoryRoutes = require("./inventory");
+const stationsRoutes = require("./stations");
+const stationCategoriesRoutes = require("./stationCategories");
 
 module.exports = (db, transports) => {
   const { io } = transports;
@@ -18,6 +20,8 @@ module.exports = (db, transports) => {
   router.use("/", backupsRoutes(db));
   router.use("/", menuRoutes(db));
   router.use("/", inventoryRoutes(db));
+  router.use("/", stationsRoutes(db));
+  router.use("/", stationCategoriesRoutes(db));
 
   router.get("/admin", async (req, res) => {
     if (!req.session.user) {
@@ -114,4 +118,3 @@ module.exports = (db, transports) => {
 
   return router;
 };
-

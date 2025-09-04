@@ -15,6 +15,9 @@ export default defineConfig({
     outDir: 'dist',
     emptyOutDir: true,
     assetsDir: '',
+    sourcemap: true,
+    minify: false,
+    chunkSizeWarningLimit: 1600,
     commonjsOptions: {
       defaultIsModuleExports: true,
       requireReturnsDefault: 'auto',
@@ -23,17 +26,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         app: 'index.html',
-        schedule: 'src/schedule/main.jsx',
-        onboarding: 'src/employees/onboardingMain.jsx',
-        hierarchy: 'src/employees/hierarchyMain.jsx',
-        adminMenu: 'src/features/AdminMenu/main.jsx',
-        kds: 'src/features/kds/main.jsx',
       },
-      output: {
-        entryFileNames: '[name].js',
-        chunkFileNames: '[name].js',
-        assetFileNames: '[name][extname]'
-      }
     },
   },
 });

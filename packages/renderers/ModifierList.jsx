@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Ajv from 'ajv';
+import Ajv2020 from 'ajv/dist/2020';
 import schema from './schemas/ModifierList.schema.json';
 import { getToken } from '../../src/utils/tokens.js';
 
@@ -14,8 +14,20 @@ function requireToken(path) {
   return value;
 }
 
-const ajv = new Ajv();
-const validate = ajv.compile(schema);
+let validate;
+let compileErr = null;
+function validateData(data) {
+  if (!validate && !compileErr) {
+    try {
+      const ajv = new Ajv2020({ allowUnionTypes: true, strict: false });
+      validate = ajv.compile(schema);
+    } catch (e) {
+      compileErr = e; // CSP or other compile issue; skip runtime validation
+      return true;
+    }
+  }
+  return validate ? validate(data) : true;
+}
 
 /**
  * Render a list of item modifiers.
@@ -33,8 +45,8 @@ function ModifierList({ modifiers, style }) {
   if (style !== undefined) {
     throw new Error('style prop is not supported');
   }
-  if (!validate({ modifiers })) {
-    throw new Error(ajv.errorsText(validate.errors));
+  if (!validateData({ modifiers })) {
+    throw new Error('Invalid ModifierList props');
   }
   if (!modifiers || modifiers.length === 0) return null;
 

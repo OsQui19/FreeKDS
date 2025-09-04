@@ -64,4 +64,38 @@ router.get('/tokens', async (req, res, next) => {
   }
 });
 
+// Update base tokens. Requires authentication even though the path is public
+// for GET in the auth middleware.
+router.post('/tokens', async (req, res, next) => {
+  try {
+    if (!req.session || !req.session.user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    const incoming = req.body || {};
+    // Defensive copy and shallow validation
+    if (typeof incoming !== 'object' || Array.isArray(incoming)) {
+      return res.status(400).json({ error: 'Invalid token payload' });
+    }
+    const { stationId, screenId } = req.query || {};
+    let targetPath;
+    if (stationId) {
+      const dir = path.join(tokensDir, 'stations');
+      await fs.mkdir(dir, { recursive: true });
+      targetPath = path.join(dir, `${stationId}.json`);
+    } else if (screenId) {
+      const dir = path.join(tokensDir, 'screens');
+      await fs.mkdir(dir, { recursive: true });
+      targetPath = path.join(dir, `${screenId}.json`);
+    } else {
+      targetPath = path.join(tokensDir, 'base.json');
+    }
+    const current = await loadJson(targetPath);
+    const merged = normalizeValues(deepMerge(current, incoming));
+    await fs.writeFile(targetPath, JSON.stringify(merged, null, 2), 'utf-8');
+    res.json({ success: true, path: targetPath });
+  } catch (err) {
+    next(err);
+  }
+});
+
 module.exports = router;

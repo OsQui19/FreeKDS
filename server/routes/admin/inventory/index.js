@@ -128,5 +128,63 @@ module.exports = (db) => {
     }
   });
 
+  // purchase order items
+  router.post('/admin/purchase-orders/:id/items', async (req, res) => {
+    const poId = parseInt(req.params.id, 10);
+    const ingredientId = parseInt(req.body.ingredient_id, 10);
+    const unitId = req.body.unit_id ? parseInt(req.body.unit_id, 10) : null;
+    const quantity = parseFloat(req.body.quantity) || 0;
+    if (!poId || !ingredientId || quantity <= 0) {
+      return res.status(400).send('Invalid data');
+    }
+    try {
+      await db.promise().query(
+        'INSERT INTO purchase_order_items (purchase_order_id, ingredient_id, quantity, unit_id) VALUES (?, ?, ?, ?)',
+        [poId, ingredientId, quantity, unitId]
+      );
+      res.json({ success: true });
+    } catch (err) {
+      logger.error('Error adding PO item:', err);
+      res.status(500).send('Server Error');
+    }
+  });
+
+  router.post('/admin/purchase-orders/:id/items/:itemId', async (req, res) => {
+    const poId = parseInt(req.params.id, 10);
+    const itemId = parseInt(req.params.itemId, 10);
+    const quantity = req.body.quantity != null ? parseFloat(req.body.quantity) : null;
+    const unitId = req.body.unit_id != null ? parseInt(req.body.unit_id, 10) : null;
+    if (!poId || !itemId) return res.status(400).send('Invalid id');
+    const fields = [];
+    const vals = [];
+    if (quantity != null && !Number.isNaN(quantity)) { fields.push('quantity=?'); vals.push(quantity); }
+    if (unitId != null && !Number.isNaN(unitId)) { fields.push('unit_id=?'); vals.push(unitId); }
+    if (!fields.length) return res.status(400).send('No changes');
+    vals.push(itemId, poId);
+    try {
+      await db.promise().query(
+        `UPDATE purchase_order_items SET ${fields.join(', ')} WHERE id=? AND purchase_order_id=?`,
+        vals
+      );
+      res.json({ success: true });
+    } catch (err) {
+      logger.error('Error updating PO item:', err);
+      res.status(500).send('Server Error');
+    }
+  });
+
+  router.post('/admin/purchase-orders/:id/items/:itemId/delete', async (req, res) => {
+    const poId = parseInt(req.params.id, 10);
+    const itemId = parseInt(req.params.itemId, 10);
+    if (!poId || !itemId) return res.status(400).send('Invalid id');
+    try {
+      await db.promise().query('DELETE FROM purchase_order_items WHERE id=? AND purchase_order_id=?', [itemId, poId]);
+      res.json({ success: true });
+    } catch (err) {
+      logger.error('Error deleting PO item:', err);
+      res.status(500).send('Server Error');
+    }
+  });
+
   return router;
 };

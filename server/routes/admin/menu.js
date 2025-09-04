@@ -1,6 +1,7 @@
 const express = require("express");
 const logger = require("../../../utils/logger");
 const { query } = require("../../../utils/db");
+const accessControl = require("../../controllers/accessControl");
 const {
   updateItemModifiers,
   updateItemGroups,
@@ -285,15 +286,54 @@ module.exports = (db) => {
     return res.sendStatus(200);
   });
 
+  // List modifiers (JSON)
+  router.get("/admin/modifiers", async (req, res) => {
+    try {
+      const role = req.session?.user?.role;
+      if (!role || !accessControl.roleHasAccess(role, "menu")) {
+        return res.status(403).json({ error: "Forbidden" });
+      }
+      const [rows] = await db
+        .promise()
+        .query(
+          `SELECT m.id, m.name, m.price, m.group_id, mg.name AS group_name,
+                  m.ingredient_id, i.name AS ingredient_name
+             FROM modifiers m
+             LEFT JOIN modifier_groups mg ON m.group_id=mg.id
+             LEFT JOIN ingredients i ON m.ingredient_id=i.id
+            ORDER BY m.name`,
+        );
+      const [groups] = await db
+        .promise()
+        .query("SELECT id, name FROM modifier_groups ORDER BY name");
+      res.json({ modifiers: rows, groups });
+    } catch (err) {
+      logger.error("Error listing modifiers:", err);
+      res.status(500).json({ error: "Server Error" });
+    }
+  });
+
   router.post("/admin/modifiers", (req, res) => {
+    const wantsJSON =
+      (req.headers['content-type'] || '').includes('application/json') ||
+      (req.headers.accept || '').includes('application/json');
     const id = req.body.id;
     const name = req.body.name;
     let price = parseFloat(req.body.price);
     const groupId = req.body.group_id || null;
     const ingredientId = parseInt(req.body.ingredient_id, 10);
     if (isNaN(price)) price = 0.0;
-    if (!name || !ingredientId)
-      return res.redirect("/admin?tab=menu&openMods=1");
+    const role = req.session?.user?.role;
+    if (!role || !accessControl.roleHasAccess(role, "menu")) {
+      return wantsJSON
+        ? res.status(403).json({ error: 'Forbidden' })
+        : res.redirect("/admin?tab=menu&openMods=1");
+    }
+    if (!name || !ingredientId) {
+      return wantsJSON
+        ? res.status(400).json({ error: 'Name and ingredient required' })
+        : res.redirect("/admin?tab=menu&openMods=1");
+    }
 
     db.query(
       "SELECT id, name FROM ingredients WHERE id=? LIMIT 1",
@@ -301,10 +341,12 @@ module.exports = (db) => {
       (err, rows) => {
         if (err || rows.length === 0) {
           logger.error("Invalid ingredient for modifier");
-          return res.redirect("/admin?tab=menu&openMods=1");
+          return wantsJSON
+            ? res.status(400).json({ error: 'Invalid ingredient' })
+            : res.redirect("/admin?tab=menu&openMods=1");
         }
         const ingName = rows[0].name;
-        const modName = name.trim() || ingName;
+        const modName = (name || '').trim() || ingName;
         const params = [modName, price, groupId, ingredientId];
         if (id) {
           db.query(
@@ -313,7 +355,11 @@ module.exports = (db) => {
             (err2) => {
               if (err2) {
                 logger.error(err2);
+                return wantsJSON
+                  ? res.status(500).json({ error: 'Server Error' })
+                  : res.redirect("/admin?tab=menu&openMods=1");
               }
+              if (wantsJSON) return res.json({ success: true, id: Number(id) });
               return res.redirect(
                 "/admin?tab=menu&msg=Modifier+saved&openMods=1",
               );
@@ -323,10 +369,14 @@ module.exports = (db) => {
           db.query(
             "INSERT INTO modifiers (name, price, group_id, ingredient_id) VALUES (?, ?, ?, ?)",
             params,
-            (err2) => {
+            (err2, result) => {
               if (err2) {
                 logger.error(err2);
+                return wantsJSON
+                  ? res.status(500).json({ error: 'Server Error' })
+                  : res.redirect("/admin?tab=menu&openMods=1");
               }
+              if (wantsJSON) return res.json({ success: true, id: result.insertId });
               return res.redirect(
                 "/admin?tab=menu&msg=Modifier+saved&openMods=1",
               );
@@ -335,6 +385,55 @@ module.exports = (db) => {
         }
       },
     );
+  });
+
+  // Update modifier (JSON)
+  router.put('/admin/modifiers/:id', async (req, res) => {
+    try {
+      const role = req.session?.user?.role;
+      if (!role || !accessControl.roleHasAccess(role, 'menu')) {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
+      const id = parseInt(req.params.id, 10);
+      if (!id) return res.status(400).json({ error: 'Invalid id' });
+      const fields = [];
+      const vals = [];
+      if (req.body.name != null) { fields.push('name=?'); vals.push(String(req.body.name).trim()); }
+      if (req.body.price != null && !Number.isNaN(parseFloat(req.body.price))) { fields.push('price=?'); vals.push(parseFloat(req.body.price)); }
+      if (req.body.group_id !== undefined) { fields.push('group_id=?'); vals.push(req.body.group_id || null); }
+      if (req.body.ingredient_id !== undefined) {
+        const ingredientId = req.body.ingredient_id ? parseInt(req.body.ingredient_id, 10) : null;
+        if (ingredientId) {
+          const [rows] = await db.promise().query('SELECT id FROM ingredients WHERE id=?', [ingredientId]);
+          if (!rows.length) return res.status(400).json({ error: 'Invalid ingredient' });
+        }
+        fields.push('ingredient_id=?'); vals.push(ingredientId);
+      }
+      if (!fields.length) return res.status(400).json({ error: 'No changes' });
+      vals.push(id);
+      await db.promise().query(`UPDATE modifiers SET ${fields.join(', ')} WHERE id=?`, vals);
+      res.json({ success: true });
+    } catch (err) {
+      logger.error('Error updating modifier:', err);
+      res.status(500).json({ error: 'Server Error' });
+    }
+  });
+
+  // Delete modifier (JSON)
+  router.delete('/admin/modifiers/:id', async (req, res) => {
+    try {
+      const role = req.session?.user?.role;
+      if (!role || !accessControl.roleHasAccess(role, 'menu')) {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
+      const id = parseInt(req.params.id, 10);
+      if (!id) return res.status(400).json({ error: 'Invalid id' });
+      await db.promise().query('DELETE FROM modifiers WHERE id=?', [id]);
+      res.json({ success: true });
+    } catch (err) {
+      logger.error('Error deleting modifier:', err);
+      res.status(500).json({ error: 'Server Error' });
+    }
   });
 
   router.post("/admin/modifiers/delete", (req, res) => {
@@ -392,4 +491,3 @@ module.exports = (db) => {
 
   return router;
 };
-

@@ -1,0 +1,14 @@
+{
+  "screens": [
+    {
+      "id": "kds-expo",
+      "blocks": [
+        { "type": "Header", "props": { "text": "Expo" } },
+        { "type": "Grid", "blocks": [
+          { "type": "TicketList", "props": { "density": "comfortable", "layout": "grid" } }
+        ]}
+      ]
+    }
+  ]
+}
+

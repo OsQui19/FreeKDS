@@ -9,6 +9,7 @@ const helmetMiddleware = require('../src/middleware/helmet');
 const rateLimitMiddleware = require('../src/middleware/rateLimit');
 const sessionMiddleware = require('../src/middleware/session');
 const authMiddleware = require('./middleware/auth');
+const apiTokenAuth = require('./middleware/apiTokenAuth');
 const registerRoutes = require('./routes');
 
 function createApp(db, transports) {
@@ -25,6 +26,7 @@ function createApp(db, transports) {
     next();
   });
   app.use(express.static(path.join(__dirname, '../dist')));
+  app.use(apiTokenAuth(db, logger));
   app.use(authMiddleware(db));
   app.use((req, res, next) => {
     res.locals.settings = settingsCache.getSettings();

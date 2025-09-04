@@ -1,0 +1,142 @@
+:root {
+  /* Resolve runtime tokens to app CSS vars with sensible fallbacks */
+  --color-surface: var(--token-color-surface, #f8f9fa);
+  --color-text: var(--token-color-text, #212529);
+  --color-accent: var(--token-color-accent, #0d6efd);
+  --color-primary: var(--color-accent);
+  --color-bg: var(--token-color-background, #ffffff);
+  --radius-card: var(--token-radius-card, .5rem);
+  --radius-button: var(--token-radius-button, .25rem);
+  --radius-field: var(--token-radius-field, .25rem);
+  --shadow-sm: var(--token-shadow-sm, 0 1px 2px rgba(0,0,0,.05));
+  --shadow-md: var(--token-shadow-md, 0 4px 6px rgba(0,0,0,.1));
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+.admin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid rgba(0,0,0,.075);
+  margin-bottom: 1rem;
+}
+
+.admin-panel-tab.btn {
+  border-radius: 999px;
+  padding: .25rem .75rem;
+}
+
+.admin-panel-tab[aria-selected="true"] {
+  background-color: var(--color-accent);
+  color: #fff;
+  border-color: var(--color-accent);
+}
+
+.admin-section {
+  background-color: var(--color-surface);
+  border: 1px solid rgba(0,0,0,.05);
+  border-radius: var(--radius-card);
+  padding: 1rem;
+}
+
+/* Touch-friendly buttons */
+.btn-touch {
+  padding: .75rem 1rem;
+  font-size: 1rem;
+}
+
+/* Sticky header/nav helpers */
+.sticky-top-sm {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--color-surface);
+}
+
+/* Category nav pills for FOH */
+.category-nav {
+  display: flex;
+  gap: .5rem;
+  overflow-x: auto;
+  padding-bottom: .25rem;
+}
+.category-chip {
+  border: 1px solid rgba(0,0,0,.1);
+  border-radius: 999px;
+  padding: .25rem .75rem;
+  background: #fff;
+  white-space: nowrap;
+}
+
+/* FOH item grid responsive */
+.item-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: .75rem;
+}
+.item-card {
+  background: #fff;
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: var(--radius-card);
+  padding: .5rem;
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+}
+.item-card img { width: 100%; height: 100px; object-fit: cover; border-radius: .25rem; }
+.item-name { font-weight: 600; }
+.item-price { color: #666; font-size: .9rem; }
+
+/* KDS density toggle */
+.kds-compact .ticket { --ticket-padding: .25rem; }
+
+/* Admin responsive sidebar */
+.admin-sidebar-toggle { display: none; }
+@media (max-width: 768px) {
+  .admin-sidebar-toggle { display: inline-block; }
+}
+
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.card-surface {
+  background-color: #fff;
+  border: 1px solid rgba(0,0,0,.05);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-sm);
+}
+
+.card-surface .card-header {
+  background: transparent;
+  border-bottom: 1px solid rgba(0,0,0,.05);
+}
+
+.u-center-screen {
+  min-height: calc(100vh - 56px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* KDS urgent visual hint */
+.ticket-wrap.is-urgent {
+  border-left: 4px solid var(--color-accent);
+  padding-left: .5rem;
+}
+
+/* Ticket timer states */
+.ticket .elapsed { font-weight: 600; }
+.ticket.warn .elapsed { color: var(--token-state-warn, #ffc107); }
+.ticket.critical .elapsed { color: var(--token-state-critical, #dc3545); }

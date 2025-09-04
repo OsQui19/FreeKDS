@@ -1,9 +1,11 @@
 import MenuPanel from './MenuPanel.jsx';
 import StationsPanel from './StationsPanel.jsx';
+import InventoryPanel from './InventoryPanel.jsx';
 
 export const corePanels = {
   menu: MenuPanel,
   stations: StationsPanel,
+  inventory: InventoryPanel,
 };
 
 export default corePanels;

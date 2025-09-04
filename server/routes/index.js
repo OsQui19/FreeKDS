@@ -7,6 +7,12 @@ module.exports = function registerRoutes(db, transports) {
   router.use('/api', require('./stations')(db));
   router.use('/api', require('./api/layout')(db));
   router.use('/api', require('./api/tokens'));
+  router.use('/api', require('./api/plugins'));
+  router.use('/api', require('./api/modules'));
+  router.use('/api', require('./api/presets')(db));
+  router.use('/api', require('./api/devices')(db));
+  router.use('/api', require('./api/payments')(db, transports));
+  router.use('/api', require('./api/apiTokens')(db));
   router.use('/api', require('./api/log'));
   router.use('/api', require('./api/flags')());
   router.use(require('./api')(db, transports));

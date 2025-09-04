@@ -6,6 +6,7 @@ import React, {
   useState,
 } from "react";
 import { Link, Route } from "react-router-dom";
+import LayoutWrap from "@/layouts/LayoutWrap.jsx";
 import loadPlugins from "./index.js";
 import { on } from "./lifecycle.js";
 
@@ -82,7 +83,15 @@ export function PluginRoutes() {
         p.meta.route
     )
     .map(({ Component, meta }) => (
-      <Route key={meta.id} path={meta.route} element={<Component />} />
+      <Route
+        key={meta.id}
+        path={meta.route}
+        element={
+          <LayoutWrap>
+            <Component />
+          </LayoutWrap>
+        }
+      />
     ));
 }
 
@@ -117,4 +126,3 @@ export function PluginZone({ zone }) {
     </>
   );
 }
-

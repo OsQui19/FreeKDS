@@ -1,0 +1,13 @@
+{
+  "screens": [
+    {
+      "id": "kds-prep",
+      "blocks": [
+        { "type": "Grid", "blocks": [
+          { "type": "TicketList", "props": { "density": "comfortable", "layout": "grid" } }
+        ]}
+      ]
+    }
+  ]
+}
+

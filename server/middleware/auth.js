@@ -50,6 +50,9 @@ module.exports = function authMiddleware(db) {
       return next();
     }
     logSecurityEvent(db, 'unauthorized', null, req.path, false, req.ip);
+    if (req.path.startsWith('/api')) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
     return res.redirect('/login');
   };
 };

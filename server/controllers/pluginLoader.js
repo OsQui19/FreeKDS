@@ -18,7 +18,7 @@ function loadPluginManifests() {
     try {
       const data = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
       if (validate(data)) {
-        manifests.push(data);
+        manifests.push({ ...data, dir: entry.name });
       } else {
         logger.error(`Invalid plugin manifest ${manifestPath}`, validate.errors);
       }

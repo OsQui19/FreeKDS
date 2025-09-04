@@ -22,8 +22,9 @@ export default class AppErrorBoundary extends React.Component {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: error.toString(),
-          stack: errorInfo?.componentStack,
+          message: error?.message || error?.toString() || 'App crash',
+          stack: error?.stack || errorInfo?.componentStack,
+          componentStack: errorInfo?.componentStack,
         }),
       });
     } catch (loggingError) {

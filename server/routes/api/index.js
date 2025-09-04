@@ -565,6 +565,23 @@ module.exports = (db, transports) => {
     }
   });
 
+  // Create a time-clock record
+  router.post("/api/time-clock", async (req, res, next) => {
+    try {
+      const employeeId = parseInt(req.body.employee_id, 10);
+      const clockIn = req.body.clock_in ? new Date(req.body.clock_in) : null;
+      const clockOut = req.body.clock_out ? new Date(req.body.clock_out) : null;
+      if (!employeeId || !clockIn || Number.isNaN(clockIn)) return res.status(400).send("Invalid data");
+      await db
+        .promise()
+        .query("INSERT INTO time_clock (employee_id, clock_in, clock_out) VALUES (?, ?, ?)", [employeeId, clockIn, clockOut]);
+      res.json({ success: true });
+    } catch (err) {
+      logger.error("Error creating time clock:", err);
+      next(err);
+    }
+  });
+
   router.put("/api/time-clock/:id", async (req, res, next) => {
     const id = parseInt(req.params.id, 10);
     if (!id) return res.status(400).send("Invalid id");
@@ -600,20 +617,98 @@ module.exports = (db, transports) => {
     }
   });
 
+  router.delete("/api/time-clock/:id", async (req, res, next) => {
+    const id = parseInt(req.params.id, 10);
+    if (!id) return res.status(400).send("Invalid id");
+    try {
+      await db.promise().query("DELETE FROM time_clock WHERE id=?", [id]);
+      res.json({ success: true });
+    } catch (err) {
+      logger.error("Error deleting time clock:", err);
+      next(err);
+    }
+  });
+
   router.get("/api/payroll", async (req, res, next) => {
     try {
-      const [rows] = await db.promise().query(
-        `SELECT e.username AS name,
-                  DATE_SUB(DATE(tc.clock_in), INTERVAL (DAYOFWEEK(tc.clock_in)+5)%7 DAY) AS period_start,
-                  SUM(TIMESTAMPDIFF(MINUTE, tc.clock_in, COALESCE(tc.clock_out, NOW())))/60 AS hours
-           FROM time_clock tc
-           JOIN employees e ON tc.employee_id=e.id
-           GROUP BY e.id, period_start
-           ORDER BY e.username, period_start`,
-      );
-      res.json({ payroll: rows });
+      const period = req.query.period_start || null;
+      const params = [];
+      const where = [];
+      if (period) {
+        where.push(`DATE_SUB(DATE(tc.clock_in), INTERVAL (DAYOFWEEK(tc.clock_in)+5)%7 DAY) = ?`);
+        params.push(period);
+      }
+      const sql = `SELECT e.id AS employee_id, e.username AS name,
+                          DATE_SUB(DATE(tc.clock_in), INTERVAL (DAYOFWEEK(tc.clock_in)+5)%7 DAY) AS period_start,
+                          SUM(TIMESTAMPDIFF(MINUTE, tc.clock_in, COALESCE(tc.clock_out, NOW())))/60 AS hours
+                   FROM time_clock tc
+                   JOIN employees e ON tc.employee_id=e.id
+                   ${where.length ? 'WHERE ' + where.join(' AND ') : ''}
+                   GROUP BY e.id, period_start
+                   ORDER BY period_start DESC, e.username`;
+      const [rows] = await db.promise().query(sql, params);
+      const selectedPeriod = period || (rows[0]?.period_start || null);
+      // Adjustments for selected period
+      let adjustments = [];
+      if (selectedPeriod) {
+        const [adj] = await db
+          .promise()
+          .query('SELECT * FROM payroll_adjustments WHERE period_start=?', [selectedPeriod]);
+        adjustments = adj;
+      }
+      res.json({ payroll: rows, adjustments, period_start: selectedPeriod });
     } catch (err) {
       logger.error("Error fetching payroll data:", err);
+      next(err);
+    }
+  });
+
+  router.get('/api/payroll/periods', async (req, res, next) => {
+    try {
+      const [rows] = await db
+        .promise()
+        .query(
+          `SELECT DISTINCT DATE_SUB(DATE(clock_in), INTERVAL (DAYOFWEEK(clock_in)+5)%7 DAY) AS period_start
+             FROM time_clock
+            ORDER BY period_start DESC`
+        );
+      res.json({ periods: rows.map((r) => r.period_start) });
+    } catch (err) {
+      logger.error('Error fetching payroll periods:', err);
+      next(err);
+    }
+  });
+
+  router.post('/api/payroll/adjustment', async (req, res, next) => {
+    try {
+      const employeeId = parseInt(req.body.employee_id, 10);
+      const periodStart = req.body.period_start;
+      const hoursAdj = req.body.hours_adjustment != null ? parseFloat(req.body.hours_adjustment) : 0;
+      const note = req.body.note || null;
+      if (!employeeId || !periodStart) return res.status(400).send('Invalid data');
+      await db
+        .promise()
+        .query(
+          `INSERT INTO payroll_adjustments (employee_id, period_start, hours_adjustment, note)
+           VALUES (?, ?, ?, ?)
+           ON DUPLICATE KEY UPDATE hours_adjustment=VALUES(hours_adjustment), note=VALUES(note)`,
+          [employeeId, periodStart, hoursAdj, note]
+        );
+      res.json({ success: true });
+    } catch (err) {
+      logger.error('Error saving payroll adjustment:', err);
+      next(err);
+    }
+  });
+
+  router.delete('/api/payroll/adjustment/:id', async (req, res, next) => {
+    try {
+      const id = parseInt(req.params.id, 10);
+      if (!id) return res.status(400).send('Invalid id');
+      await db.promise().query('DELETE FROM payroll_adjustments WHERE id=?', [id]);
+      res.json({ success: true });
+    } catch (err) {
+      logger.error('Error deleting payroll adjustment:', err);
       next(err);
     }
   });

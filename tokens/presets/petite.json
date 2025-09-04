@@ -1,0 +1,36 @@
+{
+  "$schema": "https://beta.openui.org/schemas/design-tokens.json",
+  "meta": {
+    "name": "Petite Default",
+    "description": "Soft radius, subtle shadows, airy spacing, friendly accent"
+  },
+  "color": {
+    "accent": { "type": "color", "value": "#5b8def" },
+    "surface": { "type": "color", "value": "#fbfbfc" },
+    "background": { "type": "color", "value": "#ffffff" },
+    "text": { "type": "color", "value": "#1f2937" }
+  },
+  "radius": {
+    "card": { "type": "dimension", "value": "0.75rem" },
+    "button": { "type": "dimension", "value": "0.5rem" },
+    "field": { "type": "dimension", "value": "0.5rem" }
+  },
+  "shadow": {
+    "sm": { "type": "shadow", "value": "0 1px 1.5px rgba(0,0,0,0.05)" },
+    "md": { "type": "shadow", "value": "0 6px 10px rgba(0,0,0,0.08)" }
+  },
+  "space": {
+    "xs": { "type": "dimension", "value": ".375rem" },
+    "sm": { "type": "dimension", "value": ".75rem" },
+    "md": { "type": "dimension", "value": "1.25rem" },
+    "lg": { "type": "dimension", "value": "2.5rem" }
+  },
+  "font": {
+    "size": {
+      "sm": { "type": "fontSize", "value": ".9rem" },
+      "md": { "type": "fontSize", "value": "1rem" },
+      "lg": { "type": "fontSize", "value": "1.2rem" }
+    }
+  }
+}
+

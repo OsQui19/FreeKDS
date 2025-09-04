@@ -62,3 +62,4 @@ AllDayAggregate.craft = { displayName: 'AllDayAggregate' };
 
 export const AllDayFilter = ({ children }) => <Block>{children}</Block>;
 AllDayFilter.craft = { displayName: 'AllDayFilter' };
+

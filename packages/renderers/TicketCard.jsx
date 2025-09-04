@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Ajv from 'ajv';
+import Ajv2020 from 'ajv/dist/2020';
 import schema from './schemas/TicketCard.schema.json';
 import { getToken } from '../../src/utils/tokens.js';
 import ModifierList from './ModifierList.jsx';
@@ -16,8 +16,20 @@ function requireToken(path) {
   return value;
 }
 
-const ajv = new Ajv();
-const validate = ajv.compile(schema);
+let validate;
+let compileErr = null;
+function validateData(data) {
+  if (!validate && !compileErr) {
+    try {
+      const ajv = new Ajv2020({ allowUnionTypes: true, strict: false });
+      validate = ajv.compile(schema);
+    } catch (e) {
+      compileErr = e; // CSP or other compile issue; skip runtime validation
+      return true;
+    }
+  }
+  return validate ? validate(data) : true;
+}
 
 /**
  * Display an individual kitchen ticket with items and modifiers.
@@ -48,7 +60,7 @@ function TicketCard({
     throw new Error('style prop is not supported');
   }
   if (
-    !validate({
+    !validateData({
       orderId,
       orderNumber,
       orderType,
@@ -60,7 +72,7 @@ function TicketCard({
       expeditor,
     })
   ) {
-    throw new Error(ajv.errorsText(validate.errors));
+    throw new Error('Invalid TicketCard props');
   }
 
   const surface = requireToken('color.surface');
@@ -68,10 +80,32 @@ function TicketCard({
   const padding = requireToken('space.sm');
   const date = new Date(createdTs * 1000);
   const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric' });
+  const [elapsed, setElapsed] = React.useState('00:00');
+  const [ageClass, setAgeClass] = React.useState('');
+
+  React.useEffect(() => {
+    function update() {
+      const now = Date.now();
+      const sec = Math.max(0, Math.floor((now - date.getTime()) / 1000));
+      const mm = String(Math.floor(sec / 60)).padStart(2, '0');
+      const ss = String(sec % 60).padStart(2, '0');
+      setElapsed(`${mm}:${ss}`);
+      // Basic thresholds (7m warn, 12m critical)
+      if (sec >= 12 * 60) setAgeClass('critical');
+      else if (sec >= 7 * 60) setAgeClass('warn');
+      else setAgeClass('');
+    }
+    update();
+    const t = setInterval(update, 1000);
+    return () => clearInterval(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [createdTs]);
   return (
     <div
       className={`ticket ${orderType ? orderType.replace(/\s+/g, '-').toLowerCase() : ''} ${
         expeditor ? 'expeditor' : ''
+      } ${
+        ageClass
       }`}
       data-order-id={orderId}
       data-created-ts={createdTs}
@@ -88,7 +122,7 @@ function TicketCard({
         <span className="order-num">{orderNumber}</span>
         {allergy && <span className="allergy-label">ALLERGY</span>}
         <span className="order-time">{timeStr}</span>
-        <span className="elapsed">00:00</span>
+        <span className="elapsed">{elapsed}</span>
       </div>
       {specialInstructions && (
         <div className={`ticket-instructions${allergy ? ' allergy' : ''}`}>{specialInstructions}</div>

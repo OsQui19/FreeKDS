@@ -207,5 +207,84 @@ module.exports = function (io, db, transports = {}) {
         logger.error("Error fetching stations for urgent:", err);
       }
     });
+
+    socket.on("holdOrder", async ({ orderId }) => {
+      if (!orderId) return;
+      try {
+        await query(db, 'UPDATE orders SET status="held" WHERE id=?', [orderId]);
+        io.to(`station-${socket.stationId}`).emit('orderHeld', { orderId });
+        if (socket.stationType !== 'expo') io.to('expo').emit('orderHeld', { orderId });
+        if (sse) {
+          sse.emitToStation(socket.stationId, 'orderHeld', { orderId });
+          sse.emitToExpo('orderHeld', { orderId });
+        }
+      } catch (err) {
+        logger.error('Error holding order:', err);
+      }
+    });
+
+    socket.on("releaseOrder", async ({ orderId }) => {
+      if (!orderId) return;
+      try {
+        await query(db, 'UPDATE orders SET status="active" WHERE id=?', [orderId]);
+        // Re-broadcast as added to stations owning items in the order
+        const fetchSql = `SELECT o.order_number, o.order_type, o.special_instructions, o.allergy, UNIX_TIMESTAMP(o.created_at) AS ts,
+                             oi.quantity, mi.name, mi.station_id, mi.id AS item_id,
+                             oi.special_instructions AS item_instructions, oi.allergy AS item_allergy,
+                             GROUP_CONCAT(m.name ORDER BY m.name SEPARATOR ', ') AS modifiers
+                      FROM orders o
+                      JOIN order_items oi ON o.id = oi.order_id
+                      JOIN menu_items mi ON oi.menu_item_id = mi.id
+                      LEFT JOIN order_item_modifiers oim ON oi.id = oim.order_item_id
+                      LEFT JOIN modifiers m ON oim.modifier_id = m.id
+                      WHERE o.id=?
+                      GROUP BY oi.id
+                      ORDER BY oi.id`;
+        const [rows] = await query(db, fetchSql, [orderId]);
+        if (!rows.length) return;
+        const stationMap = {};
+        rows.forEach((r) => {
+          if (!stationMap[r.station_id]) stationMap[r.station_id] = [];
+          stationMap[r.station_id].push({
+            quantity: r.quantity,
+            name: r.name,
+            stationId: r.station_id,
+            itemId: r.item_id,
+            modifiers: r.modifiers ? r.modifiers.split(', ') : [],
+            specialInstructions: r.item_instructions || '',
+            allergy: !!r.item_allergy,
+          });
+        });
+        const orderNumber = rows[0].order_number || orderId;
+        const orderType = rows[0].order_type || '';
+        const specialInstructions = rows[0].special_instructions || '';
+        const allergy = !!rows[0].allergy;
+        const createdTs = rows[0].ts;
+        Object.keys(stationMap).forEach((id) => {
+          io.to(`station-${id}`).emit('orderAdded', {
+            orderId,
+            orderNumber,
+            orderType,
+            specialInstructions,
+            allergy,
+            createdTs,
+            items: stationMap[id],
+          });
+          sse && sse.emitToStation(id, 'orderAdded', {
+            orderId,
+            orderNumber,
+            orderType,
+            specialInstructions,
+            allergy,
+            createdTs,
+            items: stationMap[id],
+          });
+        });
+        io.to('expo').emit('orderReleased', { orderId });
+        sse && sse.emitToExpo('orderReleased', { orderId });
+      } catch (err) {
+        logger.error('Error releasing order:', err);
+      }
+    });
   });
 };

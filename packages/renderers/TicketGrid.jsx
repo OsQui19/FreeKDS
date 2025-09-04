@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Ajv from 'ajv';
+import Ajv2020 from 'ajv/dist/2020';
 import gridSchema from './schemas/TicketGrid.schema.json';
 import ticketSchema from './schemas/TicketCard.schema.json';
 import { getToken } from '../../src/utils/tokens.js';
@@ -17,8 +17,20 @@ function requireToken(path) {
   return value;
 }
 
-const ajv = new Ajv({ schemas: [ticketSchema] });
-const validate = ajv.compile(gridSchema);
+let validate;
+let compileErr = null;
+function validateData(data) {
+  if (!validate && !compileErr) {
+    try {
+      const ajv = new Ajv2020({ allowUnionTypes: true, strict: false, schemas: [ticketSchema] });
+      validate = ajv.compile(gridSchema);
+    } catch (e) {
+      compileErr = e; // CSP or other compile issue; skip runtime validation
+      return true;
+    }
+  }
+  return validate ? validate(data) : true;
+}
 
 /**
  * Arrange tickets in a responsive grid for the kitchen display.
@@ -47,8 +59,8 @@ function TicketGrid({
   if (style !== undefined) {
     throw new Error('style prop is not supported');
   }
-  if (!validate({ tickets, stationType, density, layout })) {
-    throw new Error(ajv.errorsText(validate.errors));
+  if (!validateData({ tickets, stationType, density, layout })) {
+    throw new Error('Invalid TicketGrid props');
   }
 
   const gap = requireToken('space.md');

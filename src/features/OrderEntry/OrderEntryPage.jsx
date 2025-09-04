@@ -5,8 +5,11 @@ export default function OrderEntryPage() {
   const [modGroups, setModGroups] = useState([]);
   const [table, setTable] = useState(null);
   const [orderType, setOrderType] = useState('DINE-IN');
+  const [stations, setStations] = useState([]);
+  const [stationId, setStationId] = useState('');
   const [cart, setCart] = useState([]);
   const [message, setMessage] = useState(null);
+  const [query, setQuery] = useState('');
 
   // modal state
   const [currentItem, setCurrentItem] = useState(null);
@@ -16,7 +19,13 @@ export default function OrderEntryPage() {
   const [allergyDetails, setAllergyDetails] = useState('');
 
   useEffect(() => {
-    fetch('/order')
+    // Load stations for filter
+    fetch('/stations').then(r=>r.json()).then((json)=> setStations(json.stations || [])).catch(()=>{});
+  }, []);
+
+  const loadMenu = React.useCallback((sid) => {
+    const qs = sid ? `?stationId=${sid}` : '';
+    fetch(`/order${qs}`)
       .then((res) => res.json())
       .then((data) => {
         setCategories(data.categories || []);
@@ -25,6 +34,8 @@ export default function OrderEntryPage() {
       })
       .catch(() => {});
   }, []);
+
+  useEffect(() => { loadMenu(stationId); }, [loadMenu, stationId]);
 
   const itemMap = useMemo(() => {
     const map = {};
@@ -35,6 +46,14 @@ export default function OrderEntryPage() {
     });
     return map;
   }, [categories]);
+
+  const filteredCategories = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return categories;
+    return categories
+      .map((c) => ({ ...c, items: (c.items || []).filter((it) => it.name.toLowerCase().includes(q)) }))
+      .filter((c) => c.items && c.items.length);
+  }, [categories, query]);
 
   const total = useMemo(
     () => cart.reduce((sum, c) => sum + c.quantity * (c.price || 0), 0),
@@ -135,12 +154,23 @@ export default function OrderEntryPage() {
 
   return (
     <div className={`menu-layout-grid`}>
-      <header className="menu-header">
+      <header className="menu-header sticky-top-sm">
         <div className="d-flex flex-column">
           <span className="brand-name fw-bold"></span>
           <h1 className="menu-title m-0">Menu</h1>
         </div>
         <div className="header-controls">
+          <div className="mt-1 me-3">
+            <label className="fw-bold me-2">Search:</label>
+            <input className="form-control d-inline-block w-auto" placeholder="Find items…" value={query} onChange={(e)=>setQuery(e.target.value)} />
+          </div>
+          <div className="mt-1 me-3">
+            <label className="fw-bold me-2">Station:</label>
+            <select className="form-select d-inline-block w-auto" value={stationId} onChange={(e)=>setStationId(e.target.value)}>
+              <option value="">All</option>
+              {stations.map((s)=> <option key={s.id} value={s.id}>{s.name}</option>)}
+            </select>
+          </div>
           <div className="mt-1 order-type-select">
             <label htmlFor="orderType" className="fw-bold me-2">
               Order Type:
@@ -157,16 +187,16 @@ export default function OrderEntryPage() {
             </select>
           </div>
         </div>
-        <nav id="categoryNav">
+        <nav id="categoryNav" className="category-nav mt-2">
           {categories.map((cat) => (
-            <a key={cat.id} href={`#cat-${cat.id}`}>
+            <a key={cat.id} className="category-chip" href={`#cat-${cat.id}`}>
               {cat.name}
             </a>
           ))}
         </nav>
       </header>
       <main id="menu" className="menu-content container py-3">
-        {categories.map((cat) => (
+        {filteredCategories.map((cat) => (
           <div className="category" id={`cat-${cat.id}`} key={cat.id}>
             <h2>{cat.name}</h2>
             <div className="item-grid">
@@ -181,7 +211,7 @@ export default function OrderEntryPage() {
                     ${Number(item.price).toFixed(2)}
                   </span>
                   <button
-                    className="btn btn-primary"
+                    className="btn btn-primary btn-touch"
                     onClick={() => openItem(item.id)}
                   >
                     <i className="bi bi-plus-lg"></i>
@@ -191,6 +221,9 @@ export default function OrderEntryPage() {
             </div>
           </div>
         ))}
+        {filteredCategories.length === 0 && (
+          <div className="text-muted">No items match your search.</div>
+        )}
       </main>
       <div className="cart" id="cart">
         <h3>Your Order</h3>
