@@ -18,6 +18,11 @@ const publicPaths = [
   '/api/login',
   '/api/tokens',
   '/api/log',
+  // Public read endpoints for menu/KDS/order flows
+  '/api/order',
+  '/api/stations',
+  '/api/station',
+  '/api/wiki',
 ];
 
 // Requests for static assets should be allowed through without requiring
@@ -33,6 +38,8 @@ const publicAssetPrefixes = [
   '/hierarchy',
   '/adminMenu',
   '/kds',
+  '/socket.io/',
+  '/sse',
 ];
 
 module.exports = function authMiddleware(db) {

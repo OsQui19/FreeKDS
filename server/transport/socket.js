@@ -1,20 +1,17 @@
 const { Server } = require('socket.io');
 const setupSocketHandlers = require('../controllers/socketHandlers');
 
-const ALLOWED_ORIGINS = ['http://localhost:3000'];
+const ALLOWED_ORIGINS = ['*'];
 const VALID_TOKEN = process.env.REALTIME_TOKEN || 'devtoken';
 
 function initSocket(server, db, transports) {
   const io = new Server(server, {
-    cors: { origin: ALLOWED_ORIGINS },
+    cors: { origin: (origin, cb) => cb(null, true), credentials: false },
   });
 
   io.use((socket, next) => {
     const { token } = socket.handshake.query;
-    const origin = socket.handshake.headers.origin;
-    if (token !== VALID_TOKEN || !ALLOWED_ORIGINS.includes(origin)) {
-      return next(new Error('Unauthorized'));
-    }
+    if (token !== VALID_TOKEN) return next(new Error('Unauthorized'));
     next();
   });
 

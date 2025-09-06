@@ -1,4 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useToast } from '@/contexts/ToastContext.jsx';
+import { formatCurrency, formatNumber } from '@/utils/format.js';
 
 function useAdminData() {
   const [data, setData] = useState(null);
@@ -24,6 +26,7 @@ function useAdminData() {
 
 export default function InventoryRoute() {
   const { data, loading, error, reload } = useAdminData();
+  const { push } = useToast();
   const [form, setForm] = useState({});
   const [saving, setSaving] = useState(false);
 
@@ -46,10 +49,17 @@ export default function InventoryRoute() {
     setSaving(true);
     try {
       const body = new URLSearchParams();
-      Object.entries(form).forEach(([k, v]) => {
-        if (v !== undefined && v !== null) body.append(k, String(v));
-      });
-      await fetch('/api/admin/ingredients', {
+      const required = { name: (form.name||'').trim() };
+      if (!required.name) throw new Error('Name is required');
+      body.append('name', required.name);
+      if (form.quantity !== undefined && form.quantity !== '') body.append('quantity', String(form.quantity));
+      if (form.unit_id) body.append('unit_id', String(form.unit_id));
+      if (form.category_id) body.append('category_id', String(form.category_id));
+      if (form.sku) body.append('sku', String(form.sku));
+      if (form.cost !== undefined && form.cost !== '') body.append('cost', String(form.cost));
+      if (Array.isArray(form.tag_ids)) form.tag_ids.forEach((id)=> body.append('tag_ids', String(id)));
+      if (form.is_public != null) body.append('is_public', form.is_public ? '1' : '0');
+      const res = await fetch('/api/admin/ingredients', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body,
@@ -57,6 +67,7 @@ export default function InventoryRoute() {
       });
       setForm({});
       await reload();
+      push(res.ok ? (form.id ? 'Ingredient updated' : 'Ingredient added') : 'Failed to save ingredient', { variant: res.ok ? 'success' : 'danger' });
     } catch {
       // ignore
     } finally {
@@ -94,7 +105,8 @@ export default function InventoryRoute() {
         <h5 className="mb-3">Add / Edit Ingredient</h5>
         <form className="row g-2" onSubmit={saveIngredient}>
           <div className="col-md-3">
-            <input className="form-control" placeholder="Name" value={form.name||''} onChange={(e)=>setField('name', e.target.value)} required />
+            <input className={`form-control ${(form.name!==undefined && !String(form.name).trim()) ? 'is-invalid' : ''}`} placeholder="Name" value={form.name||''} onChange={(e)=>setField('name', e.target.value)} required />
+            {(form.name!==undefined && !String(form.name).trim()) && <div className="invalid-feedback">Name is required</div>}
           </div>
           <div className="col-md-2">
             <input className="form-control" placeholder="Quantity" type="number" step="any" value={form.quantity||''} onChange={(e)=>setField('quantity', e.target.value)} />
@@ -116,6 +128,7 @@ export default function InventoryRoute() {
           </div>
           <div className="col-md-2">
             <input className="form-control" placeholder="Total Cost" type="number" step="any" value={form.cost||''} onChange={(e)=>setField('cost', e.target.value)} />
+            <div className="form-text">Total cost for the entered quantity</div>
           </div>
           <div className="col-md-3">
             <select multiple className="form-select" value={form.tag_ids||[]} onChange={(e)=>setField('tag_ids', Array.from(e.target.selectedOptions).map(o=>o.value))}>
@@ -151,10 +164,10 @@ export default function InventoryRoute() {
               {(data.ingredients||[]).map(ing => (
                 <tr key={ing.id}>
                   <td>{ing.name}</td>
-                  <td>{ing.quantity}</td>
+                  <td>{formatNumber(ing.quantity, 2)}</td>
                   <td>{ing.unit}</td>
                   <td>{ing.sku||'-'}</td>
-                  <td>{ing.cost??'-'}</td>
+                  <td>{ing.cost!=null ? formatCurrency(ing.cost) : '-'}</td>
                 </tr>
               ))}
             </tbody>

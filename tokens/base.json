@@ -217,4 +217,34 @@
       "description": "Focus ring"
     }
   }
+  ,
+  "kds": {
+    "showSidebar": {
+      "type": "number",
+      "value": 0,
+      "description": "Default: show KDS sidebar (1) or hide (0)"
+    },
+    "selectBorder": {
+      "type": "color",
+      "value": "{color.accent}",
+      "description": "Selected ticket border color"
+    },
+    "readyDecoration": {
+      "type": "string",
+      "value": "line-through",
+      "description": "Decoration for ready items (line-through or none)"
+    },
+    "readyOpacity": {
+      "type": "number",
+      "value": 0.75,
+      "description": "Opacity for ready items (0–1)"
+    },
+    "expo": {
+      "showChips": {
+        "type": "number",
+        "value": 1,
+        "description": "Show per-station progress chips on Expo (1/0)"
+      }
+    }
+  }
 }

@@ -54,6 +54,35 @@ module.exports = (db) => {
     }
   });
 
+  // locations routes
+  router.post('/admin/locations', async (req, res) => {
+    const { id, name } = req.body || {};
+    if (!name || !String(name).trim()) return res.redirect('/admin?tab=inventory');
+    try {
+      if (id) {
+        await db.promise().query('UPDATE inventory_locations SET name=? WHERE id=?', [String(name).trim(), id]);
+      } else {
+        await db.promise().query('INSERT INTO inventory_locations (name) VALUES (?)', [String(name).trim()]);
+      }
+      res.redirect('/admin?tab=inventory&msg=Location+saved');
+    } catch (err) {
+      logger.error('Error saving location:', err);
+      res.redirect('/admin?tab=inventory');
+    }
+  });
+
+  router.post('/admin/locations/delete', async (req, res) => {
+    const { id } = req.body || {};
+    if (!id) return res.redirect('/admin?tab=inventory');
+    try {
+      await db.promise().query('DELETE FROM inventory_locations WHERE id=?', [id]);
+      res.redirect('/admin?tab=inventory&msg=Location+deleted');
+    } catch (err) {
+      logger.error('Error deleting location:', err);
+      res.redirect('/admin?tab=inventory');
+    }
+  });
+
   // purchase order routes
   router.post("/admin/purchase-orders", async (req, res) => {
     const { order_date, supplier_id, location_id } = req.body;

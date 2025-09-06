@@ -1,0 +1,12 @@
+CREATE TABLE IF NOT EXISTS device_pair_codes (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  code VARCHAR(12) NOT NULL,
+  station_id INT NOT NULL,
+  name VARCHAR(100) DEFAULT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  expires_at TIMESTAMP NULL DEFAULT NULL,
+  used_at TIMESTAMP NULL DEFAULT NULL,
+  UNIQUE KEY uniq_code (code),
+  FOREIGN KEY (station_id) REFERENCES stations(id)
+);
+

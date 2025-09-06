@@ -76,6 +76,8 @@ module.exports = (db) => {
         const orderSql = `SELECT o.id AS order_id, o.order_number, o.order_type,
                             o.special_instructions, o.allergy,
                             UNIX_TIMESTAMP(o.created_at) AS ts,
+                            UNIX_TIMESTAMP(o.ready_at) AS ready_ts,
+                            o.priority,
                             oi.id AS order_item_id, oi.quantity,
                             oi.special_instructions AS item_instructions, oi.allergy AS item_allergy,
                             mi.name, mi.station_id, mi.id AS item_id,
@@ -87,7 +89,7 @@ module.exports = (db) => {
                      LEFT JOIN modifiers m ON oim.modifier_id = m.id
                      WHERE ${conditions.join(" AND ")}
                      GROUP BY oi.id
-                     ORDER BY o.id, oi.id`;
+                     ORDER BY o.priority DESC, o.id, oi.id`;
         db.query(orderSql, orderParams, async (err3, rows) => {
           if (err3) {
             logger.error("Error fetching orders:", err3);
@@ -103,6 +105,8 @@ module.exports = (db) => {
                 special_instructions: row.special_instructions || "",
                 allergy: !!row.allergy,
                 ts: row.ts,
+                ready_ts: row.ready_ts,
+                priority: row.priority || 0,
                 items: [],
               };
             }
@@ -111,6 +115,7 @@ module.exports = (db) => {
               name: row.name,
               stationId: row.station_id,
               itemId: row.item_id,
+              orderItemId: row.order_item_id,
               modifiers: row.modifiers ? row.modifiers.split(", ") : [],
               specialInstructions: row.item_instructions || "",
               allergy: !!row.item_allergy,
@@ -179,7 +184,7 @@ module.exports = (db) => {
       const table = req.query.table || "";
       const filterStationId = req.query.stationId ? parseInt(req.query.stationId, 10) : null;
       const sqlItems =
-        "SELECT id, name, price, image_url, category_id, is_available, stock FROM menu_items ORDER BY category_id, sort_order, id";
+        "SELECT id, name, price, image_url, category_id, station_id, is_available, stock FROM menu_items ORDER BY category_id, sort_order, id";
       const sqlItemMods = "SELECT * FROM item_modifiers";
       const sqlItemGroups = "SELECT * FROM item_modifier_groups";
       const sqlMods = "SELECT id, name, group_id FROM modifiers";
@@ -263,6 +268,7 @@ module.exports = (db) => {
                           modifiers: itemModsMap[it.id] || [],
                           stock: it.stock,
                           is_available: it.is_available,
+                          station_id: it.station_id,
                         });
                       }
                     });

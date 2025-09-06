@@ -182,6 +182,8 @@ async function getMenuData(db) {
       station_name: row.station_name,
       category_id: row.category_id,
       sort_order: row.sort_order,
+      is_available: row.is_available,
+      stock: row.stock,
       group_ids: itemGroupsMap[row.id] || [],
       modifier_ids: itemModsMap[row.id]
         ? itemModsMap[row.id].map((m) => m.modifier_id)

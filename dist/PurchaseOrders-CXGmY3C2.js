@@ -1,5 +1,7 @@
-import { r as reactExports, u as useNavigate, j as jsxRuntimeExports, L as Link } from "./app-z9U9ikwo.js";
+import { u as useToast, a as useConfirm, r as reactExports, b as useNavigate, j as jsxRuntimeExports, f as formatDate, L as Link } from "./app-CEUZD3nV.js";
 function PurchaseOrdersRoute() {
+  const { push } = useToast();
+  const { confirm } = useConfirm();
   const [orders, setOrders] = reactExports.useState([]);
   const [suppliers, setSuppliers] = reactExports.useState([]);
   const [locations, setLocations] = reactExports.useState([]);
@@ -31,14 +33,19 @@ function PurchaseOrdersRoute() {
     body.append("order_date", form.order_date);
     body.append("supplier_id", form.supplier_id);
     if (form.location_id) body.append("location_id", form.location_id);
-    await fetch("/api/admin/purchase-orders", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body, redirect: "follow" });
+    const res = await fetch("/api/admin/purchase-orders", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body, redirect: "follow" });
     await load();
+    if (res.ok) push("Purchase order created");
+    else push("Failed to create purchase order", { variant: "danger" });
   };
   const del = async (id) => {
+    const ok = await confirm("Delete this purchase order?", { title: "Delete purchase order", confirmText: "Delete", variant: "danger" });
+    if (!ok) return;
     const body = new URLSearchParams();
     body.append("id", id);
-    await fetch("/api/admin/purchase-orders/delete", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body });
+    const res = await fetch("/api/admin/purchase-orders/delete", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body });
     await load();
+    push(res.ok ? "Purchase order deleted" : "Failed to delete purchase order", { variant: res.ok ? "success" : "danger" });
   };
   if (loading) return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { children: "Loading…" });
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "admin-section", children: [
@@ -76,7 +83,7 @@ function PurchaseOrdersRoute() {
       ] }) }),
       /* @__PURE__ */ jsxRuntimeExports.jsx("tbody", { children: orders.map((o) => /* @__PURE__ */ jsxRuntimeExports.jsxs("tr", { children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx("td", { children: o.id }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("td", { children: o.order_date?.slice(0, 10) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("td", { children: formatDate(o.order_date) }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("td", { children: o.supplier_name }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("td", { children: o.location_name || "-" }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("td", { children: o.status || "-" }),
@@ -91,4 +98,4 @@ function PurchaseOrdersRoute() {
 export {
   PurchaseOrdersRoute as default
 };
-//# sourceMappingURL=PurchaseOrders-ncSkMyeg.js.map
+//# sourceMappingURL=PurchaseOrders-CXGmY3C2.js.map

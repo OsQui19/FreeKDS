@@ -14,7 +14,11 @@ connect()
     const io = initSocket(server, db, transports);
     const sse = initSSE(app);
     Object.assign(transports, { io, sse });
-    server.on('request', app);
+    // Prevent Express from handling Socket.IO engine requests to avoid double responses
+    server.on('request', (req, res) => {
+      if (req.url && req.url.startsWith('/socket.io/')) return; // handled by socket.io listener
+      app(req, res);
+    });
     return startServer(server, db);
   })
   .catch((err) => {

@@ -40,15 +40,34 @@ function ThemeProviderWithStyled({ children }) {
     try {
       localStorage.setItem('theme', themeName);
     } catch {
-      // Skip write if localStorage is unavailable
+      /* ignore */
     }
-  }, [themeName]);
+    // Apply theme as CSS variable overrides to integrate with token-based styling
+    try {
+      const root = document.documentElement;
+      root.setAttribute('data-theme', themeName);
+      const colors = (themes?.[themeName]?.colors) || {};
+      const bg = colors.background;
+      const text = colors.text;
+      const accent = colors.accent || colors.primary;
+      // Derive a surface if not provided
+      const surface = colors.surface || (themeName === 'dark' ? '#262b3a' : '#f8f9fa');
+      if (bg) root.style.setProperty('--token-color-background', bg);
+      if (text) root.style.setProperty('--token-color-text', text);
+      if (accent) root.style.setProperty('--token-color-accent', accent);
+      if (surface) root.style.setProperty('--token-color-surface', surface);
+      // Allow focus ring to adapt
+      if (accent) root.style.setProperty('--token-focus-color', accent);
+    } catch {
+      /* ignore */
+    }
+  }, [themeName, themes]);
 
   const currentTheme = themes[themeName];
   if (!currentTheme) {
     console.error(`Theme '${themeName}' not found`);
   }
-  const value = { themeName, setThemeName, toggleTheme };
+  const value = { themeName, setThemeName, toggleTheme, theme: currentTheme };
 
   const ProviderComponent = StyledThemeProvider || FallbackThemeProvider;
 

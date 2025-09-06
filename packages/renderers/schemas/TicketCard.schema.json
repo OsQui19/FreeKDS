@@ -11,6 +11,7 @@
     "specialInstructions": { "type": "string" },
     "allergy": { "type": "boolean" },
     "createdTs": { "type": "integer" },
+    "readyTs": { "type": ["integer", "null"] },
     "expeditor": { "type": "boolean" },
     "items": {
       "type": "array",

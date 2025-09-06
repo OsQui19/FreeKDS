@@ -1,5 +1,7 @@
-import { a as useParams, r as reactExports, j as jsxRuntimeExports } from "./app-z9U9ikwo.js";
+import { u as useToast, a as useConfirm, c as useParams, r as reactExports, j as jsxRuntimeExports } from "./app-CEUZD3nV.js";
 function PurchaseOrderDetailRoute() {
+  const { push } = useToast();
+  const { confirm } = useConfirm();
   const { id } = useParams();
   const [data, setData] = reactExports.useState(null);
   const [error, setError] = reactExports.useState(null);
@@ -26,8 +28,9 @@ function PurchaseOrderDetailRoute() {
   const receive = async () => {
     setReceiving(true);
     try {
-      await fetch(`/api/admin/purchase-orders/${id}/receive`, { method: "POST" });
+      const res = await fetch(`/api/admin/purchase-orders/${id}/receive`, { method: "POST" });
       await load();
+      push(res.ok ? "Order received" : "Failed to receive order", { variant: res.ok ? "success" : "danger" });
     } finally {
       setReceiving(false);
     }
@@ -44,16 +47,20 @@ function PurchaseOrderDetailRoute() {
       if (!res.ok) throw new Error("Add failed");
       setForm({ ingredient_id: "", quantity: "", unit_id: "" });
       await load();
+      push("Item added");
     } catch (e2) {
       setError(e2.message || "Error");
     }
   };
   const delItem = async (itemId) => {
+    const ok = await confirm("Remove this item from the order?", { title: "Remove item", confirmText: "Remove", variant: "danger" });
+    if (!ok) return;
     setError(null);
     try {
       const res = await fetch(`/api/admin/purchase-orders/${id}/items/${itemId}/delete`, { method: "POST" });
       if (!res.ok) throw new Error("Delete failed");
       await load();
+      push("Item deleted");
     } catch (e) {
       setError(e.message || "Error");
     }
@@ -152,4 +159,4 @@ function ItemRow({ poId, item, units, onDeleted, onSaved }) {
 export {
   PurchaseOrderDetailRoute as default
 };
-//# sourceMappingURL=PurchaseOrderDetail-BRXH7do0.js.map
+//# sourceMappingURL=PurchaseOrderDetail-BAr476q3.js.map

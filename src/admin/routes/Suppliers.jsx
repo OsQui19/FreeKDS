@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { useToast } from '@/contexts/ToastContext.jsx';
 
 export default function SuppliersRoute() {
+  const { push } = useToast();
   const [suppliers, setSuppliers] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -28,9 +30,10 @@ export default function SuppliersRoute() {
       if (form.id) body.append('id', form.id);
       body.append('name', form.name);
       if (form.contact_info) body.append('contact_info', form.contact_info);
-      await fetch('/api/admin/suppliers', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body });
+      const res = await fetch('/api/admin/suppliers', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body });
       setForm({ id: '', name: '', contact_info: '' });
       await load();
+      push(res.ok ? (form.id ? 'Supplier updated' : 'Supplier added') : 'Failed to save supplier', { variant: res.ok ? 'success' : 'danger' });
     } catch {
       setError('Save failed');
     }
@@ -39,8 +42,9 @@ export default function SuppliersRoute() {
   const del = async (id) => {
     const body = new URLSearchParams();
     body.append('id', id);
-    await fetch('/api/admin/suppliers/delete', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body });
+    const res = await fetch('/api/admin/suppliers/delete', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body });
     await load();
+    push(res.ok ? 'Supplier deleted' : 'Failed to delete supplier', { variant: res.ok ? 'success' : 'danger' });
   };
 
   const startEdit = (s) => setForm({ id: s.id, name: s.name || '', contact_info: s.contact_info || '' });
@@ -52,7 +56,8 @@ export default function SuppliersRoute() {
       {error && <div className="alert alert-danger">{error}</div>}
       <form className="row g-2 mb-3" onSubmit={save}>
         <div className="col-md-3">
-          <input className="form-control" placeholder="Name" value={form.name} onChange={(e)=>setForm(f=>({...f,name:e.target.value}))} required />
+          <input className={`form-control ${(form.name!==undefined && !String(form.name).trim()) ? 'is-invalid' : ''}`} placeholder="Name" value={form.name} onChange={(e)=>setForm(f=>({...f,name:e.target.value}))} required />
+          {(form.name!==undefined && !String(form.name).trim()) && <div className="invalid-feedback">Name is required</div>}
         </div>
         <div className="col-md-4">
           <input className="form-control" placeholder="Contact info" value={form.contact_info} onChange={(e)=>setForm(f=>({...f,contact_info:e.target.value}))} />

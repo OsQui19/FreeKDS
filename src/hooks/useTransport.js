@@ -12,7 +12,7 @@ const HEARTBEAT_MS = 30000;
  * @param {number} options.stationId - station identifier
  * @returns {{connection:any,connected:boolean,stale:boolean,on:Function,off:Function,send:Function}}
  */
-export default function useTransport({ type, fallback = 'sse', stationId }) {
+export default function useTransport({ type, fallback = 'sse', stationId, sseType }) {
   const [transport, setTransport] = useState(type);
   const [connected, setConnected] = useState(false);
   const [stale, setStale] = useState(true);
@@ -59,7 +59,8 @@ export default function useTransport({ type, fallback = 'sse', stationId }) {
     function start() {
       if (!active) return;
       if (transport === 'ws') {
-        const socket = io('/', { query: { stationId } });
+        const token = (typeof window !== 'undefined' && (window.__RT_TOKEN__ || window.localStorage?.getItem('rt_token'))) || 'devtoken';
+        const socket = io('/', { query: { stationId, token }, transports: ['websocket', 'polling'], forceNew: true, timeout: 8000 });
         connRef.current = socket;
 
         socket.on('connect', () => {
@@ -94,9 +95,21 @@ export default function useTransport({ type, fallback = 'sse', stationId }) {
         };
 
         socket.on('disconnect', handleDisconnect);
-        socket.on('connect_error', handleDisconnect);
+        socket.on('connect_error', (err) => {
+          // Fallback to SSE quickly if WS fails
+          setConnected(false);
+          setStale(true);
+          socket.close();
+          if (fallback && fallback !== 'ws') {
+            setTransport(fallback);
+          } else {
+            handleDisconnect();
+          }
+        });
       } else {
-        const es = new EventSource(`/sse?stationId=${stationId}`);
+        const token = (typeof window !== 'undefined' && (window.__RT_TOKEN__ || window.localStorage?.getItem('rt_token'))) || 'devtoken';
+        const qType = sseType ? `&type=${encodeURIComponent(sseType)}` : '';
+        const es = new EventSource(`/sse?stationId=${stationId}&token=${encodeURIComponent(token)}${qType}`);
         connRef.current = es;
 
         es.onopen = () => {
@@ -169,4 +182,3 @@ export default function useTransport({ type, fallback = 'sse', stationId }) {
 
   return { connection: connRef.current, connected, stale, on, off, send };
 }
-

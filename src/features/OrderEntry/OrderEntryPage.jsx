@@ -9,6 +9,8 @@ export default function OrderEntryPage() {
   const [stationId, setStationId] = useState('');
   const [cart, setCart] = useState([]);
   const [message, setMessage] = useState(null);
+  const [payOpen, setPayOpen] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('cash');
   const [query, setQuery] = useState('');
 
   // modal state
@@ -20,12 +22,15 @@ export default function OrderEntryPage() {
 
   useEffect(() => {
     // Load stations for filter
-    fetch('/stations').then(r=>r.json()).then((json)=> setStations(json.stations || [])).catch(()=>{});
+    fetch('/api/stations')
+      .then(r=> r.ok ? r.json() : Promise.reject())
+      .then((json)=> setStations(json.stations || []))
+      .catch(()=>{});
   }, []);
 
   const loadMenu = React.useCallback((sid) => {
     const qs = sid ? `?stationId=${sid}` : '';
-    fetch(`/order${qs}`)
+    fetch(`/api/order${qs}`)
       .then((res) => res.json())
       .then((data) => {
         setCategories(data.categories || []);
@@ -124,31 +129,46 @@ export default function OrderEntryPage() {
   }
 
   function submitOrder() {
-    const payload = {
-      order_number: table || null,
-      order_type: orderType,
-      items: cart.map((c) => ({
+    const payload = {};
+    if (table) payload.order_number = table;
+    if (orderType) payload.order_type = orderType;
+    payload.items = cart.map((c) => {
+      const item = {
         menu_item_id: c.itemId,
         quantity: c.quantity,
-        modifier_ids: c.modifierIds,
-        special_instructions: [c.instructions, c.allergyDetails]
-          .filter(Boolean)
-          .join(' | ') || null,
-        allergy: !!c.allergy,
-      })),
-    };
+      };
+      if (Array.isArray(c.modifierIds) && c.modifierIds.length) item.modifier_ids = c.modifierIds;
+      const combinedInstr = [c.instructions, c.allergyDetails].filter((s)=> !!s && String(s).trim()).join(' | ');
+      if (combinedInstr) item.special_instructions = combinedInstr;
+      if (c.allergy) item.allergy = true;
+      return item;
+    });
+    // Prefer API-token auth; read from window or localStorage
+    const apiToken = (typeof window !== 'undefined' && (window.__API_TOKEN__ || window.localStorage?.getItem('api_token'))) || '';
+    const headers = { 'Content-Type': 'application/json' };
+    if (apiToken) headers['Authorization'] = `Bearer ${apiToken}`;
     fetch('/api/orders', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify(payload),
     })
-      .then((res) => res.json())
+      .then(async (res) => {
+        let body = null;
+        try { body = await res.json(); } catch {}
+        if (!res.ok || (body && body.error)) {
+          const errMsg = (body && body.error) || `HTTP ${res.status}`;
+          throw new Error(errMsg);
+        }
+        return body;
+      })
       .then(() => {
         setCart([]);
         setMessage({ text: 'Order placed!', error: false });
+        setPayOpen(false);
       })
-      .catch(() => {
-        setMessage({ text: 'Error sending order', error: true });
+      .catch((e) => {
+        console.error('Order submit failed:', e);
+        setMessage({ text: `Error sending order${e?.message ? `: ${e.message}` : ''}` , error: true });
       });
   }
 
@@ -262,17 +282,13 @@ export default function OrderEntryPage() {
             </li>
           ))}
         </ul>
-        <div id="cartTotal" className="cart-total">
-          Total: ${total.toFixed(2)}
+        <div className="cart-summary mt-2 d-flex align-items-center justify-content-between">
+          <div className="fw-bold">Total: ${total.toFixed(2)}</div>
+          <div className="d-flex gap-2">
+            <button className="btn btn-outline-secondary" onClick={()=> setCart([])} disabled={!cart.length}>Clear</button>
+            <button className="btn btn-primary" onClick={submitOrder} disabled={!cart.length}>Place Order</button>
+          </div>
         </div>
-        <button
-          id="submitBtn"
-          className="btn btn-success"
-          onClick={submitOrder}
-          disabled={cart.length === 0}
-        >
-          Submit Order
-        </button>
       </div>
       {currentItem && (
         <div className="modal d-block" tabIndex="-1" role="dialog">
@@ -372,6 +388,7 @@ export default function OrderEntryPage() {
           </div>
         </div>
       )}
+      {/* Payment modal removed in default UI. Hook POS for real payments if needed. */}
       {message && (
         <div
           className={`toast show position-fixed bottom-0 end-0 m-3 text-bg-${message.error ? 'danger' : 'success'}`}

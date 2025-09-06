@@ -1,0 +1,3 @@
+ALTER TABLE orders
+  ADD COLUMN ready_at TIMESTAMP NULL DEFAULT NULL AFTER updated_at;
+

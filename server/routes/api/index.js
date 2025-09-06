@@ -15,7 +15,6 @@ const { pinLookup } = require("../../../utils/pin");
 const schemaValidator = require("../../middleware/schemaValidator");
 
 module.exports = (db, transports) => {
-  const { io, sse } = transports;
   const router = express.Router();
 
   router.post(
@@ -86,7 +85,7 @@ module.exports = (db, transports) => {
         return next(err5);
       }
 
-      const fetchSql = `SELECT oi.id AS order_item_id, oi.quantity, mi.name, mi.station_id,
+      const fetchSql = `SELECT oi.id AS order_item_id, oi.quantity, mi.name, mi.station_id, mi.id AS item_id,
                                 oi.special_instructions, oi.allergy,
                                 GROUP_CONCAT(m.name ORDER BY m.name SEPARATOR ', ') AS modifiers
                                 FROM order_items oi
@@ -99,7 +98,7 @@ module.exports = (db, transports) => {
       const [rows] = await conn.query(fetchSql, [orderId]);
       await conn.commit();
       backupDatabase(db);
-      if (outOfStock.length) io.emit("menuItemsUpdated");
+      if (outOfStock.length) { transports.io && transports.io.emit("menuItemsUpdated"); transports.sse && transports.sse.emitAll("menuItemsUpdated", {}); }
 
       const stationMap = {};
       rows.forEach((r) => {
@@ -108,6 +107,8 @@ module.exports = (db, transports) => {
           quantity: r.quantity,
           name: r.name,
           stationId: r.station_id,
+          itemId: r.item_id,
+          orderItemId: r.order_item_id,
           modifiers: r.modifiers ? r.modifiers.split(", ") : [],
           specialInstructions: r.special_instructions || "",
           allergy: !!r.allergy,
@@ -124,8 +125,8 @@ module.exports = (db, transports) => {
           createdTs,
           items: stationMap[id],
         };
-        io.to(`station-${id}`).emit("orderAdded", payload);
-        sse && sse.emitToStation(id, "orderAdded", payload);
+        transports.io && transports.io.to(`station-${id}`).emit("orderAdded", payload);
+        transports.sse && transports.sse.emitToStation(id, "orderAdded", payload);
       });
       const expoPayload = {
         orderId,
@@ -138,15 +139,18 @@ module.exports = (db, transports) => {
           quantity: r.quantity,
           name: r.name,
           stationId: r.station_id,
+          itemId: r.item_id,
+          orderItemId: r.order_item_id,
           modifiers: r.modifiers ? r.modifiers.split(", ") : [],
           specialInstructions: r.special_instructions || "",
           allergy: !!r.allergy,
         })),
       };
-      io.to("expo").emit("orderAdded", expoPayload);
-      sse && sse.emitToExpo("orderAdded", expoPayload);
+      transports.io && transports.io.to("expo").emit("orderAdded", expoPayload);
+      transports.sse && transports.sse.emitToExpo("orderAdded", expoPayload);
 
-      io.emit("reportsUpdated");
+      transports.io && transports.io.emit("reportsUpdated");
+      transports.sse && transports.sse.emitAll("reportsUpdated", {});
 
       res.json({ success: true, orderId });
     } catch (err) {
@@ -169,6 +173,82 @@ module.exports = (db, transports) => {
       logger.error("Error fetching bumped orders:", err);
       res.status(500).json({ error: "DB Error" });
     }
+  });
+
+  // Split items from an order into a new order
+  router.post('/api/orders/split', async (req, res, next) => {
+    const orderId = parseInt(req.body.order_id, 10);
+    let itemIds = req.body.item_ids;
+    if (!orderId) return res.status(400).json({ error: 'order_id required' });
+    if (typeof itemIds === 'string') itemIds = itemIds.split(',').map((s)=>parseInt(s,10)).filter(Boolean);
+    if (!Array.isArray(itemIds) || !itemIds.length) return res.status(400).json({ error: 'item_ids required' });
+    let conn;
+    try {
+      conn = await db.promise().getConnection();
+      await conn.beginTransaction();
+      const [[orig]] = await conn.query('SELECT order_number, order_type, special_instructions, allergy FROM orders WHERE id=? FOR UPDATE', [orderId]);
+      if (!orig) { await conn.rollback(); return res.status(404).json({ error: 'Order not found' }); }
+      const [ins] = await conn.query('INSERT INTO orders (order_number, order_type, special_instructions, allergy, status) VALUES (?, ?, ?, ?, "active")', [orig.order_number, orig.order_type, orig.special_instructions, orig.allergy]);
+      const newId = ins.insertId;
+      await conn.query('UPDATE order_items SET order_id=? WHERE order_id=? AND id IN (?)', [newId, orderId, itemIds]);
+      await conn.commit();
+      // Broadcast new order tickets
+      const fetchSql = `SELECT oi.id AS order_item_id, oi.quantity, mi.name, mi.station_id, mi.id AS item_id,
+                             oi.special_instructions, oi.allergy,
+                             GROUP_CONCAT(m.name ORDER BY m.name SEPARATOR ', ') AS modifiers
+                        FROM order_items oi
+                        JOIN menu_items mi ON oi.menu_item_id = mi.id
+                        LEFT JOIN order_item_modifiers oim ON oi.id = oim.order_item_id
+                        LEFT JOIN modifiers m ON oim.modifier_id = m.id
+                       WHERE oi.order_id=? GROUP BY oi.id`;
+      const [rows] = await db.promise().query(fetchSql, [newId]);
+      const stationMap = {};
+      rows.forEach((r) => { (stationMap[r.station_id] = stationMap[r.station_id] || []).push({ quantity: r.quantity, name: r.name, stationId: r.station_id, itemId: r.item_id, orderItemId: r.order_item_id, modifiers: r.modifiers ? r.modifiers.split(', ') : [], specialInstructions: r.special_instructions || '', allergy: !!r.allergy }); });
+      const createdTs = Math.floor(Date.now()/1000);
+      Object.keys(stationMap).forEach((id) => {
+        const payload = { orderId: newId, orderNumber: orig.order_number || newId, orderType: orig.order_type || '', specialInstructions: orig.special_instructions || '', allergy: !!orig.allergy, createdTs, items: stationMap[id] };
+        io.to(`station-${id}`).emit('orderAdded', payload);
+        sse && sse.emitToStation(id, 'orderAdded', payload);
+      });
+      const expoPayload = { orderId: newId, orderNumber: orig.order_number || newId, orderType: orig.order_type || '', specialInstructions: orig.special_instructions || '', allergy: !!orig.allergy, createdTs, items: rows.map((r)=> ({ quantity: r.quantity, name: r.name, stationId: r.station_id, itemId: r.item_id, orderItemId: r.order_item_id, modifiers: r.modifiers ? r.modifiers.split(', ') : [], specialInstructions: r.special_instructions || '', allergy: !!r.allergy })) };
+      io.to('expo').emit('orderAdded', expoPayload);
+      sse && sse.emitToExpo('orderAdded', expoPayload);
+      res.json({ success: true, new_order_id: newId });
+    } catch (err) {
+      if (conn) await conn.rollback();
+      logger.error('Split error:', err);
+      next(err);
+    } finally { if (conn) conn.release(); }
+  });
+
+  // Merge items from one order into another
+  router.post('/api/orders/merge', async (req, res, next) => {
+    const sourceId = parseInt(req.body.source_id, 10);
+    const targetId = parseInt(req.body.target_id, 10);
+    let itemIds = req.body.item_ids;
+    if (!sourceId || !targetId || sourceId === targetId) return res.status(400).json({ error: 'Invalid source/target' });
+    if (typeof itemIds === 'string') itemIds = itemIds.split(',').map((s)=>parseInt(s,10)).filter(Boolean);
+    let conn;
+    try {
+      conn = await db.promise().getConnection();
+      await conn.beginTransaction();
+      const [[tgt]] = await conn.query('SELECT id FROM orders WHERE id=? FOR UPDATE', [targetId]);
+      if (!tgt) { await conn.rollback(); return res.status(404).json({ error: 'Target not found' }); }
+      if (Array.isArray(itemIds) && itemIds.length) {
+        await conn.query('UPDATE order_items SET order_id=? WHERE order_id=? AND id IN (?)', [targetId, sourceId, itemIds]);
+      } else {
+        await conn.query('UPDATE order_items SET order_id=? WHERE order_id=?', [targetId, sourceId]);
+      }
+      const [[cnt]] = await conn.query('SELECT COUNT(*) AS c FROM order_items WHERE order_id=?', [sourceId]);
+      if (!cnt.c) await conn.query('DELETE FROM orders WHERE id=?', [sourceId]);
+      await conn.commit();
+      io.emit('ordersMerged', { sourceId, targetId });
+      res.json({ success: true });
+    } catch (err) {
+      if (conn) await conn.rollback();
+      logger.error('Merge error:', err);
+      next(err);
+    } finally { if (conn) conn.release(); }
   });
 
   router.get("/api/recipe", async (req, res, next) => {

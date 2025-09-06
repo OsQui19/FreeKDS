@@ -1,5 +1,5 @@
 import manifest from './plugin.json';
-import LayoutAdminPanel from '@/plugins/layoutAdminPanel.js';
+import LayoutAdminPanel from '@/plugins/layoutAdminPanel.jsx';
 
 export const meta = {
   ...manifest,
@@ -15,4 +15,3 @@ export const meta = {
 export default function LayoutAdminPlugin() {
   return null;
 }
-

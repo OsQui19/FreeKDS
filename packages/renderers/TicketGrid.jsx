@@ -1,29 +1,29 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Ajv2020 from 'ajv/dist/2020';
+import Ajv from 'ajv';
 import gridSchema from './schemas/TicketGrid.schema.json';
 import ticketSchema from './schemas/TicketCard.schema.json';
-import { getToken } from '../../src/utils/tokens.js';
 import TicketCard from './TicketCard.jsx';
 import ExpoHeader from './ExpoHeader.jsx';
 
-function requireToken(path) {
-  const value = getToken(path);
-  if (!value) {
-    const message = `Missing required token: ${path}`;
-    console.error(message);
-    throw new Error(message);
-  }
-  return value;
-}
+// Tokens are applied globally as CSS variables by TokenCSSVariables.
+// The grid relies on CSS variable fallbacks in CSS to avoid async fetches here.
 
+const ENABLE_VALIDATION = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.MODE !== 'production';
 let validate;
 let compileErr = null;
 function validateData(data) {
+  if (!ENABLE_VALIDATION) return true;
   if (!validate && !compileErr) {
     try {
-      const ajv = new Ajv2020({ allowUnionTypes: true, strict: false, schemas: [ticketSchema] });
-      validate = ajv.compile(gridSchema);
+      // Use Ajv (draft-07) and strip $schema to avoid requiring the 2020-12 build.
+      const ajv = new Ajv({ allowUnionTypes: true, strict: false });
+      const ticket = { ...ticketSchema };
+      const grid = { ...gridSchema };
+      delete ticket.$schema;
+      delete grid.$schema;
+      ajv.addSchema(ticket);
+      validate = ajv.compile(grid);
     } catch (e) {
       compileErr = e; // CSP or other compile issue; skip runtime validation
       return true;
@@ -54,6 +54,10 @@ function TicketGrid({
   density = 'comfortable',
   layout = 'grid',
   onBump,
+  onTicketClick,
+  selectedId,
+  stationsMap,
+  onItemToggle,
   style,
 }) {
   if (style !== undefined) {
@@ -63,17 +67,21 @@ function TicketGrid({
     throw new Error('Invalid TicketGrid props');
   }
 
-  const gap = requireToken('space.md');
-  const background = requireToken('color.background');
-
   return (
     <div
       className={`ticket-grid ${layout} ${density}`}
-      style={{ '--ticket-grid-gap': gap, '--ticket-grid-background': background }}
+      style={{}}
     >
       {stationType === 'expo' && <ExpoHeader title="Expo" />}
       {tickets.map((t) => (
-        <TicketCard key={t.orderId} stationType={stationType} onBump={onBump} {...t} />
+        <div
+          key={t.orderId}
+          className={`ticket-wrap${selectedId===t.orderId ? ' selected' : ''}`}
+          data-order-id={t.orderId}
+          onClick={() => onTicketClick && onTicketClick(t.orderId)}
+        >
+          <TicketCard stationType={stationType} stationsMap={stationsMap} onBump={onBump ? () => onBump(t.orderId) : undefined} onItemToggle={onItemToggle} {...t} />
+        </div>
       ))}
     </div>
   );
@@ -85,6 +93,10 @@ TicketGrid.propTypes = {
   density: PropTypes.oneOf(['comfortable', 'compact']),
   layout: PropTypes.oneOf(['grid', 'list']),
   onBump: PropTypes.func,
+  onTicketClick: PropTypes.func,
+  selectedId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+  stationsMap: PropTypes.object,
+  onItemToggle: PropTypes.func,
   style: (props, propName, componentName) => {
     if (props[propName] !== undefined) {
       return new Error(`Invalid prop \`${propName}\` supplied to \`${componentName}\`. Use tokens or className instead.`);

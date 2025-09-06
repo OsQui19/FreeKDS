@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import KdsApp from './KdsApp.jsx';
 import useTransport from '@/hooks/useTransport.js';
+import useFeatureFlag from '@/hooks/useFeatureFlag.js';
 
 export default function StationScreen() {
   const { id } = useParams();
@@ -9,15 +10,39 @@ export default function StationScreen() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [compact, setCompact] = useState(false);
+  const [takeoutOnly, setTakeoutOnly] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(false);
+  const [warnS, setWarnS] = useState(7 * 60);
+  const [critS, setCritS] = useState(12 * 60);
+  const [soundNew, setSoundNew] = useState('beep');
+  const [soundUrgent, setSoundUrgent] = useState('beep2');
+  const ffContext = React.useMemo(() => ({ station: Number(id) }), [id]);
+  const { value: ffCompact } = useFeatureFlag('ui.compactModeDefault', false, ffContext);
+  const { value: ffShowAllDay } = useFeatureFlag('ui.showAllDay', true, ffContext);
 
   useEffect(() => {
     let active = true;
     (async () => {
       try {
-        const res = await fetch(`/station/${id}`);
+        const res = await fetch(`/api/station/${id}`);
         if (!res.ok) throw new Error('Failed to load station');
         const json = await res.json();
-        if (active) setData(json);
+        if (active) {
+          setData(json);
+          const s = json.settings || {};
+          const w = parseInt(s.kds_warn_minutes || 7, 10);
+          const c = parseInt(s.kds_critical_minutes || 12, 10);
+          setWarnS((Number.isNaN(w) ? 7 : w) * 60);
+          setCritS((Number.isNaN(c) ? 12 : c) * 60);
+          setSoundNew(s.kds_sound_new || 'beep');
+          setSoundUrgent(s.kds_sound_urgent || 'beep2');
+          // Apply KDS defaults from tokens (TokenCSSVariables fills --token-*)
+          try {
+            const cs = getComputedStyle(document.documentElement);
+            const ss = cs.getPropertyValue('--token-kds-showSidebar').trim();
+            if (ss) setShowSidebar(ss === '1' || ss.toLowerCase() === 'true');
+          } catch {}
+        }
       } catch (e) {
         if (active) setError(e.message || 'Error');
       } finally {
@@ -26,6 +51,29 @@ export default function StationScreen() {
     })();
     return () => { active = false };
   }, [id]);
+
+  // Sync compact from feature flag when the screen loads or flag changes
+  useEffect(() => {
+    setCompact(!!ffCompact);
+  }, [ffCompact]);
+
+  useEffect(() => {
+    try {
+      const root = document.documentElement;
+      root.style.setProperty('--kds-warn-s', String(warnS));
+      root.style.setProperty('--kds-crit-s', String(critS));
+    } catch {}
+  }, [warnS, critS]);
+
+  // Compact toggle should influence density (used by KdsApp) and CSS vars
+  useEffect(() => {
+    try {
+      const body = document.body;
+      if (compact) body.classList.add('kds-compact');
+      else body.classList.remove('kds-compact');
+      return () => { body.classList.remove('kds-compact'); };
+    } catch {}
+  }, [compact]);
 
   const { send } = useTransport({ type: 'ws', fallback: 'sse', stationId: Number(id) });
 
@@ -36,35 +84,24 @@ export default function StationScreen() {
     <div className={`container-fluid ${compact ? 'kds-compact' : ''}`}>
       <div className="d-flex align-items-center justify-content-between py-2">
         <h5 className="m-0">{data.station?.name}</h5>
-        <div className="d-flex align-items-center gap-2">
-          <label className="small mb-0">Compact</label>
-          <input type="checkbox" className="form-check-input" checked={compact} onChange={(e)=>setCompact(e.target.checked)} />
-          <div className="text-muted small">{new Date().toLocaleTimeString()}</div>
+        <div className="text-muted small">{new Date().toLocaleTimeString()}</div>
+      </div>
+      <div className="d-flex align-items-center gap-3 mb-2">
+        <div className="form-check form-switch">
+          <input className="form-check-input" type="checkbox" id="toggleCompact" checked={compact} onChange={(e)=>setCompact(e.target.checked)} />
+          <label className="form-check-label" htmlFor="toggleCompact">Compact</label>
+        </div>
+        <div className="form-check form-switch">
+          <input className="form-check-input" type="checkbox" id="toggleTakeout" checked={takeoutOnly} onChange={(e)=>setTakeoutOnly(e.target.checked)} />
+          <label className="form-check-label" htmlFor="toggleTakeout">Takeout only</label>
+        </div>
+        <div className="form-check form-switch">
+          <input className="form-check-input" type="checkbox" id="toggleSidebar" checked={showSidebar} onChange={(e)=>setShowSidebar(e.target.checked)} />
+          <label className="form-check-label" htmlFor="toggleSidebar">Summary</label>
         </div>
       </div>
-      <KdsApp stationType={data.station?.type} stationId={data.station?.id} transport="ws" fallback="sse" />
-      {data.station?.type === 'expo' && (
-        <div className="admin-section mt-3">
-          <h6 className="mb-2">Bumped Orders</h6>
-          <div className="table-responsive">
-            <table className="table table-sm align-middle">
-              <thead><tr><th>Order #</th><th>Bumped At</th><th></th></tr></thead>
-              <tbody>
-                {(data.bumpedOrders||[]).map(bo => (
-                  <tr key={bo.order_id}>
-                    <td>{bo.order_number || bo.order_id}</td>
-                    <td>{bo.bumped_at ? new Date(bo.bumped_at).toLocaleTimeString() : '-'}</td>
-                    <td className="text-end">
-                      <button className="btn btn-sm btn-outline-warning" onClick={() => send('recallOrder', { orderId: bo.order_id })}>Recall</button>
-                    </td>
-                  </tr>
-                ))}
-                {!data.bumpedOrders?.length && <tr><td colSpan={3} className="text-muted">No bumped orders</td></tr>}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+      <KdsApp stationType={data.station?.type} stationId={data.station?.id} transport="ws" fallback="sse" takeoutOnly={takeoutOnly} newSound={soundNew} urgentSound={soundUrgent} showSidebar={showSidebar} bumpedOrders={data.bumpedOrders||[]} showAllDay={!!ffShowAllDay} allStations={data.allStations||[]} />
+      {/* Bumped Orders list moved to modal inside KdsApp for cleaner UX */}
     </div>
   );
 }

@@ -36,3 +36,4 @@ export const meta = {
 export default function LayoutPlugin() {
   return null;
 }
+

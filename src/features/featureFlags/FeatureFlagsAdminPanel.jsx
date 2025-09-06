@@ -4,9 +4,20 @@ import { updateFeatureFlags } from '@/featureFlags/index.js';
 
 const NAMESPACES = ['ui', 'transport', 'perf'];
 
+const ALIASES = {
+  'ui.showAllDay': { label: 'Show All-Day totals', hint: 'Display running totals of items on screen' },
+  'ui.compactModeDefault': { label: 'Smaller tiles by default', hint: 'Use compact tiles to fit more orders' },
+  'transport.preferSSE': { label: 'Use backup live updates', hint: 'Prefer SSE instead of WebSockets' },
+  'transport.heartbeatSeconds': { label: 'Live update heartbeat (seconds)', hint: 'How often to check connection' },
+  'perf.batchSize': { label: 'Load orders in batches of', hint: 'Tune for very busy periods' },
+};
+
 function FlagRow({ flagKey, defaultValue, context, onSave }) {
   const { value, variant } = useFeatureFlag(flagKey, defaultValue, context);
   const [edit, setEdit] = useState('');
+  const alias = ALIASES[flagKey] || {};
+  const label = alias.label || flagKey;
+  const hint = alias.hint;
 
   const handleSave = () => {
     onSave(flagKey, edit);
@@ -15,7 +26,10 @@ function FlagRow({ flagKey, defaultValue, context, onSave }) {
 
   return (
     <tr>
-      <td>{flagKey}</td>
+      <td>
+        <div className="fw-semibold">{label}</div>
+        {hint && <div className="text-muted small">{hint}</div>}
+      </td>
       <td>
         <input
           className="form-control"
@@ -24,7 +38,7 @@ function FlagRow({ flagKey, defaultValue, context, onSave }) {
           onChange={(e) => setEdit(e.target.value)}
         />
       </td>
-      <td>{variant}</td>
+      <td className="text-muted small">{variant}</td>
       <td>
         <button className="btn btn-sm btn-primary" onClick={handleSave}>
           Save
@@ -123,31 +137,27 @@ export default function FeatureFlagsAdminPanel() {
   return (
     <div>
       <div className="mb-3">
-        <label className="form-label me-2">Tenant</label>
+        <label className="form-label me-2">Business</label>
         <input
           className="form-control d-inline-block w-auto me-3"
           value={tenantId}
           onChange={(e) => setTenantId(e.target.value)}
         />
-        <label className="form-label me-2">Station</label>
+        <label className="form-label me-2">Screen</label>
         <input
           className="form-control d-inline-block w-auto me-3"
           value={stationId}
           onChange={(e) => setStationId(e.target.value)}
         />
-        <label className="form-label me-2">Screen</label>
-        <input
-          className="form-control d-inline-block w-auto"
-          value={screenId}
-          onChange={(e) => setScreenId(e.target.value)}
-        />
+        <label className="form-label me-2">Device</label>
+        <input className="form-control d-inline-block w-auto" value={screenId} onChange={(e) => setScreenId(e.target.value)} />
       </div>
       <table className="table">
         <thead>
           <tr>
-            <th>Flag</th>
-            <th>Value</th>
-            <th>Source</th>
+            <th>Setting</th>
+            <th>Change to</th>
+            <th>Applied at</th>
             <th></th>
           </tr>
         </thead>
@@ -164,4 +174,3 @@ FeatureFlagsAdminPanel.meta = {
   scopes: [],
   latencyClass: 'interactive',
 };
-

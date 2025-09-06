@@ -276,6 +276,8 @@ components:
           pattern: ^#?[0-9A-Fa-f]{6}$
         font_family:
           type: [string, 'null']
+        next_station_id:
+          type: [integer, string, 'null']
       additionalProperties: false
     Theme:
       $schema: "https://json-schema.org/draft/2020-12/schema"

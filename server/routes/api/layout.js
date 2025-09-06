@@ -23,6 +23,16 @@ module.exports = (db) => {
     }
   });
 
+  // List saved layout names
+  router.get('/layout/names', async (req, res, next) => {
+    try {
+      const [rows] = await query(db, 'SELECT name FROM layouts ORDER BY name');
+      res.json({ names: rows.map((r) => r.name) });
+    } catch (err) {
+      next(err);
+    }
+  });
+
   router.post(
     '/layout',
     (req, res, next) => {
@@ -70,6 +80,19 @@ module.exports = (db) => {
       }
     },
   );
+
+  // Delete a named layout
+  router.delete('/layout', async (req, res, next) => {
+    if (!req.session.user) return res.status(401).send('Unauthorized');
+    const name = (req.query.name || req.body?.name || '').trim();
+    if (!name) return res.status(400).json({ error: 'name required' });
+    try {
+      await query(db, 'DELETE FROM layouts WHERE name=?', [name]);
+      res.json({ success: true });
+    } catch (err) {
+      next(err);
+    }
+  });
 
   router.get('/layout/versions', async (req, res, next) => {
     const name = req.query.name || 'default';

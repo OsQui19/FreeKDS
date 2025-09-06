@@ -12,6 +12,9 @@ module.exports = function registerRoutes(db, transports) {
   router.use('/api', require('./api/presets')(db));
   router.use('/api', require('./api/devices')(db));
   router.use('/api', require('./api/payments')(db, transports));
+  router.use('/api', require('./api/reports')(db));
+  router.use('/api', require('./api/settings')(db));
+  router.use('/api', require('./api/incoming')(db, transports));
   router.use('/api', require('./api/apiTokens')(db));
   router.use('/api', require('./api/log'));
   router.use('/api', require('./api/flags')());

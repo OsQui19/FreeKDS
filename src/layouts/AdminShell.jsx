@@ -21,20 +21,20 @@ export default function AdminShell() {
   const [showNav, setShowNav] = React.useState(false);
   const items = [
     { to: '/admin', label: 'Overview' },
-    { to: '/admin/employees', label: 'Employees', module: 'employees' },
-    { to: '/admin/roles', label: 'Roles & Access', module: 'employees' },
+    { to: '/admin/reports', label: 'Reports', module: 'reports' },
+    { to: '/admin/menu', label: 'Menu & Items', module: 'menu' },
     { to: '/admin/inventory', label: 'Inventory', module: 'inventory' },
     { to: '/admin/suppliers', label: 'Suppliers', module: 'inventory' },
     { to: '/admin/purchase-orders', label: 'Purchase Orders', module: 'inventory' },
-    { to: '/admin/menu', label: 'Menu', module: 'menu' },
-    { to: '/admin/stations', label: 'Stations', module: 'stations' },
-    { to: '/admin/schedule', label: 'Schedule', module: 'employees' },
+    { to: '/admin/locations', label: 'Locations', module: 'inventory' },
+    { to: '/admin/employees', label: 'Employees', module: 'employees' },
+    { to: '/admin/roles', label: 'Roles & Access', module: 'employees' },
     { to: '/admin/timeclock', label: 'Time Clock', module: 'employees' },
     { to: '/admin/payroll', label: 'Payroll', module: 'employees' },
-    { to: '/admin/theme', label: 'Theme', module: 'theme' },
-    { to: '/admin/appearance', label: 'Appearance', module: 'theme' },
-    { to: '/admin/layouts', label: 'Layouts', module: 'menu' },
-    { to: '/admin/flags', label: 'Feature Flags', module: 'updates' },
+    { to: '/admin/stations', label: 'Devices & Stations', module: 'stations' },
+    { to: '/admin/studio', label: 'Design Studio', module: 'theme' },
+    { to: '/admin/integrations', label: 'Integrations', module: 'updates' },
+    { to: '/admin/settings', label: 'Settings', module: 'updates' },
     { to: '/admin/backups', label: 'Backups', module: 'backup' },
   ];
   const visible = items.filter((it) => !it.module || has(it.module) || loading);
@@ -42,7 +42,7 @@ export default function AdminShell() {
     <div className="container-fluid">
       <div className="row">
         <aside className={`col-12 col-md-3 col-lg-2 mb-3 ${showNav ? '' : 'd-none d-md-block'}`}>
-          <div className="card-surface p-3">
+          <div className="card-surface p-3 admin-sidebar">
             <h5 className="mb-3">Admin</h5>
             <ul className="nav flex-column">
               {visible.map((it) => (

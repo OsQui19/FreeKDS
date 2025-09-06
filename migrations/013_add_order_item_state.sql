@@ -1,0 +1,4 @@
+ALTER TABLE order_items
+  ADD COLUMN state VARCHAR(20) NOT NULL DEFAULT 'in-progress' AFTER allergy,
+  ADD COLUMN prepared_at TIMESTAMP NULL DEFAULT NULL AFTER state;
+

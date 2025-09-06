@@ -15,6 +15,7 @@ module.exports = (db) => {
     const name = (req.body.name || '').trim();
     const type = (req.body.type || '').trim() || 'prep';
     const orderTypeFilter = (req.body.order_type_filter || '').trim() || null;
+    const nextStationId = req.body.next_station_id ? parseInt(req.body.next_station_id, 10) : null;
     const bgColor = (req.body.bg_color || '').trim() || null;
     const primaryColor = (req.body.primary_color || '').trim() || null;
     const fontFamily = (req.body.font_family || '').trim() || null;
@@ -24,19 +25,19 @@ module.exports = (db) => {
         await db
           .promise()
           .query(
-            'UPDATE stations SET name=?, type=?, order_type_filter=?, bg_color=?, primary_color=?, font_family=? WHERE id=?',
-            [name, type, orderTypeFilter, bgColor, primaryColor, fontFamily, id]
+            'UPDATE stations SET name=?, type=?, order_type_filter=?, bg_color=?, primary_color=?, font_family=?, next_station_id=? WHERE id=?',
+            [name, type, orderTypeFilter, bgColor, primaryColor, fontFamily, nextStationId, id]
           );
-        return res.json({ success: true, id });
-      } else {
-        const [result] = await db
-          .promise()
-          .query(
-            'INSERT INTO stations (name, type, order_type_filter, bg_color, primary_color, font_family) VALUES (?, ?, ?, ?, ?, ?)',
-            [name, type, orderTypeFilter, bgColor, primaryColor, fontFamily]
+          return res.json({ success: true, id });
+        } else {
+          const [result] = await db
+            .promise()
+            .query(
+            'INSERT INTO stations (name, type, order_type_filter, bg_color, primary_color, font_family, next_station_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [name, type, orderTypeFilter, bgColor, primaryColor, fontFamily, nextStationId]
           );
-        return res.json({ success: true, id: result.insertId });
-      }
+          return res.json({ success: true, id: result.insertId });
+        }
     } catch (err) {
       logger.error('Error saving station:', err);
       res.status(500).send('Server Error');

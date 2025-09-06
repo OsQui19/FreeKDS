@@ -3,8 +3,8 @@ import React from 'react';
 export default function LoginPage() {
   return (
     <main className="login-page u-center-screen">
-      <div className="login-container text-center">
-        <div className="auth-card card shadow-sm p-4">
+      <div className="login-container text-center px-3">
+        <div className="auth-card card-surface shadow-sm p-4" style={{ maxWidth: 420 }}>
           <h1 className="mb-4">Employee Login</h1>
           <form method="post" action="/api/login">
             <div className="mb-3">

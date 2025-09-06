@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from 'react';
+import { useToast } from '@/contexts/ToastContext.jsx';
+import { useConfirm } from '@/contexts/ConfirmContext.jsx';
+import { formatDate } from '@/utils/format.js';
 import { Link, useNavigate } from 'react-router-dom';
 
 export default function PurchaseOrdersRoute() {
+  const { push } = useToast();
+  const { confirm } = useConfirm();
   const [orders, setOrders] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [locations, setLocations] = useState([]);
@@ -34,15 +39,18 @@ export default function PurchaseOrdersRoute() {
     body.append('supplier_id', form.supplier_id);
     if (form.location_id) body.append('location_id', form.location_id);
     const res = await fetch('/api/admin/purchase-orders', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body, redirect: 'follow' });
-    // server redirects to /admin/purchase-orders/:id, but fetch doesn't follow redirect for SPA; reload list
     await load();
+    if (res.ok) push('Purchase order created'); else push('Failed to create purchase order', { variant: 'danger' });
   };
 
   const del = async (id) => {
+    const ok = await confirm('Delete this purchase order?', { title: 'Delete purchase order', confirmText: 'Delete', variant: 'danger' });
+    if (!ok) return;
     const body = new URLSearchParams();
     body.append('id', id);
-    await fetch('/api/admin/purchase-orders/delete', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body });
+    const res = await fetch('/api/admin/purchase-orders/delete', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body });
     await load();
+    push(res.ok ? 'Purchase order deleted' : 'Failed to delete purchase order', { variant: res.ok ? 'success' : 'danger' });
   };
 
   if (loading) return <div>Loading…</div>;
@@ -89,7 +97,7 @@ export default function PurchaseOrdersRoute() {
             {orders.map(o=> (
               <tr key={o.id}>
                 <td>{o.id}</td>
-                <td>{o.order_date?.slice(0,10)}</td>
+                <td>{formatDate(o.order_date)}</td>
                 <td>{o.supplier_name}</td>
                 <td>{o.location_name || '-'}</td>
                 <td>{o.status || '-'}</td>

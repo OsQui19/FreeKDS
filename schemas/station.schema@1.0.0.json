@@ -11,7 +11,8 @@
     "order_type_filter": { "type": ["string", "null"] },
     "bg_color": { "type": ["string", "null"], "pattern": "^#?[0-9A-Fa-f]{6}$" },
     "primary_color": { "type": ["string", "null"], "pattern": "^#?[0-9A-Fa-f]{6}$" },
-    "font_family": { "type": ["string", "null"] }
+    "font_family": { "type": ["string", "null"] },
+    "next_station_id": { "type": ["integer", "string", "null"] }
   },
   "additionalProperties": false
 }

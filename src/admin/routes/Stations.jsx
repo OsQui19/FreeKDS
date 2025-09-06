@@ -1,4 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useToast } from '@/contexts/ToastContext.jsx';
+import { useConfirm } from '@/contexts/ConfirmContext.jsx';
 
 function Section({ title, children, action }) {
   return (
@@ -13,10 +15,13 @@ function Section({ title, children, action }) {
 }
 
 export default function StationsRoute() {
+  const { push } = useToast();
+  const { confirm } = useConfirm();
   const [stations, setStations] = useState([]);
   const [printers, setPrinters] = useState([]);
   const [tokens, setTokens] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [pair, setPair] = useState({ stationId: '', code: '', expires_at: '' });
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
   const [editingPrinter, setEditingPrinter] = useState(null); // id or 'new'
@@ -57,6 +62,7 @@ export default function StationsRoute() {
       bg_color: s.bg_color || '',
       primary_color: s.primary_color || '',
       font_family: s.font_family || '',
+      next_station_id: s.next_station_id || '',
     });
     // Load category mapping
     try {
@@ -81,12 +87,13 @@ export default function StationsRoute() {
       (stationForm.category_ids || []).forEach((cid) => b2.append('category_ids', String(cid)));
       await fetch('/api/admin/station-categories', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: b2 });
     }
-    resetStation(); await load(); setMessage('Station saved');
+    resetStation(); await load(); push('Station saved');
   };
   const deleteStation = async (id) => {
-    if (!window.confirm('Delete this station?')) return;
+    const ok = await confirm('Delete this screen? This cannot be undone.', { title: 'Delete screen', confirmText: 'Delete', variant: 'danger' });
+    if (!ok) return;
     const res = await fetch(`/api/admin/stations/${id}`, { method: 'DELETE' });
-    if (res.ok) { await load(); setMessage('Station deleted'); }
+    if (res.ok) { await load(); push('Station deleted'); }
   };
 
   const savePrinter = async (payload, id) => {
@@ -94,7 +101,7 @@ export default function StationsRoute() {
       setError(null); setMessage(null);
       const res = await fetch('/api/printers', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...payload, id }) });
       if (!res.ok) throw new Error('Save failed');
-      setMessage('Printer saved');
+      push('Printer saved');
       setEditingPrinter(null);
       await load();
     } catch (e) {
@@ -103,11 +110,12 @@ export default function StationsRoute() {
   };
 
   const deletePrinter = async (id) => {
-    if (!window.confirm('Delete this printer?')) return;
+    const ok = await confirm('Remove this printer?', { title: 'Remove printer', confirmText: 'Remove', variant: 'danger' });
+    if (!ok) return;
     try {
       const res = await fetch(`/api/printers/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Delete failed');
-      setMessage('Printer deleted');
+      push('Printer deleted');
       await load();
     } catch (e) {
       setError(e.message || 'Error');
@@ -230,17 +238,27 @@ export default function StationsRoute() {
               <input className="form-control form-control-sm" placeholder="ALL / DINE-IN / TO-GO" value={stationForm.order_type_filter} onChange={(e)=>setStationForm(f=>({...f,order_type_filter:e.target.value}))} />
             </div>
             <div className="col-md-2">
-              <label className="form-label small">BG Color</label>
-              <input className="form-control form-control-sm" value={stationForm.bg_color} onChange={(e)=>setStationForm(f=>({...f,bg_color:e.target.value}))} />
+              <label className="form-label small">Background</label>
+              <input className="form-control form-control-sm" placeholder="#ffffff" value={stationForm.bg_color} onChange={(e)=>setStationForm(f=>({...f,bg_color:e.target.value}))} />
+              <div className="form-text">Hex color like #ffffff (optional)</div>
             </div>
             <div className="col-md-2">
-              <label className="form-label small">Primary</label>
-              <input className="form-control form-control-sm" value={stationForm.primary_color} onChange={(e)=>setStationForm(f=>({...f,primary_color:e.target.value}))} />
+              <label className="form-label small">Accent</label>
+              <input className="form-control form-control-sm" placeholder="#0d6efd" value={stationForm.primary_color} onChange={(e)=>setStationForm(f=>({...f,primary_color:e.target.value}))} />
+              <div className="form-text">Hex color like #0d6efd (optional)</div>
             </div>
             <div className="col-md-3">
               <label className="form-label small">Font</label>
-              <input className="form-control form-control-sm" value={stationForm.font_family} onChange={(e)=>setStationForm(f=>({...f,font_family:e.target.value}))} />
+              <input className="form-control form-control-sm" placeholder="e.g., Inter, system-ui" value={stationForm.font_family} onChange={(e)=>setStationForm(f=>({...f,font_family:e.target.value}))} />
+              <div className="form-text">Optional: leave blank to use default</div>
             </div>
+          <div className="col-md-3">
+            <label className="form-label small">Next Station</label>
+            <select className="form-select form-select-sm" value={stationForm.next_station_id || ''} onChange={(e)=>setStationForm(f=>({...f,next_station_id:e.target.value}))}>
+              <option value="">(none)</option>
+              {stations.filter((x)=> x.id !== stationForm.id).map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+            </select>
+          </div>
             <div className="col-md-6">
               <label className="form-label small">Visible Categories</label>
               <select multiple className="form-select form-select-sm" value={stationForm.category_ids || []} onChange={(e)=>setStationForm(f=>({...f,category_ids: Array.from(e.target.selectedOptions).map(o=>o.value)}))}>
@@ -261,18 +279,39 @@ export default function StationsRoute() {
                 <tr key={s.id}>
                   <td>{s.id}</td>
                   <td>{s.name}</td>
-                  <td>{s.type}</td>
-                  <td>{s.order_type_filter || 'ALL'}</td>
-                  <td className="text-end">
-                    <button className="btn btn-sm btn-outline-secondary me-2" onClick={()=>editStation(s)}>Edit</button>
-                    <button className="btn btn-sm btn-outline-danger" onClick={()=>deleteStation(s.id)}>Delete</button>
-                  </td>
-                </tr>
-              ))}
-              {!stations.length && <tr><td colSpan={4}>No stations found.</td></tr>}
-            </tbody>
+              <td>{s.type}</td>
+              <td>{s.order_type_filter || 'ALL'}</td>
+              <td className="text-end">
+                <button className="btn btn-sm btn-outline-secondary me-2" onClick={()=>editStation(s)}>Edit</button>
+                <button className="btn btn-sm btn-outline-danger" onClick={()=>deleteStation(s.id)}>Delete</button>
+                <button className="btn btn-sm btn-outline-primary ms-2" onClick={async ()=>{
+                  try {
+                    const body = new URLSearchParams(); body.append('station_id', s.id); body.append('name','KDS Tablet');
+                    const res = await fetch('/api/devices/pair/start', { method: 'POST', headers: { 'Content-Type':'application/x-www-form-urlencoded' }, body });
+                    if (!res.ok) throw new Error('Pair failed');
+                    const json = await res.json();
+                    setPair({ stationId: s.id, code: json.code, expires_at: json.expires_at });
+                    push('Pair code generated');
+                  } catch (e) { setError(e.message || 'Pair failed'); }
+                }}>Pair Device</button>
+              </td>
+            </tr>
+          ))}
+          {!stations.length && <tr><td colSpan={4}>No stations found.</td></tr>}
+          </tbody>
           </table>
         </div>
+        {pair.code && (
+          <div className="alert alert-info mt-2">
+            <div className="d-flex align-items-center justify-content-between">
+              <div>
+                Pair code for station {pair.stationId}: <strong>{pair.code}</strong> (expires {new Date(pair.expires_at).toLocaleTimeString()})
+              </div>
+              <button className="btn btn-sm btn-outline-secondary" onClick={()=>{ navigator.clipboard?.writeText(pair.code);}}>Copy</button>
+            </div>
+            <div className="small text-muted mt-1">On the device, open the app and enter this code to pair. The device will receive its API token automatically.</div>
+          </div>
+        )}
       </Section>
 
       <Section title="API Tokens" action={<button className="btn btn-sm btn-outline-primary" onClick={()=>setCreatingToken(true)}>Create Token</button>}>

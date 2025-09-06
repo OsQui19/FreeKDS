@@ -4,6 +4,7 @@ const validators = require("../../../schemas/validate");
 const { logInventoryForOrder } = require("../../controllers/dbHelpers");
 const { backupDatabase } = require("../../controllers/dbBackup");
 const { incrementLoad } = require("../../controllers/loadTracker");
+const webhooks = require("../../controllers/webhooks");
 
 const validateOrder = validators.order;
 
@@ -145,6 +146,7 @@ module.exports = (db, transports) => {
       sse && sse.emitToExpo("orderAdded", expoPayload);
 
       io.emit("reportsUpdated");
+      webhooks.send('order.created', expoPayload, db);
 
       res.json({ success: true, orderId });
     } catch (err) {

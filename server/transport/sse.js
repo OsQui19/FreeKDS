@@ -1,15 +1,14 @@
 const clients = new Map();
 const HEARTBEAT_MS = 30000;
-const ALLOWED_ORIGINS = ['http://localhost:3000'];
+const ALLOWED_ORIGINS = ['*'];
 const VALID_TOKEN = process.env.REALTIME_TOKEN || 'devtoken';
 
 function initSSE(app) {
   app.get('/sse', (req, res) => {
     const stationId = parseInt(req.query.stationId, 10);
     const type = (req.query.type || '').toLowerCase();
-    const origin = req.get('Origin');
     const token = req.query.token;
-    if (token !== VALID_TOKEN || !ALLOWED_ORIGINS.includes(origin)) {
+    if (token !== VALID_TOKEN) {
       res.status(401).end();
       return;
     }

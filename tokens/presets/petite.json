@@ -1,36 +1,35 @@
 {
   "$schema": "https://beta.openui.org/schemas/design-tokens.json",
   "meta": {
-    "name": "Petite Default",
-    "description": "Soft radius, subtle shadows, airy spacing, friendly accent"
+    "name": { "value": "Petite Default" },
+    "description": { "value": "Soft radius, subtle shadows, airy spacing, friendly accent" }
   },
   "color": {
-    "accent": { "type": "color", "value": "#5b8def" },
-    "surface": { "type": "color", "value": "#fbfbfc" },
-    "background": { "type": "color", "value": "#ffffff" },
-    "text": { "type": "color", "value": "#1f2937" }
+    "accent": { "type": "color", "value": "#5b8def", "description": "Primary accent color" },
+    "surface": { "type": "color", "value": "#fbfbfc", "description": "Card and panel background" },
+    "background": { "type": "color", "value": "#ffffff", "description": "App background" },
+    "text": { "type": "color", "value": "#1f2937", "description": "Default text color" }
   },
   "radius": {
-    "card": { "type": "dimension", "value": "0.75rem" },
-    "button": { "type": "dimension", "value": "0.5rem" },
-    "field": { "type": "dimension", "value": "0.5rem" }
+    "card": { "type": "dimension", "value": "0.75rem", "description": "Corner radius for cards" },
+    "button": { "type": "dimension", "value": "0.5rem", "description": "Corner radius for buttons" },
+    "field": { "type": "dimension", "value": "0.5rem", "description": "Corner radius for inputs" }
   },
   "shadow": {
-    "sm": { "type": "shadow", "value": "0 1px 1.5px rgba(0,0,0,0.05)" },
-    "md": { "type": "shadow", "value": "0 6px 10px rgba(0,0,0,0.08)" }
+    "sm": { "type": "shadow", "value": "0 1px 1.5px rgba(0,0,0,0.05)", "description": "Subtle small shadow" },
+    "md": { "type": "shadow", "value": "0 6px 10px rgba(0,0,0,0.08)", "description": "Medium depth shadow" }
   },
   "space": {
-    "xs": { "type": "dimension", "value": ".375rem" },
-    "sm": { "type": "dimension", "value": ".75rem" },
-    "md": { "type": "dimension", "value": "1.25rem" },
-    "lg": { "type": "dimension", "value": "2.5rem" }
+    "xs": { "type": "dimension", "value": ".375rem", "description": "Tight spacing" },
+    "sm": { "type": "dimension", "value": ".75rem", "description": "Small spacing" },
+    "md": { "type": "dimension", "value": "1.25rem", "description": "Medium spacing" },
+    "lg": { "type": "dimension", "value": "2.5rem", "description": "Large spacing" }
   },
   "font": {
     "size": {
-      "sm": { "type": "fontSize", "value": ".9rem" },
-      "md": { "type": "fontSize", "value": "1rem" },
-      "lg": { "type": "fontSize", "value": "1.2rem" }
+      "sm": { "type": "fontSize", "value": ".9rem", "description": "Small body text" },
+      "md": { "type": "fontSize", "value": "1rem", "description": "Default body text" },
+      "lg": { "type": "fontSize", "value": "1.2rem", "description": "Large body text" }
     }
   }
 }
-

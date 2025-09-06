@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Ajv2020 from 'ajv/dist/2020';
+import Ajv from 'ajv';
 import schema from './schemas/ModifierList.schema.json';
 import { getToken } from '../../src/utils/tokens.js';
 
@@ -14,13 +14,17 @@ function requireToken(path) {
   return value;
 }
 
+const ENABLE_VALIDATION = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.MODE !== 'production';
 let validate;
 let compileErr = null;
 function validateData(data) {
+  if (!ENABLE_VALIDATION) return true;
   if (!validate && !compileErr) {
     try {
-      const ajv = new Ajv2020({ allowUnionTypes: true, strict: false });
-      validate = ajv.compile(schema);
+      const ajv = new Ajv({ allowUnionTypes: true, strict: false });
+      const s = { ...schema };
+      delete s.$schema;
+      validate = ajv.compile(s);
     } catch (e) {
       compileErr = e; // CSP or other compile issue; skip runtime validation
       return true;
@@ -51,13 +55,20 @@ function ModifierList({ modifiers, style }) {
   if (!modifiers || modifiers.length === 0) return null;
 
   const spacing = requireToken('space.xs');
+  const format = (m) => {
+    if (!m) return m;
+    const s = String(m);
+    if (/\bno\b/i.test(s)) return <strong style={{ color: '#dc3545' }}>{s}</strong>;
+    if (/\bextra\b|\bspicy\b|\ballergy\b/i.test(s)) return <strong style={{ color: '#fd7e14' }}>{s}</strong>;
+    return s;
+  };
   return (
     <ul
       className="item-modifiers"
       style={{ '--modifier-list-padding': spacing }}
     >
       {modifiers.map((m, i) => (
-        <li key={i}>{m}</li>
+        <li key={i}>{format(m)}</li>
       ))}
     </ul>
   );

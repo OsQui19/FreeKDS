@@ -74,6 +74,58 @@ module.exports = (db) => {
     }
   });
 
+  function genCode() {
+    return String(Math.floor(100000 + Math.random() * 900000));
+  }
+
+  router.post('/devices/pair/start', async (req, res) => {
+    const role = req.session?.user?.role;
+    if (!role || !accessControl.roleHasAccess(role, 'stations')) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+    const stationId = parseInt(req.body.station_id, 10);
+    const name = (req.body.name || '').trim() || 'Device';
+    if (!stationId) return res.status(400).json({ error: 'station_id required' });
+    try {
+      const code = genCode();
+      const expires = new Date(Date.now() + 10 * 60 * 1000);
+      await db
+        .promise()
+        .query('INSERT INTO device_pair_codes (code, station_id, name, expires_at) VALUES (?, ?, ?, ?)', [code, stationId, name, expires]);
+      res.json({ code, expires_at: expires.toISOString() });
+    } catch (err) {
+      res.status(500).json({ error: 'Failed to create pair code' });
+    }
+  });
+
+  router.post('/devices/pair/complete', async (req, res) => {
+    const code = (req.body.code || '').trim();
+    if (!code) return res.status(400).json({ error: 'code required' });
+    try {
+      const [rows] = await db
+        .promise()
+        .query('SELECT * FROM device_pair_codes WHERE code=? AND used_at IS NULL AND (expires_at IS NULL OR expires_at > NOW())', [code]);
+      if (!rows.length) return res.status(400).json({ error: 'invalid or expired code' });
+      const rec = rows[0];
+      // Create API token for this device
+      const name = rec.name || `Device ${rec.id}`;
+      const scopes = ['kds:read', 'orders:read'];
+      const tokenId = require('crypto').randomUUID();
+      const secret = require('crypto').randomBytes(24).toString('base64url');
+      const bcrypt = require('bcrypt');
+      const secretHash = await bcrypt.hash(secret, 10);
+      await db
+        .promise()
+        .query(
+          'INSERT INTO api_tokens (token_id, name, secret_hash, scopes, station_id) VALUES (?, ?, ?, ?, ?)',
+          [tokenId, name, secretHash, JSON.stringify(scopes), rec.station_id]
+        );
+      await db.promise().query('UPDATE device_pair_codes SET used_at=NOW() WHERE id=?', [rec.id]);
+      res.json({ token: `${tokenId}.${secret}`, station_id: rec.station_id, name });
+    } catch (err) {
+      res.status(500).json({ error: 'Failed to complete pairing' });
+    }
+  });
+
   return router;
 };
-

@@ -65,6 +65,7 @@ module.exports = function (io, db, transports = {}) {
           );
           io.emit("orderCompleted", { orderId });
           sse && sse.emitAll("orderCompleted", { orderId });
+          try { require('./webhooks').send('order.completed', { orderId }); } catch {}
           io.emit("reportsUpdated");
         } else {
           await query(
@@ -82,6 +83,48 @@ module.exports = function (io, db, transports = {}) {
             orderId,
             stationId: socket.stationId,
           });
+          try { require('./webhooks').send('order.progress', { orderId, stationId: socket.stationId }); } catch {}
+          // Forward to next station if configured
+          try {
+            const [ns] = await query(db, 'SELECT next_station_id FROM stations WHERE id=?', [socket.stationId]);
+            const nextId = ns[0]?.next_station_id;
+            if (nextId) {
+              const fetchSql = `SELECT oi.id AS order_item_id, oi.quantity, mi.name, mi.station_id, mi.id AS item_id,
+                                       oi.special_instructions, oi.allergy,
+                                       GROUP_CONCAT(m.name ORDER BY m.name SEPARATOR ', ') AS modifiers
+                                FROM order_items oi
+                                JOIN menu_items mi ON oi.menu_item_id = mi.id
+                                LEFT JOIN order_item_modifiers oim ON oi.id = oim.order_item_id
+                                LEFT JOIN modifiers m ON oim.modifier_id = m.id
+                                WHERE oi.order_id=? AND mi.station_id=?
+                                GROUP BY oi.id`;
+              const [rows] = await query(db, fetchSql, [orderId, nextId]);
+              if (rows.length) {
+                const payload = {
+                  orderId,
+                  orderNumber: orderId,
+                  orderType: '',
+                  specialInstructions: '',
+                  allergy: false,
+                  createdTs: Math.floor(Date.now() / 1000),
+                  items: rows.map((r) => ({
+                    quantity: r.quantity,
+                    name: r.name,
+                    stationId: r.station_id,
+                    itemId: r.item_id,
+                    orderItemId: r.order_item_id,
+                    modifiers: r.modifiers ? r.modifiers.split(', ') : [],
+                    specialInstructions: r.special_instructions || '',
+                    allergy: !!r.allergy,
+                  })),
+                };
+                io.to(`station-${nextId}`).emit('orderAdded', payload);
+                sse && sse.emitToStation(nextId, 'orderAdded', payload);
+              }
+            }
+          } catch (e) {
+            logger.error('Error forwarding to next station:', e);
+          }
         }
       } catch (err) {
         logger.error("Error handling bumpOrder:", err);
@@ -91,11 +134,7 @@ module.exports = function (io, db, transports = {}) {
     socket.on("recallOrder", async ({ orderId }) => {
       if (!orderId) return;
       try {
-        await query(
-          db,
-          "DELETE FROM bumped_orders WHERE order_id=? AND station_id=?",
-          [orderId, socket.stationId],
-        );
+        // Preserve bumped_orders history for analytics; do not delete on recall.
         if (socket.stationType === "expo") {
           await query(
             db,
@@ -104,7 +143,7 @@ module.exports = function (io, db, transports = {}) {
           );
           io.emit("reportsUpdated");
           const fetchSql = `SELECT o.order_number, o.order_type, o.special_instructions, o.allergy, UNIX_TIMESTAMP(o.created_at) AS ts,
-                               oi.quantity, mi.name, mi.station_id, mi.id AS item_id,
+                               oi.id AS order_item_id, oi.quantity, mi.name, mi.station_id, mi.id AS item_id,
                                oi.special_instructions AS item_instructions, oi.allergy AS item_allergy,
                                GROUP_CONCAT(m.name ORDER BY m.name SEPARATOR ', ') AS modifiers
                         FROM orders o
@@ -125,6 +164,7 @@ module.exports = function (io, db, transports = {}) {
               name: r.name,
               stationId: r.station_id,
               itemId: r.item_id,
+              orderItemId: r.order_item_id,
               modifiers: r.modifiers ? r.modifiers.split(", ") : [],
               specialInstructions: r.item_instructions || "",
               allergy: !!r.item_allergy,
@@ -167,6 +207,7 @@ module.exports = function (io, db, transports = {}) {
               name: r.name,
               stationId: r.station_id,
               itemId: r.item_id,
+              orderItemId: r.order_item_id,
               modifiers: r.modifiers ? r.modifiers.split(", ") : [],
               specialInstructions: r.item_instructions || "",
               allergy: !!r.item_allergy,
@@ -186,6 +227,38 @@ module.exports = function (io, db, transports = {}) {
         }
       } catch (err) {
         logger.error("Error handling recallOrder:", err);
+      }
+    });
+    socket.on('itemPrepared', async ({ orderId, orderItemId, state }) => {
+      if (!orderId || !orderItemId) return;
+      try {
+        // Update DB
+        if (state === 'ready') {
+          await query(db, 'UPDATE order_items SET state=?, prepared_at=NOW() WHERE id=? AND order_id=?', [state, orderItemId, orderId]);
+        } else {
+          await query(db, 'UPDATE order_items SET state=?, prepared_at=NULL WHERE id=? AND order_id=?', [state, orderItemId, orderId]);
+        }
+        // Broadcast item state to station and expo
+        io.to(`station-${socket.stationId}`).emit('itemState', { orderId, itemId: orderItemId, state });
+        io.to('expo').emit('itemState', { orderId, itemId: orderItemId, state });
+        sse && sse.emitToStation(socket.stationId, 'itemState', { orderId, itemId: orderItemId, state });
+        sse && sse.emitToExpo('itemState', { orderId, itemId: orderItemId, state });
+        // Check if all items are ready => mark order ready
+        const [rows] = await db
+          .promise()
+          .query('SELECT COUNT(*) AS remaining FROM order_items WHERE order_id=? AND state<>"ready"', [orderId]);
+        const remaining = rows[0]?.remaining || 0;
+        if (remaining === 0) {
+          await query(db, 'UPDATE orders SET status="ready", ready_at=NOW() WHERE id=?', [orderId]);
+          const readyTs = Math.floor(Date.now() / 1000);
+          io.emit('orderReady', { orderId, readyTs });
+          sse && sse.emitAll('orderReady', { orderId });
+          try { require('./webhooks').send('order.ready', { orderId, readyTs }); } catch {}
+        } else {
+          await query(db, 'UPDATE orders SET status="active" WHERE id=?', [orderId]);
+        }
+      } catch (err) {
+        logger.error('Error itemPrepared:', err);
       }
     });
     socket.on("markUrgent", async ({ orderId }) => {
@@ -220,6 +293,22 @@ module.exports = function (io, db, transports = {}) {
         }
       } catch (err) {
         logger.error('Error holding order:', err);
+      }
+    });
+
+    socket.on('prioritizeOrder', async ({ orderId, amount }) => {
+      if (!orderId) return;
+      const inc = Number.isFinite(amount) ? parseInt(amount, 10) : 1;
+      try {
+        await query(db, 'UPDATE orders SET priority=priority+? WHERE id=?', [inc, orderId]);
+        const [rows] = await db
+          .promise()
+          .query('SELECT priority FROM orders WHERE id=?', [orderId]);
+        const priority = rows[0]?.priority || 0;
+        io.emit('orderPriority', { orderId, priority });
+        sse && sse.emitAll('orderPriority', { orderId, priority });
+      } catch (err) {
+        logger.error('Error prioritizing order:', err);
       }
     });
 
@@ -284,6 +373,27 @@ module.exports = function (io, db, transports = {}) {
         sse && sse.emitToExpo('orderReleased', { orderId });
       } catch (err) {
         logger.error('Error releasing order:', err);
+      }
+    });
+
+    socket.on('clearReady', async () => {
+      if (socket.stationType !== 'expo') return;
+      try {
+        const [rows] = await query(db, 'SELECT id, order_number FROM orders WHERE status="ready"');
+        for (const r of rows) {
+          await query(db, 'UPDATE orders SET status="completed" WHERE id=?', [r.id]);
+          await query(
+            db,
+            `INSERT INTO bumped_orders (order_id, station_id, order_number)
+                   VALUES (?, ?, ?)
+                   ON DUPLICATE KEY UPDATE bumped_at=NOW(), order_number=VALUES(order_number)`,
+            [r.id, socket.stationId, r.order_number || String(r.id)]
+          );
+          io.emit('orderCompleted', { orderId: r.id });
+        }
+        io.emit('reportsUpdated');
+      } catch (err) {
+        logger.error('Error clearing ready orders:', err);
       }
     });
   });

@@ -1,0 +1,10 @@
+CREATE TABLE IF NOT EXISTS webhook_deliveries (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  event VARCHAR(50) NOT NULL,
+  payload JSON NOT NULL,
+  status_code INT DEFAULT NULL,
+  response_ms INT DEFAULT NULL,
+  error TEXT DEFAULT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+

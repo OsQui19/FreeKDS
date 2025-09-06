@@ -19,10 +19,11 @@ module.exports = (db) => {
     const wantsJSON =
       req.headers.accept && req.headers.accept.includes("application/json");
     const id = req.body.id;
-    const name = req.body.name;
-    const price = parseFloat(req.body.price) || 0;
-    const stationId = req.body.station_id;
-    const categoryId = req.body.category_id;
+    const name = (req.body.name || '').trim();
+    let price = parseFloat(req.body.price);
+    if (!Number.isFinite(price)) price = 0;
+    const stationId = req.body.station_id != null ? parseInt(req.body.station_id, 10) : null;
+    const categoryId = req.body.category_id != null ? parseInt(req.body.category_id, 10) : null;
     const recipe = req.body.recipe ? req.body.recipe.trim() : "";
     const imageUrl =
       req.body.image_url && req.body.image_url.trim() !== ""
@@ -34,10 +35,14 @@ module.exports = (db) => {
           ? 1
           : 0
         : 1;
-    const stock =
-      req.body.stock !== undefined && req.body.stock !== ""
-        ? parseInt(req.body.stock, 10)
-        : null;
+    let stock = null;
+    if (req.body.stock !== undefined) {
+      const raw = String(req.body.stock).trim();
+      if (raw !== '') {
+        const parsed = parseInt(raw, 10);
+        stock = Number.isFinite(parsed) ? parsed : null;
+      }
+    }
     let itemIngredients = [];
     if (req.body.ingredient_ids && req.body.ingredient_amounts) {
       const ids = Array.isArray(req.body.ingredient_ids)
@@ -120,7 +125,9 @@ module.exports = (db) => {
     }
 
     if (!name || !stationId || !categoryId) {
-      return res.redirect("/admin?tab=menu");
+      return wantsJSON
+        ? res.status(400).json({ error: 'Name, screen, and category are required' })
+        : res.redirect("/admin?tab=menu");
     }
     if (!id && itemIngredients.length === 0) {
       if (recipe === "") {
@@ -149,7 +156,9 @@ module.exports = (db) => {
         await updateItemIngredients(db, id, itemIngredients);
         await updateItemGroups(db, id, selectedGroups);
         await updateItemModifiers(db, id, selectedMods);
-        return res.redirect("/admin?tab=menu&msg=Item+saved");
+        return wantsJSON
+          ? res.json({ success: true, id: Number(id) })
+          : res.redirect("/admin?tab=menu&msg=Item+saved");
       }
       const insertSql =
         "INSERT INTO menu_items (name, price, station_id, category_id, image_url, recipe, is_available, stock) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
@@ -167,10 +176,14 @@ module.exports = (db) => {
       await updateItemIngredients(db, itemId, itemIngredients);
       await updateItemGroups(db, itemId, selectedGroups);
       await updateItemModifiers(db, itemId, selectedMods);
-      return res.redirect("/admin?tab=menu&msg=Item+saved");
+      return wantsJSON
+        ? res.json({ success: true, id: itemId })
+        : res.redirect("/admin?tab=menu&msg=Item+saved");
     } catch (err) {
       logger.error("Error saving item:", err);
-      return res.redirect("/admin?tab=menu");
+      return wantsJSON
+        ? res.status(500).json({ error: 'Server Error' })
+        : res.redirect("/admin?tab=menu");
     }
   });
 
@@ -318,9 +331,9 @@ module.exports = (db) => {
       (req.headers['content-type'] || '').includes('application/json') ||
       (req.headers.accept || '').includes('application/json');
     const id = req.body.id;
-    const name = req.body.name;
+    const name = (req.body.name || '').trim();
     let price = parseFloat(req.body.price);
-    const groupId = req.body.group_id || null;
+    const groupId = req.body.group_id ? parseInt(req.body.group_id, 10) : null;
     const ingredientId = parseInt(req.body.ingredient_id, 10);
     if (isNaN(price)) price = 0.0;
     const role = req.session?.user?.role;

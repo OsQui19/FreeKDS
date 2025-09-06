@@ -41,13 +41,35 @@ module.exports = (db) => {
   });
 
   router.get("/admin/backups/list", (req, res) => {
-    res.json({ backups: listBackups() });
+    try {
+      listBackups((err, list) => {
+        if (err) {
+          logger.error("Error listing backups:", err);
+          return res.status(500).json({ error: 'Failed' });
+        }
+        res.json({ backups: list });
+      });
+    } catch (e) {
+      logger.error("Unhandled error listing backups:", e);
+      res.status(500).json({ error: 'Failed' });
+    }
   });
 
   router.get("/admin/backups/log", async (req, res) => {
     try {
-      const logPath = path.join(getBackupDir(), "backup.log");
-      const data = await fs.promises.readFile(logPath, "utf8");
+      const dir = getBackupDir();
+      try { await fs.promises.mkdir(dir, { recursive: true }); } catch {}
+      const logPath = path.join(dir, "backup.log");
+      let data = '';
+      try {
+        data = await fs.promises.readFile(logPath, "utf8");
+      } catch (err) {
+        if (err && err.code === 'ENOENT') {
+          // No log yet; return empty content
+          return res.type('text/plain').send('');
+        }
+        throw err;
+      }
       res.type("text/plain").send(data);
     } catch (err) {
       logger.error("Error fetching backup log:", err);
@@ -151,4 +173,3 @@ module.exports = (db) => {
 
   return router;
 };
-

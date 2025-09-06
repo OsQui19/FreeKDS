@@ -11,43 +11,26 @@ export default function useFeatureFlag(key, defaultValue, context = {}) {
       let result;
       switch (typeof defaultValue) {
         case 'string':
-          result = await featureFlagClient.getStringDetails(
-            key,
-            defaultValue,
-            context
-          );
+          result = await featureFlagClient.getStringDetails(key, defaultValue, context);
           break;
         case 'number':
-          result = await featureFlagClient.getNumberDetails(
-            key,
-            defaultValue,
-            context
-          );
+          result = await featureFlagClient.getNumberDetails(key, defaultValue, context);
           break;
         case 'boolean':
-          result = await featureFlagClient.getBooleanDetails(
-            key,
-            defaultValue,
-            context
-          );
+          result = await featureFlagClient.getBooleanDetails(key, defaultValue, context);
           break;
         default:
-          result = await featureFlagClient.getObjectDetails(
-            key,
-            defaultValue,
-            context
-          );
+          result = await featureFlagClient.getObjectDetails(key, defaultValue, context);
       }
-      if (active) {
-        setState({ value: result.value, variant: result.variant || 'default' });
-      }
+      if (active) setState({ value: result.value, variant: result.variant || 'default' });
     }
 
     evaluate();
-    const interval = setInterval(evaluate, 1000);
+    const handler = () => evaluate();
+    try { window.addEventListener('featureFlags:updated', handler); } catch {}
     return () => {
       active = false;
-      clearInterval(interval);
+      try { window.removeEventListener('featureFlags:updated', handler); } catch {}
     };
   }, [key, defaultValue, context]);
 

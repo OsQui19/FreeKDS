@@ -1,6 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { formatCurrency } from '@/utils/format.js';
+import { useConfirm } from '@/contexts/ConfirmContext.jsx';
 
 export default function MenuItemsManager() {
+  const { confirm } = useConfirm();
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -35,6 +38,8 @@ export default function MenuItemsManager() {
     try {
       if (!edit.name?.trim()) throw new Error('Name is required');
       if (edit.price === '' || Number.isNaN(Number(edit.price))) throw new Error('Valid price is required');
+      if (!edit.station_id) throw new Error('Choose a screen');
+      if (!edit.category_id) throw new Error('Choose a category');
       const body = new URLSearchParams();
       if (edit.id) body.append('id', edit.id);
       body.append('name', edit.name);
@@ -60,7 +65,8 @@ export default function MenuItemsManager() {
   };
 
   const del = async (id) => {
-    if (!window.confirm('Delete this item?')) return;
+    const ok = await confirm('Delete this item? This cannot be undone.', { title: 'Delete item', confirmText: 'Delete', variant: 'danger' });
+    if (!ok) return;
     const body = new URLSearchParams();
     body.append('id', id);
     const res = await fetch('/api/admin/items/delete', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body });
@@ -81,7 +87,8 @@ export default function MenuItemsManager() {
           <div className="row g-2 align-items-end">
             <div className="col-md-3">
               <label className="form-label small">Name</label>
-              <input className="form-control form-control-sm" value={edit.name} onChange={(e)=>setEdit((v)=>({...v,name:e.target.value}))} />
+              <input className={`form-control form-control-sm ${(!edit.name?.trim() && 'is-invalid')||''}`} value={edit.name} onChange={(e)=>setEdit((v)=>({...v,name:e.target.value}))} />
+              {!edit.name?.trim() && <div className="invalid-feedback">Name is required</div>}
             </div>
             <div className="col-12">
               <label className="form-label small">Recipe (optional)</label>
@@ -89,23 +96,27 @@ export default function MenuItemsManager() {
             </div>
             <div className="col-md-2">
               <label className="form-label small">Price</label>
-              <input type="number" step="any" className="form-control form-control-sm" value={edit.price} onChange={(e)=>setEdit((v)=>({...v,price:e.target.value}))} />
+              <input type="number" step="any" className={`form-control form-control-sm ${((edit.price==='' || Number.isNaN(Number(edit.price))) && 'is-invalid')||''}`} value={edit.price} onChange={(e)=>setEdit((v)=>({...v,price:e.target.value}))} />
+              {(edit.price==='' || Number.isNaN(Number(edit.price))) && <div className="invalid-feedback">Enter a valid price</div>}
             </div>
             <div className="col-md-3">
               <label className="form-label small">Station</label>
-              <select className="form-select form-select-sm" value={edit.station_id} onChange={(e)=>setEdit((v)=>({...v,station_id:e.target.value}))}>
+              <select className={`form-select form-select-sm ${(!edit.station_id && 'is-invalid')||''}`} value={edit.station_id} onChange={(e)=>setEdit((v)=>({...v,station_id:e.target.value}))}>
                 {stations.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
               </select>
+              {!edit.station_id && <div className="invalid-feedback">Choose a screen</div>}
             </div>
             <div className="col-md-3">
               <label className="form-label small">Category</label>
-              <select className="form-select form-select-sm" value={edit.category_id} onChange={(e)=>setEdit((v)=>({...v,category_id:e.target.value}))}>
+              <select className={`form-select form-select-sm ${(!edit.category_id && 'is-invalid')||''}`} value={edit.category_id} onChange={(e)=>setEdit((v)=>({...v,category_id:e.target.value}))}>
                 {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
+              {!edit.category_id && <div className="invalid-feedback">Choose a category</div>}
             </div>
             <div className="col-md-2">
               <label className="form-label small">Stock</label>
               <input type="number" className="form-control form-control-sm" value={edit.stock ?? ''} onChange={(e)=>setEdit((v)=>({...v,stock:e.target.value}))} />
+              <div className="form-text">Leave empty if not tracking stock</div>
             </div>
             <div className="col-md-2">
               <label className="form-label small d-block">Available</label>
@@ -134,7 +145,7 @@ export default function MenuItemsManager() {
               </div>
             </div>
             <div className="col-md-3 ms-auto text-end">
-              <button className="btn btn-sm btn-primary me-2" disabled={saving || !edit.name?.trim() || edit.price==='' || Number.isNaN(Number(edit.price))} onClick={save}>Save</button>
+              <button className="btn btn-sm btn-primary me-2" disabled={saving || !edit.name?.trim() || edit.price==='' || Number.isNaN(Number(edit.price)) || !edit.station_id || !edit.category_id} onClick={save}>Save</button>
               <button className="btn btn-sm btn-secondary" onClick={cancel}>Cancel</button>
             </div>
           </div>
@@ -150,7 +161,7 @@ export default function MenuItemsManager() {
                 {(c.items || []).map((it) => (
                   <tr key={it.id}>
                     <td>{it.name}</td>
-                    <td>${Number(it.price).toFixed(2)}</td>
+                    <td>{formatCurrency(it.price)}</td>
                     <td>{it.station_name || it.station_id}</td>
                     <td>{it.is_available ? 'Yes' : 'No'}</td>
                     <td>{it.stock ?? '-'}</td>

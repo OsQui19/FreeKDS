@@ -19,12 +19,8 @@ function createApp(db, transports) {
   app.use(express.urlencoded({ extended: true }));
   app.use(express.json());
   app.use(sessionMiddleware(db, config, logger));
-  app.use((req, res, next) => {
-    if (req.secure || req.headers['x-forwarded-proto'] === 'https') {
-      return res.redirect('http://' + req.headers.host + req.originalUrl);
-    }
-    next();
-  });
+  // Do not force protocol downgrades; allow proxy to manage HTTPS.
+  // If you want to force HTTPS in production, do it explicitly via config.
   app.use(express.static(path.join(__dirname, '../dist')));
   app.use(apiTokenAuth(db, logger));
   app.use(authMiddleware(db));
@@ -58,6 +54,10 @@ function createApp(db, transports) {
     next();
   });
   app.get('*', (req, res) => {
+    // Prevent Express from handling engine.io or SSE upgrade/endpoints
+    if (req.path.startsWith('/socket.io') || req.path.startsWith('/sse')) {
+      return; // let socket.io/SSE handlers on the server respond
+    }
     const indexPath = path.join(__dirname, '../dist/index.html');
     if (fs.existsSync(indexPath)) {
       return res.sendFile(indexPath);

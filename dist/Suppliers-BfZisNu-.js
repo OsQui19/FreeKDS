@@ -1,5 +1,6 @@
-import { r as reactExports, j as jsxRuntimeExports } from "./app-z9U9ikwo.js";
+import { u as useToast, r as reactExports, j as jsxRuntimeExports } from "./app-CEUZD3nV.js";
 function SuppliersRoute() {
+  const { push } = useToast();
   const [suppliers, setSuppliers] = reactExports.useState([]);
   const [error, setError] = reactExports.useState(null);
   const [loading, setLoading] = reactExports.useState(true);
@@ -27,9 +28,10 @@ function SuppliersRoute() {
       if (form.id) body.append("id", form.id);
       body.append("name", form.name);
       if (form.contact_info) body.append("contact_info", form.contact_info);
-      await fetch("/api/admin/suppliers", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body });
+      const res = await fetch("/api/admin/suppliers", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body });
       setForm({ id: "", name: "", contact_info: "" });
       await load();
+      push(res.ok ? form.id ? "Supplier updated" : "Supplier added" : "Failed to save supplier", { variant: res.ok ? "success" : "danger" });
     } catch {
       setError("Save failed");
     }
@@ -37,8 +39,9 @@ function SuppliersRoute() {
   const del = async (id) => {
     const body = new URLSearchParams();
     body.append("id", id);
-    await fetch("/api/admin/suppliers/delete", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body });
+    const res = await fetch("/api/admin/suppliers/delete", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body });
     await load();
+    push(res.ok ? "Supplier deleted" : "Failed to delete supplier", { variant: res.ok ? "success" : "danger" });
   };
   const startEdit = (s) => setForm({ id: s.id, name: s.name || "", contact_info: s.contact_info || "" });
   if (loading) return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { children: "Loading…" });
@@ -46,7 +49,10 @@ function SuppliersRoute() {
     /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "mb-3", children: "Suppliers" }),
     error && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "alert alert-danger", children: error }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("form", { className: "row g-2 mb-3", onSubmit: save, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "col-md-3", children: /* @__PURE__ */ jsxRuntimeExports.jsx("input", { className: "form-control", placeholder: "Name", value: form.name, onChange: (e) => setForm((f) => ({ ...f, name: e.target.value })), required: true }) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "col-md-3", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("input", { className: `form-control ${form.name !== void 0 && !String(form.name).trim() ? "is-invalid" : ""}`, placeholder: "Name", value: form.name, onChange: (e) => setForm((f) => ({ ...f, name: e.target.value })), required: true }),
+        form.name !== void 0 && !String(form.name).trim() && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "invalid-feedback", children: "Name is required" })
+      ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "col-md-4", children: /* @__PURE__ */ jsxRuntimeExports.jsx("input", { className: "form-control", placeholder: "Contact info", value: form.contact_info, onChange: (e) => setForm((f) => ({ ...f, contact_info: e.target.value })) }) }),
       /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "col-md-2", children: /* @__PURE__ */ jsxRuntimeExports.jsx("button", { className: "btn btn-primary w-100", children: form.id ? "Update" : "Add" }) }),
       /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "col-md-2", children: form.id && /* @__PURE__ */ jsxRuntimeExports.jsx("button", { type: "button", className: "btn btn-secondary w-100", onClick: () => setForm({ id: "", name: "", contact_info: "" }), children: "Cancel" }) })
@@ -71,4 +77,4 @@ function SuppliersRoute() {
 export {
   SuppliersRoute as default
 };
-//# sourceMappingURL=Suppliers-CbKrIJiN.js.map
+//# sourceMappingURL=Suppliers-BfZisNu-.js.map

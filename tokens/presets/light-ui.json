@@ -1,0 +1,16 @@
+{
+  "color": {
+    "background": { "type": "color", "value": "#f7f8fa" },
+    "surface": { "type": "color", "value": "#ffffff" },
+    "text": { "type": "color", "value": "#212529" },
+    "accent": { "type": "color", "value": "#0d6efd" }
+  },
+  "shadow": {
+    "sm": { "type": "shadow", "value": "0 1px 2px rgba(0,0,0,0.06)" },
+    "md": { "type": "shadow", "value": "0 4px 8px rgba(0,0,0,0.1)" }
+  },
+  "state": {
+    "warn": { "type": "color", "value": "#ffc107" },
+    "critical": { "type": "color", "value": "#dc3545" }
+  }
+}

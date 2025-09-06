@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import { useToast } from '@/contexts/ToastContext.jsx';
+import { useConfirm } from '@/contexts/ConfirmContext.jsx';
 import { useParams } from 'react-router-dom';
 
 export default function PurchaseOrderDetailRoute() {
+  const { push } = useToast();
+  const { confirm } = useConfirm();
   const { id } = useParams();
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
@@ -28,8 +32,9 @@ export default function PurchaseOrderDetailRoute() {
   const receive = async () => {
     setReceiving(true);
     try {
-      await fetch(`/api/admin/purchase-orders/${id}/receive`, { method: 'POST' });
+      const res = await fetch(`/api/admin/purchase-orders/${id}/receive`, { method: 'POST' });
       await load();
+      push(res.ok ? 'Order received' : 'Failed to receive order', { variant: res.ok ? 'success' : 'danger' });
     } finally {
       setReceiving(false);
     }
@@ -47,17 +52,21 @@ export default function PurchaseOrderDetailRoute() {
       if (!res.ok) throw new Error('Add failed');
       setForm({ ingredient_id: '', quantity: '', unit_id: '' });
       await load();
+      push('Item added');
     } catch (e) {
       setError(e.message || 'Error');
     }
   };
 
   const delItem = async (itemId) => {
+    const ok = await confirm('Remove this item from the order?', { title: 'Remove item', confirmText: 'Remove', variant: 'danger' });
+    if (!ok) return;
     setError(null);
     try {
       const res = await fetch(`/api/admin/purchase-orders/${id}/items/${itemId}/delete`, { method: 'POST' });
       if (!res.ok) throw new Error('Delete failed');
       await load();
+      push('Item deleted');
     } catch (e) {
       setError(e.message || 'Error');
     }

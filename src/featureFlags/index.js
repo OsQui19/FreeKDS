@@ -89,6 +89,7 @@ OpenFeature.setProvider(provider);
 
 export function updateFeatureFlags(newFlags) {
   provider.data = newFlags;
+  try { window.dispatchEvent(new CustomEvent('featureFlags:updated')); } catch {}
 }
 
 export const featureFlagClient = OpenFeature.getClient();

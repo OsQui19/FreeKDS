@@ -1,4 +1,4 @@
-import { r as reactExports } from "./app-z9U9ikwo.js";
+import { r as reactExports, s as shallowequalExports } from "./app-CEUZD3nV.js";
 var __assign = function() {
   __assign = Object.assign || function __assign2(t) {
     for (var s, i = 1, n = arguments.length; i < n; i++) {
@@ -22,45 +22,6 @@ typeof SuppressedError === "function" ? SuppressedError : function(error, suppre
   var e = new Error(message);
   return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
 };
-var shallowequal;
-var hasRequiredShallowequal;
-function requireShallowequal() {
-  if (hasRequiredShallowequal) return shallowequal;
-  hasRequiredShallowequal = 1;
-  shallowequal = function shallowEqual(objA, objB, compare, compareContext) {
-    var ret = compare ? compare.call(compareContext, objA, objB) : void 0;
-    if (ret !== void 0) {
-      return !!ret;
-    }
-    if (objA === objB) {
-      return true;
-    }
-    if (typeof objA !== "object" || !objA || typeof objB !== "object" || !objB) {
-      return false;
-    }
-    var keysA = Object.keys(objA);
-    var keysB = Object.keys(objB);
-    if (keysA.length !== keysB.length) {
-      return false;
-    }
-    var bHasOwnProperty = Object.prototype.hasOwnProperty.bind(objB);
-    for (var idx = 0; idx < keysA.length; idx++) {
-      var key = keysA[idx];
-      if (!bHasOwnProperty(key)) {
-        return false;
-      }
-      var valueA = objA[key];
-      var valueB = objB[key];
-      ret = compare ? compare.call(compareContext, valueA, valueB, key) : void 0;
-      if (ret === false || ret === void 0 && valueA !== valueB) {
-        return false;
-      }
-    }
-    return true;
-  };
-  return shallowequal;
-}
-var shallowequalExports = requireShallowequal();
 var MS = "-ms-";
 var MOZ = "-moz-";
 var WEBKIT = "-webkit-";
@@ -1288,4 +1249,4 @@ export {
   v as version,
   yt as withTheme
 };
-//# sourceMappingURL=styled-components.browser.esm-CNtzB2--.js.map
+//# sourceMappingURL=styled-components.browser.esm-Y9EpI0E0.js.map
