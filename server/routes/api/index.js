@@ -21,8 +21,10 @@ module.exports = (db, transports) => {
     "/api/orders",
     schemaValidator("order"),
     async (req, res, next) => {
-      const { order_number, order_type, items, special_instructions, allergy } =
-        req.body;
+      const { order_number, order_type, items, special_instructions, allergy, source: bodySource, channel: bodyChannel } =
+        req.body || {};
+      const source = (bodySource || 'pos');
+      const channel = bodyChannel || null;
 
     let conn;
     try {
@@ -30,10 +32,12 @@ module.exports = (db, transports) => {
       await conn.beginTransaction();
 
       const [result] = await conn.query(
-        "INSERT INTO orders (order_number, order_type, special_instructions, allergy) VALUES (?, ?, ?, ?)",
+        "INSERT INTO orders (order_number, order_type, source, channel, special_instructions, allergy) VALUES (?, ?, ?, ?, ?, ?)",
         [
           order_number || null,
           order_type || null,
+          source || null,
+          channel,
           special_instructions || null,
           allergy ? 1 : 0,
         ],
@@ -122,6 +126,8 @@ module.exports = (db, transports) => {
           orderType: order_type || "",
           specialInstructions: special_instructions || "",
           allergy: !!allergy,
+          source: source || '',
+          channel: channel || '',
           createdTs,
           items: stationMap[id],
         };
@@ -134,6 +140,8 @@ module.exports = (db, transports) => {
         orderType: order_type || "",
         specialInstructions: special_instructions || "",
         allergy: !!allergy,
+        source: source || '',
+        channel: channel || '',
         createdTs,
         items: rows.map((r) => ({
           quantity: r.quantity,

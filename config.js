@@ -18,6 +18,15 @@ module.exports = {
     windowMs: 60 * 1000,
     max: 1000,
   },
+  cors: {
+    // Allowed origins for Socket.IO/WebSocket connections
+    allowedOrigins: [
+      'http://localhost:3000',
+      'http://127.0.0.1:3000',
+      'http://localhost',
+      'http://127.0.0.1',
+    ],
+  },
   githubRepo: process.env.GITHUB_REPO || '',
   defaultTransport: 'ws', /* see docs/realtime.md */
 };

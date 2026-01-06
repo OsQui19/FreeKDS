@@ -6,6 +6,8 @@ import Builder from '@/features/LayoutBuilder/Builder.jsx';
 import { useTheme } from '@/contexts/ThemeContext.jsx';
 import Renderer from '@/features/LayoutBuilder/Renderer.jsx';
 import { useToast } from '@/contexts/ToastContext.jsx';
+import * as BuilderBlocks from '@/features/LayoutBuilder/components.jsx';
+import { Element } from '@craftjs/core';
 
 // No default tickets; users can run a test to generate
 
@@ -244,6 +246,8 @@ export default function DesignStudioRoute() {
         </div>
         <label className="small">Device</label>
         <select className="form-select form-select-sm sctrl" value={previewWidth} onChange={(e)=>setPreviewWidth(parseInt(e.target.value,10))} title="Change preview size">
+          <option value={360}>Phone</option>
+          <option value={414}>Phone (large)</option>
           <option value={768}>Tablet</option>
           <option value={1024}>Large tablet</option>
           <option value={1280}>Desktop</option>
@@ -336,10 +340,35 @@ export default function DesignStudioRoute() {
                   <div className="row g-3">
                     <div className="col-12 col-lg-7">
                       <div className="card-surface p-2">
-                        <Builder target={builderTarget} renderControls={({ saveDraft, serialize }) => (
-                          <div className="d-flex justify-content-end gap-2 mb-2">
-                            <button className="sbtn primary" onClick={saveDraft}>Save</button>
-                            <button className="sbtn" onClick={()=>{ const n = prompt('Save as (new layout name)'); if (n) saveAs(serialize, n); }}>Save as…</button>
+                        <Builder target={builderTarget} renderControls={({ saveDraft, publishDraft, serialize, applyTemplate }) => (
+                          <div className="d-flex justify-content-between align-items-center mb-2">
+                            <div className="d-flex gap-2">
+                              <div className="dropdown">
+                                <button className="sbtn dropdown-toggle" data-bs-toggle="dropdown">Templates</button>
+                                <ul className="dropdown-menu">
+                                  <li><button className="dropdown-item" onClick={() => applyTemplate(
+                                    (<Element is={BuilderBlocks.Stack} canvas>
+                                      <BuilderBlocks.KdsHeader />
+                                      <Element is={BuilderBlocks.Grid} canvas>
+                                        <BuilderBlocks.KdsTicketGrid />
+                                      </Element>
+                                    </Element>)
+                                  )}>KDS: Header + Grid</button></li>
+                                  <li><button className="dropdown-item" onClick={() => applyTemplate(
+                                    (<Element is={BuilderBlocks.Stack} canvas>
+                                      <BuilderBlocks.KdsHeader />
+                                      <BuilderBlocks.KdsAllDay />
+                                      <BuilderBlocks.KdsTicketGrid />
+                                    </Element>)
+                                  )}>KDS: Header + All Day + Grid</button></li>
+                                </ul>
+                              </div>
+                            </div>
+                            <div className="d-flex gap-2">
+                              <button className="sbtn" onClick={saveDraft}>Save Draft</button>
+                              <button className="sbtn primary" onClick={publishDraft}>Publish</button>
+                              <button className="sbtn" onClick={()=>{ const n = prompt('Save as (new layout name)'); if (n) saveAs(serialize, n); }}>Save as…</button>
+                            </div>
                           </div>
                         )} />
                       </div>

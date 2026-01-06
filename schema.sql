@@ -83,6 +83,8 @@ CREATE TABLE IF NOT EXISTS orders (
   id           INT PRIMARY KEY AUTO_INCREMENT,
   order_number VARCHAR(50),             -- external reference or number (could be table number or online order ID)
   order_type   VARCHAR(20),             -- e.g. 'DINE-IN', 'TO-GO', 'CATERING'
+  source       VARCHAR(20) DEFAULT NULL, -- e.g. 'pos', 'online'
+  channel      VARCHAR(50) DEFAULT NULL, -- e.g. 'api', 'doordash'
   special_instructions TEXT,
   allergy      BOOLEAN DEFAULT FALSE,
   is_urgent    BOOLEAN DEFAULT FALSE,

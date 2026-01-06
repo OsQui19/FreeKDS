@@ -7,6 +7,8 @@
   "properties": {
     "order_number": { "type": ["string", "integer"] },
     "order_type": { "type": "string" },
+    "source": { "type": "string" },
+    "channel": { "type": "string" },
     "special_instructions": { "type": "string" },
     "allergy": { "type": "boolean" },
     "items": {

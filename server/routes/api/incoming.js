@@ -13,6 +13,8 @@ module.exports = (db, transports) => {
       const payload = req.body || {};
       const orderNumber = payload.order_number || null;
       const orderType = payload.order_type || null;
+      const source = payload.source || 'online';
+      const channel = payload.channel || 'api';
       const items = Array.isArray(payload.items) ? payload.items : [];
       if (!items.length) return res.status(400).json({ error: 'No items' });
       // Map item names to ids if necessary
@@ -27,7 +29,7 @@ module.exports = (db, transports) => {
       const conn = await db.promise().getConnection();
       try {
         await conn.beginTransaction();
-        const [result] = await conn.query('INSERT INTO orders (order_number, order_type, special_instructions, allergy) VALUES (?, ?, ?, ?)', [orderNumber, orderType, payload.special_instructions || null, payload.allergy ? 1 : 0]);
+        const [result] = await conn.query('INSERT INTO orders (order_number, order_type, source, channel, special_instructions, allergy) VALUES (?, ?, ?, ?, ?, ?)', [orderNumber, orderType, source || null, channel || null, payload.special_instructions || null, payload.allergy ? 1 : 0]);
         const orderId = result.insertId;
         const orderItemInfo = [];
         for (const it of items) {
@@ -53,11 +55,11 @@ module.exports = (db, transports) => {
         const stationMap = {};
         rows.forEach((r) => { (stationMap[r.station_id] = stationMap[r.station_id] || []).push({ quantity: r.quantity, name: r.name, stationId: r.station_id, itemId: r.item_id, orderItemId: r.order_item_id, modifiers: r.modifiers ? r.modifiers.split(', ') : [], specialInstructions: r.special_instructions || '', allergy: !!r.allergy }); });
         Object.keys(stationMap).forEach((id) => {
-          const payloadOut = { orderId, orderNumber: orderNumber || orderId, orderType: orderType || '', specialInstructions: payload.special_instructions || '', allergy: !!payload.allergy, createdTs, items: stationMap[id] };
+          const payloadOut = { orderId, orderNumber: orderNumber || orderId, orderType: orderType || '', specialInstructions: payload.special_instructions || '', allergy: !!payload.allergy, source: source || '', channel: channel || '', createdTs, items: stationMap[id] };
           transports.io && transports.io.to(`station-${id}`).emit('orderAdded', payloadOut);
           transports.sse && transports.sse.emitToStation(id, 'orderAdded', payloadOut);
         });
-        const expoPayload = { orderId, orderNumber: orderNumber || orderId, orderType: orderType || '', specialInstructions: payload.special_instructions || '', allergy: !!payload.allergy, createdTs, items: rows.map((r)=> ({ quantity: r.quantity, name: r.name, stationId: r.station_id, itemId: r.item_id, orderItemId: r.order_item_id, modifiers: r.modifiers ? r.modifiers.split(', ') : [], specialInstructions: r.special_instructions || '', allergy: !!r.allergy })) };
+        const expoPayload = { orderId, orderNumber: orderNumber || orderId, orderType: orderType || '', specialInstructions: payload.special_instructions || '', allergy: !!payload.allergy, source: source || '', channel: channel || '', createdTs, items: rows.map((r)=> ({ quantity: r.quantity, name: r.name, stationId: r.station_id, itemId: r.item_id, orderItemId: r.order_item_id, modifiers: r.modifiers ? r.modifiers.split(', ') : [], specialInstructions: r.special_instructions || '', allergy: !!r.allergy })) };
         transports.io && transports.io.to('expo').emit('orderAdded', expoPayload);
         transports.sse && transports.sse.emitToExpo('orderAdded', expoPayload);
         return res.json({ success: true, orderId });

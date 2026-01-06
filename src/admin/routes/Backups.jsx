@@ -87,7 +87,9 @@ export default function BackupsRoute() {
       <div className="d-flex align-items-center gap-2 mb-3">
         <select className="form-select w-auto" value={selected} onChange={(e)=>setSelected(e.target.value)}>
           <option value="">Select backup to restore…</option>
-          {list.map(f => <option key={f} value={f}>{f}</option>)}
+          {list.map((f) => (
+            <option key={f.name} value={f.name}>{f.name}</option>
+          ))}
         </select>
         <button className="btn btn-outline-warning" onClick={restore} disabled={!selected}>Restore</button>
         <label className="btn btn-outline-secondary mb-0">
@@ -104,11 +106,11 @@ export default function BackupsRoute() {
           </thead>
           <tbody>
             {list.map((f) => (
-              <tr key={f}>
-                <td>{f}</td>
+              <tr key={f.name}>
+                <td>{f.name}</td>
                 <td>
-                  <a className="btn btn-sm btn-outline-primary me-2" href={`/api/admin/backups/download?file=${encodeURIComponent(f)}`}>Download</a>
-                  <button className="btn btn-sm btn-outline-danger" onClick={()=>del(f)}>Delete</button>
+                  <a className="btn btn-sm btn-outline-primary me-2" href={`/api/admin/backups/download?file=${encodeURIComponent(f.name)}`}>Download</a>
+                  <button className="btn btn-sm btn-outline-danger" onClick={()=>del(f.name)}>Delete</button>
                 </td>
               </tr>
             ))}

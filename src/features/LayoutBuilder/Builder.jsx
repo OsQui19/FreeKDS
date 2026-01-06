@@ -31,7 +31,8 @@ function Palette({ target = 'kds' }) {
   };
   const ICONS = {
     'Header':'🧾', 'Ticket Grid':'🧩', 'All Day':'🧮', 'Ticket Template':'🎫',
-    'Stack':'📦', 'Grid':'#', 'Data Table':'📋', 'Form':'✍️', 'Button Bar':'🛠️', 'Filters':'🔎'
+    'Stack':'📦', 'Grid':'#', 'Data Table':'📋', 'Form':'✍️', 'Button Bar':'🛠️', 'Filters':'🔎',
+    'Image':'🖼️', 'Video':'🎬', 'Map':'🗺️', 'Menu Section':'🍽️', 'Gallery':'🖼️', 'Testimonials':'💬', 'Contact Form':'📮'
   };
   const Item = ({ title, node }) => (
     <div className="d-flex align-items-center gap-2">
@@ -71,6 +72,13 @@ function Palette({ target = 'kds' }) {
       {target === 'kds' && <Item title="Ticket Template" node={<Blocks.KdsTicketTemplate />} />}
       <Item title="Stack" node={<Element is={Blocks.Stack} canvas />} />
       <Item title="Grid" node={<Element is={Blocks.Grid} canvas />} />
+      <Item title="Image" node={<Blocks.ImageBlock />} />
+      <Item title="Video" node={<Blocks.VideoEmbed />} />
+      <Item title="Map" node={<Blocks.MapEmbed />} />
+      <Item title="Menu Section" node={<Blocks.MenuSection />} />
+      <Item title="Gallery" node={<Blocks.GalleryBlock />} />
+      <Item title="Testimonials" node={<Blocks.TestimonialsSlider />} />
+      <Item title="Contact Form" node={<Blocks.ContactForm />} />
       {(target === 'admin' || target === 'order') && (
         <>
           <Item title="Data Table" node={<Blocks.DataTable />} />
@@ -86,7 +94,7 @@ function Palette({ target = 'kds' }) {
 
 function Controls({ renderControls }) {
   const { query, actions } = useEditor();
-  const { saveLayout } = useLayout();
+  const { saveLayout, saveDraft, publishDraft } = useLayout();
   const { confirm } = useConfirm();
   const history = React.useRef([]);
   const snapshot = () => { try { history.current.push(query.serialize()); } catch {} };
@@ -102,9 +110,24 @@ function Controls({ renderControls }) {
     return () => window.removeEventListener('keydown', handler);
   }, [query, saveLayout]);
   if (typeof renderControls === 'function') {
+    const clearScreen = async () => {
+      try {
+        const root = query.node('ROOT').get();
+        const children = root?.data?.nodes || [];
+        children.forEach((id) => actions.delete(id));
+      } catch {}
+    };
+    const applyTemplate = async (...nodes) => {
+      await clearScreen();
+      nodes.forEach((node) => {
+        try { const tree = query.parseReactElement(node).toNodeTree(); actions.addNodeTree(tree, 'ROOT'); } catch {}
+      });
+    };
     return renderControls({
       serialize: query.serialize,
-      saveDraft: () => saveLayout(query.serialize()),
+      saveDraft: () => saveDraft(query.serialize()),
+      publishDraft,
+      applyTemplate,
     });
   }
   const clearScreen = async () => {
@@ -192,6 +215,12 @@ function PropertyPanel() {
       },
     };
   });
+  const { query, actions: editorActions } = useEditor();
+  const [menuCats, setMenuCats] = React.useState([]);
+  const [snippets, setSnippets] = React.useState(() => {
+    try { return JSON.parse(localStorage.getItem('ds_snippets') || '[]'); } catch { return []; }
+  });
+  React.useEffect(() => { (async ()=>{ try { const r = await fetch('/api/order'); const j = await r.json(); setMenuCats(Array.isArray(j.categories) ? j.categories : []); } catch {} })(); }, []);
 
   if (!selected) return (
     <div className="card-surface p-2">
@@ -309,6 +338,65 @@ function PropertyPanel() {
       case 'grid':
       case 'stack':
         return slider('Spacing between parts', 'gap', 0, 32, 1);
+      case 'image':
+        return (
+          <>
+            {text('Image URL', 'src')}
+            {text('Alt text', 'alt')}
+            {text('Width (e.g., 100%, 320px)', 'width')}
+          </>
+        );
+      case 'video':
+        return (
+          <>
+            {text('Embed URL', 'url')}
+            {number('Height (px)', 'height', 120, 1200, 10)}
+          </>
+        );
+      case 'map':
+        return (
+          <>
+            {text('Embed URL', 'url')}
+            {number('Height (px)', 'height', 120, 1200, 10)}
+          </>
+        );
+      case 'menusection':
+        return (
+          <>
+            <div className="mb-2">
+              <label className="form-label small">Category</label>
+              <select className="form-select form-select-sm" value={selected.props.categoryId ?? ''}
+                onChange={(e)=>setProp((p)=>{ p.categoryId = e.target.value; })}>
+                <option value="">All categories</option>
+                {menuCats.map((c)=> (<option key={c.id} value={c.id}>{c.name}</option>))}
+              </select>
+            </div>
+            {number('Columns', 'columns', 1, 4, 1)}
+            {toggle('Show images', 'showImages')}
+          </>
+        );
+      case 'galleryblock':
+        return (
+          <>
+            {text('Image URLs (comma-separated)', 'images')}
+            {number('Height (px)', 'height', 120, 1200, 10)}
+            {number('Interval (ms)', 'intervalMs', 1000, 60000, 100)}
+          </>
+        );
+      case 'testimonialsslider':
+        return (
+          <>
+            {text('Testimonials (quote|author per line)', 'itemsText')}
+            {number('Interval (ms)', 'intervalMs', 1000, 60000, 100)}
+          </>
+        );
+      case 'contactform':
+        return (
+          <>
+            {text('Submit URL', 'url')}
+            {text('Success message', 'success')}
+          </>
+        );
       default:
         return <div className="text-muted">No settings for this part yet</div>;
     }
@@ -318,6 +406,99 @@ function PropertyPanel() {
     <div className="card-surface p-2">
       <div className="fw-bold mb-2">Settings</div>
       {renderFor(selected.name)}
+      {/* Snippets */}
+      <div className="border-top mt-2 pt-2">
+        <div className="fw-bold small mb-1">Snippets</div>
+        <div className="d-flex gap-2 mb-2">
+          <button className="btn btn-sm btn-outline-primary" onClick={() => {
+            const name = prompt('Save snippet as'); if (!name) return;
+            try {
+              const build = (id) => {
+                const node = query.node(id).get();
+                if (!node || !node.data) return null;
+                const type = node.data.displayName || node.data.name;
+                const props = node.data.props || {};
+                const children = (node.data.nodes || []).map((cid) => build(cid)).filter(Boolean);
+                return { type, props, children };
+              };
+              const tree = build(selected.id);
+              if (!tree) return;
+              const next = [...snippets.filter((s)=> s.name !== name), { name, tree }];
+              setSnippets(next);
+              localStorage.setItem('ds_snippets', JSON.stringify(next));
+            } catch {}
+          }}>Save snippet…</button>
+        </div>
+        <div>
+          {snippets.map((s) => (
+            <div key={s.name} className="d-flex align-items-center justify-content-between mb-1">
+              <div className="small">{s.name}</div>
+              <div className="d-flex gap-2">
+                <button className="btn btn-sm btn-outline-primary" onClick={() => {
+                  try {
+                    const canvases = new Set(['Stack','Grid']);
+                    const toEl = (n) => {
+                      const Comp = Blocks[n.type];
+                      if (!Comp) return null;
+                      const kids = (n.children||[]).map(toEl).filter(Boolean);
+                      if (canvases.has(n.type)) return (<Element is={Comp} canvas>{kids}</Element>);
+                      return React.createElement(Comp, n.props || {}, kids);
+                    };
+                    const el = toEl(s.tree);
+                    if (!el) return;
+                    const tree = query.parseReactElement(el).toNodeTree();
+                    editorActions.addNodeTree(tree, 'ROOT');
+                  } catch {}
+                }}>Insert</button>
+                <button className="btn btn-sm btn-outline-danger" onClick={() => {
+                  const next = snippets.filter((x)=> x.name !== s.name);
+                  setSnippets(next);
+                  localStorage.setItem('ds_snippets', JSON.stringify(next));
+                }}>Delete</button>
+              </div>
+            </div>
+          ))}
+          {!snippets.length && <div className="text-muted small">No snippets saved</div>}
+        </div>
+      </div>
+      <div className="border-top mt-2 pt-2">
+        <div className="fw-bold small mb-1">Visibility</div>
+        <div className="row g-2">
+          <div className="col-6">
+            <div className="form-check form-switch">
+              <input className="form-check-input" type="checkbox" id="hidePhone" checked={!!selected.props.hideOnPhone} onChange={(e)=>setProp((p)=>{ p.hideOnPhone = e.target.checked; })} />
+              <label className="form-check-label small" htmlFor="hidePhone">Hide on phone</label>
+            </div>
+          </div>
+          <div className="col-6">
+            <div className="form-check form-switch">
+              <input className="form-check-input" type="checkbox" id="hideTablet" checked={!!selected.props.hideOnTablet} onChange={(e)=>setProp((p)=>{ p.hideOnTablet = e.target.checked; })} />
+              <label className="form-check-label small" htmlFor="hideTablet">Hide on tablet</label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="border-top mt-2 pt-2">
+        <div className="fw-bold small mb-1">Animation</div>
+        <div className="row g-2">
+          <div className="col-6">
+            <label className="form-label small">Effect</label>
+            <select className="form-select form-select-sm" value={selected.props.anim || ''} onChange={(e)=>setProp((p)=>{ p.anim = e.target.value; })}>
+              <option value="">None</option>
+              <option value="fade-in">Fade in</option>
+              <option value="slide-up">Slide up</option>
+            </select>
+          </div>
+          <div className="col-3">
+            <label className="form-label small">Duration (ms)</label>
+            <input type="number" className="form-control form-control-sm" value={selected.props.duration ?? 300} onChange={(e)=>setProp((p)=>{ p.duration = parseInt(e.target.value||'0',10)||0; })} />
+          </div>
+          <div className="col-3">
+            <label className="form-label small">Delay (ms)</label>
+            <input type="number" className="form-control form-control-sm" value={selected.props.delay ?? 0} onChange={(e)=>setProp((p)=>{ p.delay = parseInt(e.target.value||'0',10)||0; })} />
+          </div>
+        </div>
+      </div>
       <div className="d-flex justify-content-end mt-3">
         <button className="btn btn-sm btn-outline-danger" onClick={() => actions.delete(selected.id)}>Remove this part</button>
       </div>

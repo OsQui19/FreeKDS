@@ -73,12 +73,14 @@ module.exports = (db) => {
           conditions.push("o.order_type = ?");
           orderParams.push(station.order_type_filter);
         }
-        const orderSql = `SELECT o.id AS order_id, o.order_number, o.order_type,
+        const orderSql = `SELECT o.id AS order_id, o.order_number, o.order_type, o.source, o.channel,
                             o.special_instructions, o.allergy,
                             UNIX_TIMESTAMP(o.created_at) AS ts,
                             UNIX_TIMESTAMP(o.ready_at) AS ready_ts,
                             o.priority,
                             oi.id AS order_item_id, oi.quantity,
+                            oi.state AS item_state,
+                            UNIX_TIMESTAMP(oi.prepared_at) AS prepared_ts,
                             oi.special_instructions AS item_instructions, oi.allergy AS item_allergy,
                             mi.name, mi.station_id, mi.id AS item_id,
                             GROUP_CONCAT(m.name ORDER BY m.name SEPARATOR ', ') AS modifiers
@@ -98,15 +100,17 @@ module.exports = (db) => {
           const ordersMap = {};
           rows.forEach((row) => {
             if (!ordersMap[row.order_id]) {
-              ordersMap[row.order_id] = {
-                order_id: row.order_id,
-                order_number: row.order_number,
-                order_type: row.order_type,
-                special_instructions: row.special_instructions || "",
-                allergy: !!row.allergy,
-                ts: row.ts,
-                ready_ts: row.ready_ts,
-                priority: row.priority || 0,
+            ordersMap[row.order_id] = {
+              order_id: row.order_id,
+              order_number: row.order_number,
+              order_type: row.order_type,
+              source: row.source || '',
+              channel: row.channel || '',
+              special_instructions: row.special_instructions || "",
+              allergy: !!row.allergy,
+              ts: row.ts,
+              ready_ts: row.ready_ts,
+              priority: row.priority || 0,
                 items: [],
               };
             }
@@ -116,6 +120,8 @@ module.exports = (db) => {
               stationId: row.station_id,
               itemId: row.item_id,
               orderItemId: row.order_item_id,
+              state: row.item_state || null,
+              preparedTs: row.prepared_ts || null,
               modifiers: row.modifiers ? row.modifiers.split(", ") : [],
               specialInstructions: row.item_instructions || "",
               allergy: !!row.item_allergy,

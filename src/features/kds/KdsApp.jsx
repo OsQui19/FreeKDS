@@ -1,8 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, startTransition } from 'react';
 import OrderList from '../Orders/components/OrderList.jsx';
 import { TicketGrid } from '../../../packages/renderers/index.js';
 import useTransport from '@/hooks/useTransport.js';
 import KdsSidebar from './KdsSidebar.jsx';
+import useFeatureFlag from '@/hooks/useFeatureFlag.js';
 
 /**
  * KDS application component that renders incoming orders.
@@ -12,6 +13,7 @@ import KdsSidebar from './KdsSidebar.jsx';
  */
 export default function KdsApp({ stationType, stationId, transport = 'ws', fallback, takeoutOnly = false, newSound = 'beep', urgentSound = 'beep2', showSidebar = false, bumpedOrders = [], showAllDay = true, allStations = [] }) {
   const [orders, setOrders] = useState([]);
+  const [nowSec, setNowSec] = useState(() => Math.floor(Date.now()/1000));
   const [urgentIds, setUrgentIds] = useState(new Set());
   const [heldIds, setHeldIds] = useState(new Set());
   const [newIds, setNewIds] = useState(new Set());
@@ -38,6 +40,8 @@ export default function KdsApp({ stationType, stationId, transport = 'ws', fallb
     });
     return m;
   }, [allStations]);
+  const { value: showSourceBadge } = useFeatureFlag('kds.showSourceBadge', true, { station: stationId });
+  const { value: sourceColors } = useFeatureFlag('kds.sourceColors', {}, { station: stationId });
   // Expose send for simple UI hooks
   useEffect(() => {
     try { if (typeof window !== 'undefined') window.__kdsSend = send; } catch {}
@@ -109,14 +113,6 @@ export default function KdsApp({ stationType, stationId, transport = 'ws', fallb
       setUrgentIds((prev) => new Set([...prev, orderId]));
       beep(urgentSound);
     };
-    const handleItemState = ({ orderId, itemId, state }) => {
-      const ts = state === 'ready' ? Math.floor(Date.now()/1000) : undefined;
-      setOrders((prev) => prev.map((o) =>
-        o.orderId === orderId
-          ? { ...o, items: (o.items || []).map((it) => it.itemId === itemId ? { ...it, state, preparedTs: ts } : it) }
-          : o
-      ));
-    };
     const handleHeld = ({ orderId }) => {
       setHeldIds((prev) => new Set([...prev, orderId]));
     };
@@ -145,19 +141,19 @@ export default function KdsApp({ stationType, stationId, transport = 'ws', fallb
     on('orderAdded', handleAdd);
     on('orderCompleted', handleComplete);
     on('orderUrgent', handleUrgent);
-    on('itemState', handleItemState);
     on('orderHeld', handleHeld);
     on('orderReleased', handleReleased);
     on('orderReady', handleReady);
     on('orderPriority', handlePriority);
-    on('stationDone', ({ orderId, stationId: doneId }) => {
+    const handleStationDone = ({ orderId, stationId: doneId }) => {
       const ts = Math.floor(Date.now()/1000);
       setOrders((prev) => prev.map((o) => (
         o.orderId === orderId
           ? { ...o, items: (o.items || []).map((it) => (String(it.stationId) === String(doneId) ? { ...it, state: 'ready', preparedTs: ts } : it)) }
           : o
       )));
-    });
+    };
+    on('stationDone', handleStationDone);
     if (stationType === 'expo') {
       on('orderCompleted', refreshBumped);
       on('stationUndo', refreshBumped);
@@ -167,18 +163,33 @@ export default function KdsApp({ stationType, stationId, transport = 'ws', fallb
       off('orderAdded', handleAdd);
       off('orderCompleted', handleComplete);
       off('orderUrgent', handleUrgent);
-      off('itemState', handleItemState);
+    // 'itemState' is deprecated; readiness is driven by station bump events
       off('orderHeld', handleHeld);
       off('orderReleased', handleReleased);
       off('orderReady', handleReady);
       off('orderPriority', handlePriority);
-      off('stationDone', () => {});
+      off('stationDone', handleStationDone);
       if (stationType === 'expo') {
         off('orderCompleted', refreshBumped);
         off('stationUndo', refreshBumped);
       }
     };
-  }, [connection, connected, on, off]);
+  }, [connection, connected, stationType, stationId, on, off]);
+
+  // Shared clock for timers to avoid many per-card intervals
+  useEffect(() => {
+    const t = setInterval(() => {
+      startTransition(() => {
+        setNowSec(Math.floor(Date.now()/1000));
+      });
+    }, 1000);
+    // Expose for renderers that read from window (keeps renderers decoupled)
+    try { if (typeof window !== 'undefined') window.__KDS_NOW_SEC = Math.floor(Date.now()/1000); } catch {}
+    return () => clearInterval(t);
+  }, []);
+  useEffect(() => {
+    try { if (typeof window !== 'undefined') window.__KDS_NOW_SEC = nowSec; } catch {}
+  }, [nowSec]);
 
   const visibleOrders = React.useMemo(() => (takeoutOnly ? orders.filter((o)=> String(o.orderType||'').toUpperCase().includes('TO-GO')) : orders), [orders, takeoutOnly]);
   // Poll fallback to keep KDS updated even if realtime is blocked
@@ -186,6 +197,8 @@ export default function KdsApp({ stationType, stationId, transport = 'ws', fallb
       orderId: o.order_id,
       orderNumber: o.order_number || o.order_id,
       orderType: o.order_type || '',
+      source: o.source || '',
+      channel: o.channel || '',
       specialInstructions: o.special_instructions || '',
       allergy: !!o.allergy,
       createdTs: o.ts,
@@ -197,12 +210,18 @@ export default function KdsApp({ stationType, stationId, transport = 'ws', fallb
         stationId: it.stationId,
         itemId: it.itemId,
         orderItemId: it.orderItemId,
+        state: it.state || null,
+        preparedTs: it.preparedTs || null,
         modifiers: it.modifiers||[],
         specialInstructions: it.specialInstructions||'',
         allergy: !!it.allergy,
       })),
     }), []);
+  const tickInFlightRef = React.useRef(false);
+  const lastTickRef = React.useRef(0);
   const tick = React.useCallback(async () => {
+      if (tickInFlightRef.current) return; // prevent overlapping fetches under bursty events
+      tickInFlightRef.current = true;
       try {
         const res = await fetch(`/api/station/${stationId}`);
         if (!res.ok) return;
@@ -211,22 +230,40 @@ export default function KdsApp({ stationType, stationId, transport = 'ws', fallb
           setOrders(json.orders.map(mapOrder));
         }
       } catch {}
+      finally {
+        lastTickRef.current = Date.now();
+        tickInFlightRef.current = false;
+      }
     }, [stationId, mapOrder]);
+  const scheduleTimerRef = React.useRef(null);
+  const scheduleTick = React.useCallback(() => {
+    // Throttle to at most 1 fetch per 500ms to avoid UI jank
+    const elapsed = Date.now() - lastTickRef.current;
+    if (elapsed >= 500 && !tickInFlightRef.current) {
+      tick();
+      return;
+    }
+    if (scheduleTimerRef.current) return;
+    scheduleTimerRef.current = setTimeout(() => {
+      scheduleTimerRef.current = null;
+      tick();
+    }, Math.max(0, 500 - elapsed));
+  }, [tick]);
   useEffect(() => {
     if (!stationId) return;
     let active = true;
     tick();
     // Initial fetch and periodic when not connected or stale
-    const interval = setInterval(() => { if (!connected || stale) tick(); }, 3000);
-    return () => { active = false; clearInterval(interval); };
+    const interval = setInterval(() => { if (!connected || stale) scheduleTick(); }, 3000);
+    return () => { active = false; clearInterval(interval); if (scheduleTimerRef.current) { clearTimeout(scheduleTimerRef.current); scheduleTimerRef.current = null; } };
   }, [stationId, connected, stale, tick]);
 
   // Force refresh when server broadcasts report changes (e.g., after order create)
   useEffect(() => {
-    const handleReports = () => tick();
+    const handleReports = () => scheduleTick();
     on('reportsUpdated', handleReports);
     return () => off('reportsUpdated', handleReports);
-  }, [on, off, tick]);
+  }, [on, off, scheduleTick]);
   // Keep recall selection in sync with bumped list
   useEffect(() => {
     if (Array.isArray(bumpedList) && bumpedList.length) {
@@ -258,10 +295,12 @@ export default function KdsApp({ stationType, stationId, transport = 'ws', fallb
             stationType={stationType}
             density={document.body.classList.contains('kds-compact') ? 'compact' : 'comfortable'}
             layout="grid"
+            nowSec={nowSec}
             onTicketClick={(orderId) => setSelectedId((prev)=> prev===orderId ? null : orderId)}
             selectedId={selectedId}
             stationsMap={stationsById}
-            onItemToggle={(orderId, orderItemId, state) => send('itemPrepared', { orderId, orderItemId, state })}
+            showSourceBadge={!!showSourceBadge}
+            sourceColors={sourceColors || {}}
             onBump={(orderId) => {
               const id = orderId || selectedId || orders[0]?.orderId;
               if (!id) return;

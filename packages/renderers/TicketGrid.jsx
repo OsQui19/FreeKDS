@@ -9,7 +9,19 @@ import ExpoHeader from './ExpoHeader.jsx';
 // Tokens are applied globally as CSS variables by TokenCSSVariables.
 // The grid relies on CSS variable fallbacks in CSS to avoid async fetches here.
 
-const ENABLE_VALIDATION = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.MODE !== 'production';
+const ENABLE_VALIDATION = (() => {
+  try {
+    if (typeof window !== 'undefined') {
+      const v = window.localStorage.getItem('validate_renderers');
+      if (v === '0' || v === 'false') return false;
+      if (v === '1' || v === 'true') return true;
+    }
+  } catch {}
+  const env = (typeof import.meta !== 'undefined' && import.meta.env) || {};
+  if (env.VITE_VALIDATE_RENDERERS === '0' || env.VITE_VALIDATE_RENDERERS === 'false') return false;
+  if (env.VITE_VALIDATE_RENDERERS === '1' || env.VITE_VALIDATE_RENDERERS === 'true') return true;
+  return env.MODE !== 'production';
+})();
 let validate;
 let compileErr = null;
 function validateData(data) {
@@ -58,7 +70,10 @@ function TicketGrid({
   selectedId,
   stationsMap,
   onItemToggle,
+  showSourceBadge = true,
+  sourceColors = {},
   style,
+  nowSec,
 }) {
   if (style !== undefined) {
     throw new Error('style prop is not supported');
@@ -80,7 +95,7 @@ function TicketGrid({
           data-order-id={t.orderId}
           onClick={() => onTicketClick && onTicketClick(t.orderId)}
         >
-          <TicketCard stationType={stationType} stationsMap={stationsMap} onBump={onBump ? () => onBump(t.orderId) : undefined} onItemToggle={onItemToggle} {...t} />
+          <TicketCard stationType={stationType} stationsMap={stationsMap} onBump={onBump ? () => onBump(t.orderId) : undefined} onItemToggle={onItemToggle} showSourceBadge={showSourceBadge} sourceColors={sourceColors} nowSec={nowSec} {...t} />
         </div>
       ))}
     </div>
@@ -97,6 +112,9 @@ TicketGrid.propTypes = {
   selectedId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   stationsMap: PropTypes.object,
   onItemToggle: PropTypes.func,
+  showSourceBadge: PropTypes.bool,
+  sourceColors: PropTypes.object,
+  nowSec: PropTypes.number,
   style: (props, propName, componentName) => {
     if (props[propName] !== undefined) {
       return new Error(`Invalid prop \`${propName}\` supplied to \`${componentName}\`. Use tokens or className instead.`);

@@ -22,6 +22,8 @@ function createApp(db, transports) {
   // Do not force protocol downgrades; allow proxy to manage HTTPS.
   // If you want to force HTTPS in production, do it explicitly via config.
   app.use(express.static(path.join(__dirname, '../dist')));
+  // Serve uploaded assets (branding)
+  app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
   app.use(apiTokenAuth(db, logger));
   app.use(authMiddleware(db));
   app.use((req, res, next) => {

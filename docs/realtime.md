@@ -9,6 +9,15 @@ Server‑Sent Events (SSE) when necessary.
 - **Server‑Sent Events (`sse`)** – unidirectional fallback when WebSockets
   are unavailable.
 
+### Allowed origins
+Both WebSocket and SSE endpoints enforce origin checks. Configure allowed
+origins using one of:
+
+- Env var `ALLOWED_ORIGINS` – comma‑separated list or `*` to allow all.
+- `config.cors.allowedOrigins` – array in `config.js`.
+
+Defaults allow only localhost in development.
+
 ## Heartbeat
 - Heartbeats run every 30 seconds.
 - WebSocket clients send a `ping` and expect a `pong` reply.

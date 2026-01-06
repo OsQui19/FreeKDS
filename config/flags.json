@@ -3,6 +3,13 @@
     "ui": {
       "sampleFeature": false
     },
+    "kds": {
+      "showSourceBadge": true,
+      "sourceColors": {
+        "pos": "#0d6efd",
+        "online": "#6f42c1"
+      }
+    },
     "transport": {},
     "perf": {
       "enableMetrics": false

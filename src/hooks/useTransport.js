@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { io } from 'socket.io-client';
 const HEARTBEAT_MS = 30000;
 /**
@@ -32,13 +32,14 @@ export default function useTransport({ type, fallback = 'sse', stationId, sseTyp
     queueRef.current = [];
   };
 
-  const send = (evt, data) => {
-    if (transport === 'ws' && connected && connRef.current) {
-      connRef.current.emit(evt, data);
+  const send = useCallback((evt, data) => {
+    const conn = connRef.current;
+    if (transport === 'ws' && connected && conn) {
+      conn.emit(evt, data);
     } else {
       queueRef.current.push([evt, data]);
     }
-  };
+  }, [transport, connected]);
 
   useEffect(() => {
     let active = true;
@@ -166,19 +167,19 @@ export default function useTransport({ type, fallback = 'sse', stationId, sseTyp
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [transport, stationId, fallback]);
 
-  const on = (evt, handler) => {
+  const on = useCallback((evt, handler) => {
     const conn = connRef.current;
     if (!conn) return;
     if (transport === 'ws') conn.on(evt, handler);
     else conn.addEventListener(evt, handler);
-  };
+  }, [transport]);
 
-  const off = (evt, handler) => {
+  const off = useCallback((evt, handler) => {
     const conn = connRef.current;
     if (!conn) return;
     if (transport === 'ws') conn.off(evt, handler);
     else conn.removeEventListener(evt, handler);
-  };
+  }, [transport]);
 
   return { connection: connRef.current, connected, stale, on, off, send };
 }

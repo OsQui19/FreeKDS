@@ -16,8 +16,10 @@ module.exports = (db, transports) => {
     if (!validateOrder(req.body)) {
       return res.status(400).json({ errors: validateOrder.errors });
     }
-    const { order_number, order_type, items, special_instructions, allergy } =
-      req.body;
+    const { order_number, order_type, items, special_instructions, allergy, source: bodySource, channel: bodyChannel } =
+      req.body || {};
+    const source = (bodySource || 'pos');
+    const channel = bodyChannel || null;
 
     let conn;
     try {
@@ -25,10 +27,12 @@ module.exports = (db, transports) => {
       await conn.beginTransaction();
 
       const [result] = await conn.query(
-        "INSERT INTO orders (order_number, order_type, special_instructions, allergy) VALUES (?, ?, ?, ?)",
+        "INSERT INTO orders (order_number, order_type, source, channel, special_instructions, allergy) VALUES (?, ?, ?, ?, ?, ?)",
         [
           order_number || null,
           order_type || null,
+          source || null,
+          channel,
           special_instructions || null,
           allergy ? 1 : 0,
         ],

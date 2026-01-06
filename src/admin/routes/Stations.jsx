@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useToast } from '@/contexts/ToastContext.jsx';
 import { useConfirm } from '@/contexts/ConfirmContext.jsx';
+import SectionHeader from '@/components/SectionHeader.jsx';
 
 function Section({ title, children, action }) {
   return (
@@ -215,7 +216,7 @@ export default function StationsRoute() {
 
   return (
     <div className="admin-section">
-      <h3 className="mb-3">Stations & Devices</h3>
+      <SectionHeader title="Stations & Devices" />
       {error && <div className="alert alert-danger py-1">{error}</div>}
       {message && <div className="toast show position-fixed bottom-0 end-0 m-3 text-bg-success"><div className="toast-body">{message}</div></div>}
 

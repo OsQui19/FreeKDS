@@ -68,6 +68,16 @@ module.exports = function (io, db, transports = {}) {
           try { require('./webhooks').send('order.completed', { orderId }); } catch {}
           io.emit("reportsUpdated");
         } else {
+          // Mark this station's items as ready and timestamp prepared_at
+          try {
+            await query(
+              db,
+              'UPDATE order_items oi JOIN menu_items mi ON oi.menu_item_id = mi.id SET oi.state="ready", oi.prepared_at=NOW() WHERE oi.order_id=? AND mi.station_id=?',
+              [orderId, socket.stationId]
+            );
+          } catch (e) {
+            logger.error('Failed updating item states on bumpOrder:', e);
+          }
           await query(
             db,
             `INSERT INTO bumped_orders (order_id, station_id, order_number)
@@ -83,6 +93,22 @@ module.exports = function (io, db, transports = {}) {
             orderId,
             stationId: socket.stationId,
           });
+          // If all items in the order are ready now, mark order ready and notify
+          try {
+            const [rows] = await db
+              .promise()
+              .query('SELECT COUNT(*) AS remaining FROM order_items WHERE order_id=? AND state<>"ready"', [orderId]);
+            const remaining = rows[0]?.remaining || 0;
+            if (remaining === 0) {
+              await query(db, 'UPDATE orders SET status="ready", ready_at=NOW() WHERE id=?', [orderId]);
+              const readyTs = Math.floor(Date.now() / 1000);
+              io.emit('orderReady', { orderId, readyTs });
+              sse && sse.emitAll('orderReady', { orderId, readyTs });
+              try { require('./webhooks').send('order.ready', { orderId, readyTs }); } catch {}
+            }
+          } catch (e) {
+            logger.error('Failed to compute order readiness on bumpOrder:', e);
+          }
           try { require('./webhooks').send('order.progress', { orderId, stationId: socket.stationId }); } catch {}
           // Forward to next station if configured
           try {
@@ -142,7 +168,7 @@ module.exports = function (io, db, transports = {}) {
             [orderId],
           );
           io.emit("reportsUpdated");
-          const fetchSql = `SELECT o.order_number, o.order_type, o.special_instructions, o.allergy, UNIX_TIMESTAMP(o.created_at) AS ts,
+          const fetchSql = `SELECT o.order_number, o.order_type, o.source, o.channel, o.special_instructions, o.allergy, UNIX_TIMESTAMP(o.created_at) AS ts,
                                oi.id AS order_item_id, oi.quantity, mi.name, mi.station_id, mi.id AS item_id,
                                oi.special_instructions AS item_instructions, oi.allergy AS item_allergy,
                                GROUP_CONCAT(m.name ORDER BY m.name SEPARATOR ', ') AS modifiers
@@ -172,6 +198,8 @@ module.exports = function (io, db, transports = {}) {
           });
           const orderNumber = rows[0].order_number || orderId;
           const orderType = rows[0].order_type || "";
+          const source = rows[0].source || '';
+          const channel = rows[0].channel || '';
           const specialInstructions = rows[0].special_instructions || "";
           const allergy = !!rows[0].allergy;
           const createdTs = rows[0].ts;
@@ -180,6 +208,8 @@ module.exports = function (io, db, transports = {}) {
               orderId,
               orderNumber,
               orderType,
+              source,
+              channel,
               specialInstructions,
               allergy,
               createdTs,
@@ -189,6 +219,8 @@ module.exports = function (io, db, transports = {}) {
               orderId,
               orderNumber,
               orderType,
+              source,
+              channel,
               specialInstructions,
               allergy,
               createdTs,
@@ -199,6 +231,8 @@ module.exports = function (io, db, transports = {}) {
             orderId,
             orderNumber,
             orderType,
+            source,
+            channel,
             specialInstructions,
             allergy,
             createdTs,
@@ -229,38 +263,7 @@ module.exports = function (io, db, transports = {}) {
         logger.error("Error handling recallOrder:", err);
       }
     });
-    socket.on('itemPrepared', async ({ orderId, orderItemId, state }) => {
-      if (!orderId || !orderItemId) return;
-      try {
-        // Update DB
-        if (state === 'ready') {
-          await query(db, 'UPDATE order_items SET state=?, prepared_at=NOW() WHERE id=? AND order_id=?', [state, orderItemId, orderId]);
-        } else {
-          await query(db, 'UPDATE order_items SET state=?, prepared_at=NULL WHERE id=? AND order_id=?', [state, orderItemId, orderId]);
-        }
-        // Broadcast item state to station and expo
-        io.to(`station-${socket.stationId}`).emit('itemState', { orderId, itemId: orderItemId, state });
-        io.to('expo').emit('itemState', { orderId, itemId: orderItemId, state });
-        sse && sse.emitToStation(socket.stationId, 'itemState', { orderId, itemId: orderItemId, state });
-        sse && sse.emitToExpo('itemState', { orderId, itemId: orderItemId, state });
-        // Check if all items are ready => mark order ready
-        const [rows] = await db
-          .promise()
-          .query('SELECT COUNT(*) AS remaining FROM order_items WHERE order_id=? AND state<>"ready"', [orderId]);
-        const remaining = rows[0]?.remaining || 0;
-        if (remaining === 0) {
-          await query(db, 'UPDATE orders SET status="ready", ready_at=NOW() WHERE id=?', [orderId]);
-          const readyTs = Math.floor(Date.now() / 1000);
-          io.emit('orderReady', { orderId, readyTs });
-          sse && sse.emitAll('orderReady', { orderId });
-          try { require('./webhooks').send('order.ready', { orderId, readyTs }); } catch {}
-        } else {
-          await query(db, 'UPDATE orders SET status="active" WHERE id=?', [orderId]);
-        }
-      } catch (err) {
-        logger.error('Error itemPrepared:', err);
-      }
-    });
+    // Removed legacy per-item ready toggling via 'itemPrepared' in favor of bump-driven readiness
     socket.on("markUrgent", async ({ orderId }) => {
       if (!orderId || socket.stationType !== "expo") return;
       const sql = `SELECT DISTINCT mi.station_id
@@ -317,7 +320,7 @@ module.exports = function (io, db, transports = {}) {
       try {
         await query(db, 'UPDATE orders SET status="active" WHERE id=?', [orderId]);
         // Re-broadcast as added to stations owning items in the order
-        const fetchSql = `SELECT o.order_number, o.order_type, o.special_instructions, o.allergy, UNIX_TIMESTAMP(o.created_at) AS ts,
+        const fetchSql = `SELECT o.order_number, o.order_type, o.source, o.channel, o.special_instructions, o.allergy, UNIX_TIMESTAMP(o.created_at) AS ts,
                              oi.quantity, mi.name, mi.station_id, mi.id AS item_id,
                              oi.special_instructions AS item_instructions, oi.allergy AS item_allergy,
                              GROUP_CONCAT(m.name ORDER BY m.name SEPARATOR ', ') AS modifiers
@@ -346,6 +349,8 @@ module.exports = function (io, db, transports = {}) {
         });
         const orderNumber = rows[0].order_number || orderId;
         const orderType = rows[0].order_type || '';
+        const source = rows[0].source || '';
+        const channel = rows[0].channel || '';
         const specialInstructions = rows[0].special_instructions || '';
         const allergy = !!rows[0].allergy;
         const createdTs = rows[0].ts;
@@ -354,6 +359,8 @@ module.exports = function (io, db, transports = {}) {
             orderId,
             orderNumber,
             orderType,
+            source,
+            channel,
             specialInstructions,
             allergy,
             createdTs,
@@ -363,6 +370,8 @@ module.exports = function (io, db, transports = {}) {
             orderId,
             orderNumber,
             orderType,
+            source,
+            channel,
             specialInstructions,
             allergy,
             createdTs,

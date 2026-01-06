@@ -23,6 +23,42 @@ module.exports = (db) => {
     }
   });
 
+  // Draft endpoints for WYSIWYG publishing workflow
+  router.get('/layout/draft', async (req, res, next) => {
+    if (!req.session.user) return res.status(401).send('Unauthorized');
+    const name = req.query.name || 'default';
+    try {
+      const [rows] = await query(db, 'SELECT definition, updated_at FROM layout_drafts WHERE name=?', [name]);
+      res.json({ draft: rows.length ? rows[0].definition : null, updated_at: rows.length ? rows[0].updated_at : null });
+    } catch (err) { next(err); }
+  });
+
+  router.post('/layout/draft', async (req, res, next) => {
+    if (!req.session.user) return res.status(401).send('Unauthorized');
+    const name = (req.body && req.body.name) || 'default';
+    const layout = (req.body && req.body.layout) || null;
+    if (typeof layout !== 'string') return res.status(400).json({ error: 'Invalid layout' });
+    try {
+      await query(db, 'INSERT INTO layout_drafts (name, definition) VALUES (?, ?) ON DUPLICATE KEY UPDATE definition=VALUES(definition)', [name, layout]);
+      res.json({ success: true });
+    } catch (err) { next(err); }
+  });
+
+  router.post('/layout/publish', async (req, res, next) => {
+    if (!req.session.user) return res.status(401).send('Unauthorized');
+    const name = (req.body && req.body.name) || 'default';
+    try {
+      const [rows] = await query(db, 'SELECT definition FROM layout_drafts WHERE name=?', [name]);
+      if (!rows.length) return res.status(404).json({ error: 'No draft' });
+      const layout = rows[0].definition;
+      // Snapshot current layout to versions
+      const [prev] = await query(db, 'SELECT definition FROM layouts WHERE name=?', [name]);
+      if (prev.length) await query(db, 'INSERT INTO layout_versions (name, definition) VALUES (?, ?)', [name, prev[0].definition]);
+      await query(db, 'INSERT INTO layouts (name, definition) VALUES (?, ?) ON DUPLICATE KEY UPDATE definition=VALUES(definition)', [name, layout]);
+      res.json({ success: true });
+    } catch (err) { next(err); }
+  });
+
   // List saved layout names
   router.get('/layout/names', async (req, res, next) => {
     try {

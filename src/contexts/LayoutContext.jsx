@@ -43,8 +43,33 @@ export function LayoutProvider({ children, name = 'default', stationId }) {
     }
   };
 
+  const saveDraft = async (json) => {
+    try {
+      await fetch('/api/layout/draft', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ layout: json, name }),
+      });
+    } catch {
+      /* ignore */
+    }
+  };
+
+  const publishDraft = async () => {
+    try {
+      await fetch('/api/layout/publish', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name }),
+      });
+      fetchLayout();
+    } catch {
+      /* ignore */
+    }
+  };
+
   return (
-    <LayoutContext.Provider value={{ layout, saveLayout }}>
+    <LayoutContext.Provider value={{ layout, saveLayout, saveDraft, publishDraft }}>
       {children}
     </LayoutContext.Provider>
   );

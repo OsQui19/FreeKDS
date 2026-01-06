@@ -8,6 +8,8 @@
     "orderId": { "type": ["integer", "string"] },
     "orderNumber": { "type": ["integer", "string"] },
     "orderType": { "type": "string" },
+    "source": { "type": "string" },
+    "channel": { "type": "string" },
     "specialInstructions": { "type": "string" },
     "allergy": { "type": "boolean" },
     "createdTs": { "type": "integer" },

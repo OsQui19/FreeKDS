@@ -22,7 +22,7 @@ describe('sse transport auth', () => {
     const res = await request(app)
       .get('/sse?stationId=1&token=devtoken')
       .set('Origin', 'http://evil.com');
-    expect(res.status).to.equal(401);
+    expect(res.status).to.equal(403);
     expect(sse.clientCount()).to.equal(0);
   });
 });
